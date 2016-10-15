@@ -1,6 +1,8 @@
 
 #include "chip.h"
+#include "util.h"
 #include "ltc6804.h"
+#include <string.h>
 
 const uint32_t OscRateIn = 0;
 
@@ -29,6 +31,7 @@ static uint8_t Tx_Buf[BUFFER_SIZE];
 static uint8_t Rx_Buf[BUFFER_SIZE];
 
 static uint8_t test_pec_data[2];
+static char str[100];
 
 static SSP_ConfigFormat ssp_format;
 static Chip_SSP_DATA_SETUP_T xf_setup;
@@ -43,7 +46,6 @@ static void Init_SSP_PinMux(void) {
 
 static void Buffer_Init(void) {
 	uint16_t i;
-	uint8_t ch = 0;
 
 	for (i = 0; i < BUFFER_SIZE; i++) {
 		Tx_Buf[i] = 0x01;
@@ -127,15 +129,18 @@ int main(void)
 	int i;
 
 	while (1) {
-		Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
+		// Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
 
-		test_pec[0] = 0x01;
-		test_pec[1] = 0x00;
-        uint16_t pec = ltc6804_calculate_pec(&test_pec_data, 2);
+		test_pec_data[0] = 0x01;
+		test_pec_data[1] = 0x00;
+        uint16_t pec = ltc6804_calculate_pec((char *) &test_pec_data, 2);
+        itoa(pec, str, 16);
+	    Chip_UART_SendBlocking(LPC_USART, str, strlen(str));
 	    Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
-        LED_ON();
+        LED_On();
 		for(i=0; i< 0xFFFF; i++);
-        LED_OFF();
+	    Chip_UART_SendBlocking(LPC_USART, "LED_OFF", 7);
+        LED_Off();
 	}
 
 	return 0;

@@ -1,0 +1,18 @@
+Page 41
+
+The serial ports (SPI or isoSPI) will enter the low power
+IDLE state if there is no activity on Port A for a time of t IDLE .
+
+The WAKEUP circuit monitors activity on pins 41 and 42.
+If ISOMD = V – , Port A is in SPI mode. Activity on the CSB
+or SCK pin will wake up the SPI interface. If ISOMD = V REG ,
+Port A is in isoSPI mode. Differential activity on IPA-IMB
+wakes up the isoSPI interface. The LTC6804 will be ready
+to communicate when the isoSPI state changes to READY
+within t WAKE or t READY , depending on the Core state (see
+Figure 1 and state descriptions for details.)
+
+The software timer
+can only be reset after a valid WRCFG
+
+LTC clock mode???

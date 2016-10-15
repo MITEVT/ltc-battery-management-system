@@ -40,7 +40,6 @@ static void Init_SSP_PinMux(void) {
 
 static void Buffer_Init(void) {
 	uint16_t i;
-	uint8_t ch = 0;
 
 	for (i = 0; i < BUFFER_SIZE; i++) {
 		Tx_Buf[i] = 0x01;
@@ -110,13 +109,13 @@ int main(void)
 	while (1) {
 		Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
 
-		test_pec[0] = 0x01;
-		test_pec[1] = 0x00;
-        uint16_t pec = ltc6804_calculate_pec(&test_pec_data, 2);
+		test_pec_data[0] = 0x01;
+		test_pec_data[1] = 0x00;
+        uint16_t pec = ltc6804_calculate_pec((char *) &test_pec_data, 2);
 	    Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
-        LED_ON();
+        LED_On();
 		for(i=0; i< 0xFFFF; i++);
-        LED_OFF();
+        LED_Off();
 	}
 
 	return 0;

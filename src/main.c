@@ -17,6 +17,9 @@ const uint32_t OscRateIn = 0;
 #define SSP_IRQ           SSP0_IRQn
 #define SSPIRQHANDLER     SSP0_IRQHandler
 
+#define _cs_pin 	2
+#define _cs_port 	3
+
 
 #define LED_PIN 8
 /* Tx buffer */
@@ -66,6 +69,22 @@ static void LED_On(void) {
 static void LED_Off(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, 2, LED_PIN, false);
 	Chip_UART_SendBlocking(LPC_USART, "LED_OFF", 6);
+}
+
+static void LTC8604_RDCFG(void){
+	Chip_GPIO_SetPinState(LPC_GPIO, _cs_port, _cs_pin, false);
+	Tx_Buf[0] = (RDCFG & 0xFF00)>>8;
+	Tx_Buf[1] = (RDCFG & 0x00FF);
+	uint16_t pec_val = ltc6804_calculate_pec(&test_pec_data, 2);	
+	Tx_Buf[2] = (pec_val & 0xFF00)>>8;
+	Tx_Buf[3] = (pec_val & 0x00FF);
+	
+	xf_setup.length = 6;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO,_cs_port, _cs_pin, true);
 }
 
 /**

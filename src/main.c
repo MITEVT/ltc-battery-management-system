@@ -24,10 +24,20 @@ const uint32_t OscRateIn = 0;
 /* Tx buffer */
 static uint8_t Tx_Buf[BUFFER_SIZE];
 
+volatile uint32_t msTicks;
+
+void SysTick_Handler(void) {
+	msTicks++;
+}
+
+static void delay(uint32_t dlyTicks) {
+	uint32_t curTicks = msTicks;
+	while ((msTicks - curTicks) < dlyTicks);
+}
+
 /* Rx buffer */
 static uint8_t Rx_Buf[BUFFER_SIZE];
 
-static uint8_t test_pec_data[2];
 static char str[100];
 
 static SSP_ConfigFormat ssp_format;
@@ -86,8 +96,15 @@ int main(void)
 	/* LED Initialization */
 	GPIO_Config();
 	LED_Config();
-	LED_On();
 
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
+
+	Chip_UART_Init(LPC_USART);
+	Chip_UART_SetBaud(LPC_USART, 115200);
+	Chip_UART_ConfigData(LPC_USART, (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS));
+	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
+	Chip_UART_TXEnable(LPC_USART);
 
     Init_SSP_PinMux();
 	Chip_SSP_Init(LPC_SSP);
@@ -105,24 +122,18 @@ int main(void)
 
 	Buffer_Init();
 
-	LED_On();
+	// LED_On();
 
-	int i;
+
 
 	while (1) {
 		// Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
-
-		test_pec_data[0] = 0x01;
-		test_pec_data[1] = 0x00;
-        uint16_t pec = ltc6804_calculate_pec((char *) &test_pec_data, 2);
+        uint8_t test_pec_data[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1};
+        uint16_t pec = ltc6804_calculate_pec(test_pec_data, 16);
         itoa(pec, str, 16);
 	    Chip_UART_SendBlocking(LPC_USART, str, strlen(str));
-	    Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
-        LED_On();
-		for(i=0; i< 0xFFFF; i++);
-	    Chip_UART_SendBlocking(LPC_USART, "LED_OFF", 7);
-        LED_Off();
 	}
 
 	return 0;
 }
+

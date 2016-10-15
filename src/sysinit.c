@@ -91,24 +91,6 @@
 //                     <2=> WDT Oscillator
 //                     <3=> System PLL Clock Out
 //   </e1>
-//   <e10> USB Clock Setup
-//     <e11> Use USB PLL
-//                     <i> F_pll = M * F_in
-//                     <i> F_in must be in the range of 10 MHz to 25 MHz
-//       <o12.0..1> Select Input Clock for usb_pllclkin (Register: USBPLLCLKSEL)
-//                     <0=> IRC Oscillator
-//                     <1=> System Oscillator
-//       <o13.0..4>   M: PLL Multiplier Selection
-//                     <1-32><#-1>
-//       <o13.5..6>   P: PLL Divider Selection
-//                     <0=> 2
-//                     <1=> 4
-//                     <2=> 8
-//                     <3=> 16
-//       <o13.7>      DIRECT: Direct CCO Clock Output Enable
-//       <o13.8>      BYPASS: PLL Bypass Enable
-//     </e11>
-//   </e10>
 //   <o14.0..7> System AHB Divider <0-255>
 //                     <i> 0 = is disabled
 //   <o15.0>   SYS Clock Enable
@@ -125,7 +107,6 @@
 //   <o15.11>  SSP Clock Enable
 //   <o15.12>  UART Clock Enable
 //   <o15.13>  ADC Clock Enable
-//   <o15.14>  USB_REG Clock Enable
 //   <o15.15>  SWDT Clock Enable
 //   <o15.16>  IOCON Clock Enable
 // </e>
@@ -138,8 +119,8 @@
 #define WDTOSCCTRL_Val        0xA0
 #define SYSPLLCLKSEL_Val      0x0
 #define SYSPLL_SETUP          1
-#define SYSPLLCTRL_Val        0x23
-#define MAINCLKSEL_Val        0x1
+#define SYSPLLCTRL_Val        0x41
+#define MAINCLKSEL_Val        0x3
 #define SYSAHBCLKDIV_Val      0x1
 #define AHBCLKCTRL_Val        0x1005F
 
@@ -189,18 +170,6 @@
 
 #if (CHECK_RSVD((MAINCLKSEL_Val),  ~0x3))
    #error "MAINCLKSEL: Invalid values of reserved bits!"
-#endif
-
-#if (CHECK_RANGE((USBPLLCLKSEL_Val), 0, 1))
-   #error "USBPLLCLKSEL: Value out of range!"
-#endif
-
-#if (CHECK_RSVD((USBPLLCTRL_Val),  ~0x1FF))
-   #error "USBPLLCTRL: Invalid values of reserved bits!"
-#endif
-
-#if (CHECK_RSVD((USBPLLUEN_Val),   ~0x1))
-   #error "USBPLLUEN: Invalid values of reserved bits!"
 #endif
 
 #if (CHECK_RANGE((SYSAHBCLKDIV_Val), 0, 255))
@@ -442,13 +411,11 @@ void SystemInit (void)
   LPC_SYSCTL->PDRUNCFG     &= ~(1 << 6);          /* Power-up WDT Clock       */
 #endif
   LPC_SYSCTL->MAINCLKSEL    = MAINCLKSEL_Val;     /* Select PLL Clock Output  */
-  LPC_SYSCTL->MAINCLKUEN    = 0x1;               /* Update MCLK Clock Source */
+  // LPC_SYSCTL->MAINCLKUEN    = 0x1;               /* Update MCLK Clock Source */
   LPC_SYSCTL->MAINCLKUEN    = 0x0;               /* Toggle Update Register   */
   LPC_SYSCTL->MAINCLKUEN    = 0x1;
   while (!(LPC_SYSCTL->MAINCLKUEN & 0x1));       /* Wait Until Updated       */
 #endif
-  LPC_SYSCTL->PDRUNCFG     |=  (1 << 10);         /* Power-down USB PHY       */
-  LPC_SYSCTL->PDRUNCFG     |=  (1 <<  8);         /* Power-down USB PLL       */
 
   LPC_SYSCTL->SYSAHBCLKDIV  = SYSAHBCLKDIV_Val;
   LPC_SYSCTL->SYSAHBCLKCTRL = AHBCLKCTRL_Val;

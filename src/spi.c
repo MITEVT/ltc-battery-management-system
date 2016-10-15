@@ -1,5 +1,6 @@
 
 #include "chip.h"
+#include "ltc6804.h"
 
 const uint32_t OscRateIn = 0;
 
@@ -106,7 +107,6 @@ int main(void)
 	while (1) {
 		Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
 		for(i=0; i< 0xFFFF; i++);
-
 	}
 
 	return 0;

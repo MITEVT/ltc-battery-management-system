@@ -301,7 +301,7 @@ writeflash: all
 
 com:
 	@echo "Opening" $(COMPORT)
-	picocom $(COMPORT)
+	@picocom $(COMPORT) -b $(BAUDRATE)
 
 #=============================================================================#
 # make clean

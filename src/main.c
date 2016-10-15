@@ -18,12 +18,14 @@ const uint32_t OscRateIn = 0;
 #define SSPIRQHANDLER     SSP0_IRQHandler
 
 
-#define LED_PIN 5
+#define LED_PIN 8
 /* Tx buffer */
 static uint8_t Tx_Buf[BUFFER_SIZE];
 
 /* Rx buffer */
 static uint8_t Rx_Buf[BUFFER_SIZE];
+
+static uint8_t test_pec_data[2];
 
 static SSP_ConfigFormat ssp_format;
 static Chip_SSP_DATA_SETUP_T xf_setup;
@@ -58,11 +60,12 @@ static void LED_Config(void) {
 
 static void LED_On(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, 2, LED_PIN, true);
-	//Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
+	Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
 }
 
 static void LED_Off(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, 2, LED_PIN, false);
+	Chip_UART_SendBlocking(LPC_USART, "LED_OFF", 6);
 }
 
 /**
@@ -106,7 +109,14 @@ int main(void)
 
 	while (1) {
 		Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);
+
+		test_pec[0] = 0x01;
+		test_pec[1] = 0x00;
+        uint16_t pec = ltc6804_calculate_pec(&test_pec_data, 2);
+	    Chip_UART_SendBlocking(LPC_USART, "LED_ON", 6);
+        LED_ON();
 		for(i=0; i< 0xFFFF; i++);
+        LED_OFF();
 	}
 
 	return 0;

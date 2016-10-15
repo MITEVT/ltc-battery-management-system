@@ -77,7 +77,7 @@ static void LTC8604_RDCFG(void){
 	Chip_GPIO_SetPinState(LPC_GPIO, _cs_port, _cs_pin, false);
 	Tx_Buf[0] = (RDCFG & 0xFF00)>>8;
 	Tx_Buf[1] = (RDCFG & 0x00FF);
-	uint16_t pec_val = ltc6804_calculate_pec(&test_pec_data, 2);	
+	uint16_t pec_val = ltc6804_calculate_pec((char *)&Tx_Buf, 2);	
 	Tx_Buf[2] = (pec_val & 0xFF00)>>8;
 	Tx_Buf[3] = (pec_val & 0x00FF);
 	
@@ -127,6 +127,12 @@ int main(void)
 	LED_On();
 
 	int i;
+	Chip_UART_SendBlocking(LPC_USART, "Reading Config Register:\n", 25);
+	LTC8604_RDCFG();
+	for(i = 0; i<6;i++){
+		itoa(Rx_Buf[i],str,16);
+		Chip_UART_SendBlocking(LPC_USART,str, strlen(str));
+	}
 
 	while (1) {
 		// Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, BUFFER_SIZE);

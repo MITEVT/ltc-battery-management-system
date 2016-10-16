@@ -15,7 +15,7 @@ const uint32_t OscRateIn = 0;
 																					  (8 - SSP_DATA_BIT_NUM(databits))))
 #define SSP_HI_BYTE_MSK(databits)           ((SSP_DATA_BYTES(databits) > 1) ? (0xFF >> \
 																			   (16 - SSP_DATA_BIT_NUM(databits))) : 0)
-#define LPC_SSP           LPC_SSP0
+#define LPC_SSP           LPC_SSP1
 #define SSP_IRQ           SSP0_IRQn
 #define SSPIRQHANDLER     SSP0_IRQHandler
 
@@ -51,6 +51,8 @@ static void Init_SSP_PinMux(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MOSI0 */
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_0, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* SSEL0 */
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* SCK0 */
+
+	Chip_GPIO_WriteDirBit(LPC_GPIO, _cs_port, _cs_pin, true);
 	Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO2_11);
 }
 
@@ -139,7 +141,7 @@ int main(void)
 	ssp_format.bits = SSP_DATA_BITS;
 	ssp_format.clockMode = SSP_CLOCK_MODE0; 
 	Chip_SSP_SetFormat(LPC_SSP, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
-	Chip_SSP_SetMaster(LPC_SSP, SSP_MODE_TEST);
+	Chip_SSP_SetMaster(LPC_SSP, true);
 	Chip_SSP_Enable(LPC_SSP);
 
 

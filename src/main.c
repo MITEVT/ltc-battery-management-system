@@ -53,7 +53,7 @@ static void Init_SSP_PinMux(void) {
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_0, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* SSEL1 */ // WILL NEED TO USE _cs pin manually in future
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* SCK1 */
 
-	Chip_GPIO_WriteDirBit(LPC_GPIO, _cs_port, _cs_pin, true);
+	// Chip_GPIO_WriteDirBit(LPC_GPIO, _cs_port, _cs_pin, true);
 	Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO2_11);
 }
 
@@ -92,7 +92,7 @@ static void LED_Off(void) {
 }
 
 static void LTC8604_RDCFG(void){
-	Chip_GPIO_SetPinState(LPC_GPIO, _cs_port, _cs_pin, false);
+	// Chip_GPIO_SetPinState(LPC_GPIO, _cs_port, _cs_pin, false);
 
 	Chip_UART_SendBlocking(LPC_USART, "sending frames..\n",17);	
 	Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, TX_BUFFER_SIZE);
@@ -108,7 +108,7 @@ static void LTC8604_RDCFG(void){
 	Chip_UART_SendBlocking(LPC_USART, "done reading frames..\n",23);	
     */
 
-	Chip_GPIO_SetPinState(LPC_GPIO,_cs_port, _cs_pin, true);
+	// Chip_GPIO_SetPinState(LPC_GPIO,_cs_port, _cs_pin, true);
 }
 
 /**

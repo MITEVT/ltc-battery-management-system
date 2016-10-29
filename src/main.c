@@ -158,7 +158,20 @@ static uint32_t ReadVoltageGroupC(void) {
 	return (Rx_Buf[4])|(Rx_Buf[5]<<8)|(Rx_Buf[6]<<16)|(Rx_Buf[7]<<24);
 }
 
+static void CVSelfTest(void) {
+    Tx_Buf[0] = 0x03;
+    Tx_Buf[1] = 0x27;
+    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+    Tx_Buf[2] = pec >> 8;
+    Tx_Buf[3] = pec & 0xFF;
 
+    xf_setup.length = 4;
+    xf_setup.rx_cnt = 0;
+    xf_setup.tx_cnt = 0;
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+    Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+}
 
 static void ReadConfig(void) {
 
@@ -258,16 +271,37 @@ int main(void)
 	// Chip_UART_SendBlocking(LPC_USART, str, 4);
 	// Chip_UART_SendBlocking(LPC_USART, "\r\n", 4);
 
-
+    
 	ConfigureChip();
 	delay(1);
-	StartADC();
+	//StartADC();
+    CVSelfTest();
 	delay(3);
 	uint32_t a = ReadVoltageGroupA();
 	delay(1);
 	uint32_t c = ReadVoltageGroupC();
 	int i = 0;
-
+    if((a & 0xFFFF) == 0x9555 && (a >> 16) == 0x9555) {
+        if((c & 0xFFFF) == 0x9555 && (c >> 16) == 0x9555) {
+            Chip_UART_SendBlocking(LPC_USART, "Passed test!", 13);
+        }
+    } else {
+        Chip_UART_SendBlocking(LPC_USART, "Didn't pass test!", 18);
+        Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+        itoa(a >> 16, str, 16);
+        Chip_UART_SendBlocking(LPC_USART, str, 4);
+        Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+        itoa(a & 0xFFFF, str, 16);
+        Chip_UART_SendBlocking(LPC_USART, str, 4);
+        Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+        itoa(c >> 16, str, 16);
+        Chip_UART_SendBlocking(LPC_USART, str, 4);
+        Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+        itoa(c & 0xFFFF, str, 16);
+        Chip_UART_SendBlocking(LPC_USART, str, 4);
+        Chip_UART_SendBlocking(LPC_USART, "\r\n", 2);
+}
+    /*
 	Chip_UART_SendBlocking(LPC_USART, "0x", 2);
 	itoa(a >> 16, str, 16);
 	Chip_UART_SendBlocking(LPC_USART, str, 4);
@@ -281,6 +315,7 @@ int main(void)
 	itoa(c & 0xFFFF, str, 16);
 	Chip_UART_SendBlocking(LPC_USART, str, 4);
 	Chip_UART_SendBlocking(LPC_USART, "\r\n", 2);
+    */
 
 	while(1) {
 		// Chip_GPIO_SetPinState(LPC_GPIO, CS, false);

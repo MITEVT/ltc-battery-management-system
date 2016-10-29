@@ -47,20 +47,24 @@ static void LED_Config(void) {
 
 }
 
-static void SendCommand(uint8_t CMD1, uint8_t CMD2, uint8_t *data, uint8_t read) {
+static void LTC6804_Wake(void) {
 	Tx_Buf[0] = 0x00;
+	Tx_Buf[1] = 0x00;
+
+
+}
+
+static void SendCommand(uint8_t CMD1, uint8_t CMD2, uint8_t *data, uint8_t read) {
 	Tx_Buf[1] = CMD1;
 	Tx_Buf[2] = CMD2;
 	uint16_t pec = ltc6804_calculate_pec(Tx_Buf+1, 2);
 
 }
 
-static void SetADCMode(void) {
+static void ConfigureChip(void) {
 
-	Tx_Buf[0] = 0x00;
-	Tx_Buf[1] = 0x00;
-
-	xf_setup.length = 2;
+	// For now send junk to chip to wake up
+	xf_setup.length = 7;
 	xf_setup.rx_cnt = 0;
 	xf_setup.tx_cnt = 0;
 
@@ -73,7 +77,7 @@ static void SetADCMode(void) {
     uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
     Tx_Buf[2] = pec >> 8;
     Tx_Buf[3] = pec & 0x00FF;
-    Tx_Buf[4] = 0xF9;
+    Tx_Buf[4] = 0xF8; // GPIO OFF with ADC Option 0
     Tx_Buf[5] = 0x00;
     Tx_Buf[6] = 0x00;
     Tx_Buf[7] = 0x00;
@@ -90,6 +94,68 @@ static void SetADCMode(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
 	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
 	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+}
+
+static void StartADC(void) {
+	Tx_Buf[0] = 0x03;
+	Tx_Buf[1] = 0x60;
+	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+	Tx_Buf[2] = pec >> 8;
+	Tx_Buf[3] = pec & 0xFF;
+
+	xf_setup.length = 4;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+}
+
+//read voltages of cells 1-2
+static uint32_t ReadVoltageGroupA(void) {
+	Tx_Buf[0] = 0x00;
+	Tx_Buf[1] = 0x04;
+	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+	Tx_Buf[2] = pec >> 8;
+	Tx_Buf[3] = pec & 0xFF;
+	int i;
+	for(i = 5; i < 12; i++){
+		Tx_Buf[i] = 0;
+	}
+
+	xf_setup.length = 12;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+
+	return (Rx_Buf[4])|(Rx_Buf[5]<<8)|(Rx_Buf[6]<<16)|(Rx_Buf[7]<<24);
+}
+
+//read voltages of cells 7-8
+static uint32_t ReadVoltageGroupC(void) {
+	Tx_Buf[0] = 0x00;
+	Tx_Buf[1] = 0x08;
+	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+	Tx_Buf[2] = pec >> 8;
+	Tx_Buf[3] = pec & 0xFF;
+	int i;
+	for(i = 5; i < 12; i++){
+		Tx_Buf[i] = 0;
+	}
+
+	xf_setup.length = 12;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+
+	return (Rx_Buf[4])|(Rx_Buf[5]<<8)|(Rx_Buf[6]<<16)|(Rx_Buf[7]<<24);
 }
 
 
@@ -144,7 +210,7 @@ int main(void)
 	Chip_UART_TXEnable(LPC_USART);
 
 	Chip_SSP_Init(LPC_SSP);
-	Chip_SSP_SetBitRate(LPC_SSP, 100000);
+	Chip_SSP_SetBitRate(LPC_SSP, 500000);
 
 	ssp_format.frameFormat = SSP_FRAMEFORMAT_SPI;
 	ssp_format.bits = SSP_BITS_8;
@@ -184,18 +250,37 @@ int main(void)
 	xf_setup.tx_data = Tx_Buf;
 
 
-	SetADCMode();
-	delay(1);
-	ReadConfig();
-	delay(1);
+	// Tx_Buf[0] = 0x03;
+	// Tx_Buf[1] = 0x60;
+	// uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+	// Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+	// itoa(pec, str, 16);
+	// Chip_UART_SendBlocking(LPC_USART, str, 4);
+	// Chip_UART_SendBlocking(LPC_USART, "\r\n", 4);
 
+
+	ConfigureChip();
+	delay(1);
+	StartADC();
+	delay(3);
+	uint32_t a = ReadVoltageGroupA();
+	delay(1);
+	uint32_t c = ReadVoltageGroupC();
 	int i = 0;
-	for (i = 4; i < 12; i++) {
-		Chip_UART_SendBlocking(LPC_USART, "0x", 2);
-		itoa(Rx_Buf[i], str, 16);
-		Chip_UART_SendBlocking(LPC_USART, str, 2);
-		Chip_UART_SendBlocking(LPC_USART, "\n\r", 2);
-	}
+
+	Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+	itoa(a >> 16, str, 16);
+	Chip_UART_SendBlocking(LPC_USART, str, 4);
+	Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+	itoa(a & 0xFFFF, str, 16);
+	Chip_UART_SendBlocking(LPC_USART, str, 4);
+	Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+	itoa(c >> 16, str, 16);
+	Chip_UART_SendBlocking(LPC_USART, str, 4);
+	Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+	itoa(c & 0xFFFF, str, 16);
+	Chip_UART_SendBlocking(LPC_USART, str, 4);
+	Chip_UART_SendBlocking(LPC_USART, "\r\n", 2);
 
 	while(1) {
 		// Chip_GPIO_SetPinState(LPC_GPIO, CS, false);

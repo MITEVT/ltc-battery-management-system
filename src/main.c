@@ -6,8 +6,7 @@
 
 const uint32_t OscRateIn = 0;
 
-#define TX_BUFFER_SIZE                         (0x100)
-#define RX_BUFFER_SIZE                         (0x100)
+#define BUFFER_SIZE                         (14)
 
 #define LPC_SSP           LPC_SSP1
 #define SSP_IRQ           SSP1_IRQn
@@ -18,7 +17,9 @@ const uint32_t OscRateIn = 0;
 
 #define LED0 2, 10
 /* Tx buffer */
-static uint8_t Tx_Buf[TX_BUFFER_SIZE];
+static uint8_t Tx_Buf[BUFFER_SIZE];
+/* Rx buffer */
+static uint8_t Rx_Buf[BUFFER_SIZE];
 
 volatile uint32_t msTicks;
 
@@ -30,9 +31,6 @@ static void delay(uint32_t dlyTicks) {
 	uint32_t curTicks = msTicks;
 	while ((msTicks - curTicks) < dlyTicks);
 }
-
-/* Rx buffer */
-static uint8_t Rx_Buf[RX_BUFFER_SIZE];
 
 static char str[100];
 
@@ -49,24 +47,74 @@ static void LED_Config(void) {
 
 }
 
-static void LTC8604_RDCFG(void){
-	// Chip_GPIO_SetPinState(LPC_GPIO, _cs_port, _cs_pin, false);
+static void SendCommand(uint8_t CMD1, uint8_t CMD2, uint8_t *data, uint8_t read) {
+	Tx_Buf[0] = 0x00;
+	Tx_Buf[1] = CMD1;
+	Tx_Buf[2] = CMD2;
+	uint16_t pec = ltc6804_calculate_pec(Tx_Buf+1, 2);
 
-	Chip_UART_SendBlocking(LPC_USART, "sending frames..\n",17);	
-	Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, TX_BUFFER_SIZE);
-	Chip_UART_SendBlocking(LPC_USART, "done sending frames..\n",23);	
-	
-    /*
-	xf_setup.length = 5;
+}
+
+static void SetADCMode(void) {
+
+	Tx_Buf[0] = 0x00;
+	Tx_Buf[1] = 0x00;
+
+	xf_setup.length = 2;
 	xf_setup.rx_cnt = 0;
 	xf_setup.tx_cnt = 0;
 
-	
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_UART_SendBlocking(LPC_USART, "done reading frames..\n",23);	
-    */
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+    Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
 
-	// Chip_GPIO_SetPinState(LPC_GPIO,_cs_port, _cs_pin, true);
+    Tx_Buf[0] = 0x00;
+    Tx_Buf[1] = 0x01;
+    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+    Tx_Buf[2] = pec >> 8;
+    Tx_Buf[3] = pec & 0x00FF;
+    Tx_Buf[4] = 0xF9;
+    Tx_Buf[5] = 0x00;
+    Tx_Buf[6] = 0x00;
+    Tx_Buf[7] = 0x00;
+    Tx_Buf[8] = 0x00;
+    Tx_Buf[9] = 0x00;
+    pec = ltc6804_calculate_pec(Tx_Buf+4, 6);
+    Tx_Buf[10] = pec >> 8;
+    Tx_Buf[11] = pec & 0xFF;
+
+    xf_setup.length = 12;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+}
+
+
+
+static void ReadConfig(void) {
+
+	uint16_t i;
+    Tx_Buf[0] = 0x00;
+    Tx_Buf[1] = 0x02;
+    // Hard coding PEC, use erpo's PEC code for later
+    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+    Tx_Buf[2] = pec >> 8;
+    Tx_Buf[3] = pec & 0x00FF;
+
+    for(i = 5; i < 12; i++) {
+    	Tx_Buf[i] = 0;	
+    }
+
+    xf_setup.length = 12;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
 }
 
 /**
@@ -90,13 +138,13 @@ int main(void)
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
 
 	Chip_UART_Init(LPC_USART);
-	Chip_UART_SetBaud(LPC_USART, 115200);
+	Chip_UART_SetBaud(LPC_USART, 57600);
 	Chip_UART_ConfigData(LPC_USART, (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS));
 	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
 	Chip_UART_TXEnable(LPC_USART);
 
 	Chip_SSP_Init(LPC_SSP);
-	Chip_SSP_SetBitRate(LPC_SSP, 30000);
+	Chip_SSP_SetBitRate(LPC_SSP, 100000);
 
 	ssp_format.frameFormat = SSP_FRAMEFORMAT_SPI;
 	ssp_format.bits = SSP_BITS_8;
@@ -114,21 +162,74 @@ int main(void)
 	// Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_9, (IOCON_FUNC0 | IOCON_MODE_INACT));
 	Chip_GPIO_WriteDirBit(LPC_GPIO, CS, true);
 
-	uint16_t i;
+	// uint16_t i;
+	// Tx_Buf[0] = 0x00;
+ //    Tx_Buf[1] = 0x00;
+ //    Tx_Buf[2] = 0x04;
+ //    // Hard coding PEC, use erpo's PEC code for later
+ //    uint16_t pec = ltc6804_calculate_pec(Tx_Buf+1, 2);
+ //    Tx_Buf[3] = pec >> 8;
+ //    Tx_Buf[4] = pec & 0x00FF;
 
-    Tx_Buf[0] = 0x00;
-    Tx_Buf[1] = 0x01;
-    // Hard coding PEC, use erpo's PEC code for later
-    Tx_Buf[2] = 0x3D; // 0011 1101
-    Tx_Buf[3] = 0x6E;
+ //    for(i = 5; i < 13; i++) {
+ //    	Tx_Buf[i] = 0;	
+ //    }
+
+ //    itoa(pec, str, 16);
+ //    Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+ //    Chip_UART_SendBlocking(LPC_USART, str, 4);
+ //    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+    xf_setup.rx_data = Rx_Buf;
+	xf_setup.tx_data = Tx_Buf;
+
+
+	SetADCMode();
+	delay(1);
+	ReadConfig();
+	delay(1);
+
+	int i = 0;
+	for (i = 4; i < 12; i++) {
+		Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+		itoa(Rx_Buf[i], str, 16);
+		Chip_UART_SendBlocking(LPC_USART, str, 2);
+		Chip_UART_SendBlocking(LPC_USART, "\n\r", 2);
+	}
 
 	while(1) {
-		Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	    Chip_UART_SendBlocking(LPC_USART, "sending frames..\n",17);	
-		Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, 4);
-		Chip_UART_SendBlocking(LPC_USART, "done sending frames..\n",23);
-		Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-    }
+		// Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	    // Chip_UART_SendBlocking(LPC_USART, "sending frames..\n",17);	
+		// Chip_SSP_WriteFrames_Blocking(LPC_SSP, Tx_Buf, 4);
+		// Chip_UART_SendBlocking(LPC_USART, "done sending frames..\n",22);
+
+		// xf_setup.rx_data = Rx_Buf;
+		// xf_setup.tx_data = Tx_Buf;
+		// xf_setup.length = BUFFER_SIZE;
+		// xf_setup.rx_cnt = 0;
+		// xf_setup.tx_cnt = 0;
+
+		//     itoa(Tx_Buf[2], str, 16);
+		// Chip_UART_SendBlocking(LPC_USART, str, 2);
+		// itoa(Rx_Buf[3], str, 16);
+		// Chip_UART_SendBlocking(LPC_USART, " ", 1);
+		// Chip_UART_SendBlocking(LPC_USART, str, 2);
+		// Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+		// Chip_UART_SendBlocking(LPC_USART, "reading and writing frames..\n",28);
+		// Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+		// Chip_UART_SendBlocking(LPC_USART, "done reading and writing frames..\n",34);
+		// for(i = 0; i < 12; i++) {
+		// 	// itoa(Rx_Buf[i], str, 10);
+			// Chip_UART_SendBlocking(LPC_USART, str, 3);
+			// Chip_UART_SendBlocking(LPC_USART, ",", 1);
+		// }
+		// Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+		// Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+
+		delay(5);
+	}
 
 	return 0;
 }

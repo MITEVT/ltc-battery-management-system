@@ -96,6 +96,26 @@ static void ConfigureChip(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
 }
 
+static void OpenWireTest(uint8_t pup_bit) {
+	Tx_Buf[0] = 0x03;
+    if(pup_bit == 0) {
+	    Tx_Buf[1] = 0x28;
+    } else {
+	    Tx_Buf[1] = 0x68;
+    }
+	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
+	Tx_Buf[2] = pec >> 8;
+	Tx_Buf[3] = pec & 0xFF;
+
+	xf_setup.length = 4;
+	xf_setup.rx_cnt = 0;
+	xf_setup.tx_cnt = 0;
+
+    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+}
+
 static void StartADC(void) {
 	Tx_Buf[0] = 0x03;
 	Tx_Buf[1] = 0x60;
@@ -196,6 +216,22 @@ static void ReadConfig(void) {
 	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
 }
 
+void PrintTwoCellsTwoGroups(uint32_t a, uint32_t c) {
+    Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+    itoa(a >> 16, str, 16);
+    Chip_UART_SendBlocking(LPC_USART, str, 4);
+    Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+    itoa(a & 0xFFFF, str, 16);
+    Chip_UART_SendBlocking(LPC_USART, str, 4);
+    Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+    itoa(c >> 16, str, 16);
+    Chip_UART_SendBlocking(LPC_USART, str, 4);
+    Chip_UART_SendBlocking(LPC_USART, ", 0x", 4);
+    itoa(c & 0xFFFF, str, 16);
+    Chip_UART_SendBlocking(LPC_USART, str, 4);
+    Chip_UART_SendBlocking(LPC_USART, "\r\n", 2);
+}
+
 /**
  * @brief	Main routine for SSP example
  * @return	Nothing
@@ -241,45 +277,77 @@ int main(void)
 	// Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_9, (IOCON_FUNC0 | IOCON_MODE_INACT));
 	Chip_GPIO_WriteDirBit(LPC_GPIO, CS, true);
 
-	// uint16_t i;
-	// Tx_Buf[0] = 0x00;
- //    Tx_Buf[1] = 0x00;
- //    Tx_Buf[2] = 0x04;
- //    // Hard coding PEC, use erpo's PEC code for later
- //    uint16_t pec = ltc6804_calculate_pec(Tx_Buf+1, 2);
- //    Tx_Buf[3] = pec >> 8;
- //    Tx_Buf[4] = pec & 0x00FF;
-
- //    for(i = 5; i < 13; i++) {
- //    	Tx_Buf[i] = 0;	
- //    }
-
- //    itoa(pec, str, 16);
- //    Chip_UART_SendBlocking(LPC_USART, "0x", 2);
- //    Chip_UART_SendBlocking(LPC_USART, str, 4);
- //    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
-
     xf_setup.rx_data = Rx_Buf;
 	xf_setup.tx_data = Tx_Buf;
-
-
-	// Tx_Buf[0] = 0x03;
-	// Tx_Buf[1] = 0x60;
-	// uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-	// Chip_UART_SendBlocking(LPC_USART, "0x", 2);
-	// itoa(pec, str, 16);
-	// Chip_UART_SendBlocking(LPC_USART, str, 4);
-	// Chip_UART_SendBlocking(LPC_USART, "\r\n", 4);
-
     
 	ConfigureChip();
 	delay(1);
-	//StartADC();
-    CVSelfTest();
-	delay(3);
+	StartADC();
+    //CVSelfTest();
+    
+    int cellGroupA[3];
+    int cellGroupA2[3];
+    int cellGroupC[3];
+    int cellGroupC2[3];
+
+    OpenWireTest(1);
+    OpenWireTest(1);
+	delay(5);
 	uint32_t a = ReadVoltageGroupA();
-	delay(1);
+    cellGroupA[0] = a & 0xFFFF;
+    cellGroupA[1] = a >> 16;
+    cellGroupA[2] = 0;
+
+	// delay(10);
 	uint32_t c = ReadVoltageGroupC();
+    cellGroupC[0] = c & 0xFFFF;
+    cellGroupC[1] = c >> 16;
+    cellGroupC[2] = 0;
+
+    OpenWireTest(0);
+    OpenWireTest(0);
+	delay(5);
+	uint32_t a2 = ReadVoltageGroupA(); // PUP down
+    cellGroupA2[0] = a2 & 0xFFFF;
+    cellGroupA2[1] = a2 >> 16;
+    cellGroupA2[2] = 0;
+	// delay(1);
+	uint32_t c2 = ReadVoltageGroupC();
+    cellGroupC2[0] = c2 & 0xFFFF;
+    cellGroupC2[1] = c2 >> 16;
+    cellGroupC2[2] = 0;
+
+    PrintTwoCellsTwoGroups(a, c);
+    PrintTwoCellsTwoGroups(a2, c2);
+
+    uint8_t i;
+    for(i = 0; i < 3; i++) {
+        if(cellGroupA[i] - cellGroupA2[i] < -400) {
+            itoa(i, str, 10);
+            Chip_UART_SendBlocking(LPC_USART, "Cell Group A, Cell ", 18);
+            Chip_UART_SendBlocking(LPC_USART, str, 1);
+            Chip_UART_SendBlocking(LPC_USART, "  is probably open!\n", 20);
+        } else {
+            itoa(i, str, 10);
+            Chip_UART_SendBlocking(LPC_USART, "Cell Group A, Cell ", 18);
+            Chip_UART_SendBlocking(LPC_USART, str, 1);
+            Chip_UART_SendBlocking(LPC_USART, "  is probably not open!\n", 24);
+        }
+
+        if(cellGroupC[i] - cellGroupC2[i] < -400) {
+            itoa(i, str, 10);
+            Chip_UART_SendBlocking(LPC_USART, "Cell Group B, Cell ", 18);
+            Chip_UART_SendBlocking(LPC_USART, str, 1);
+            Chip_UART_SendBlocking(LPC_USART, "  is probably open!\n", 20);
+        } else {
+            itoa(i, str, 10);
+            Chip_UART_SendBlocking(LPC_USART, "Cell Group B, Cell ", 18);
+            Chip_UART_SendBlocking(LPC_USART, str, 1);
+            Chip_UART_SendBlocking(LPC_USART, "  is probably not open!\n", 24);
+        }
+    }
+
+    /*
 	int i = 0;
     if((a & 0xFFFF) == 0x9555 && (a >> 16) == 0x9555) {
         if((c & 0xFFFF) == 0x9555 && (c >> 16) == 0x9555) {
@@ -300,7 +368,9 @@ int main(void)
         itoa(c & 0xFFFF, str, 16);
         Chip_UART_SendBlocking(LPC_USART, str, 4);
         Chip_UART_SendBlocking(LPC_USART, "\r\n", 2);
-}
+    }
+    */
+
     /*
 	Chip_UART_SendBlocking(LPC_USART, "0x", 2);
 	itoa(a >> 16, str, 16);

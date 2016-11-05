@@ -1,0 +1,3 @@
+#define BMS_NODES 1
+
+#define SPI_BUFFER_SIZE 4+8*BMS_NODES

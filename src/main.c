@@ -6,22 +6,19 @@
 
 const uint32_t OscRateIn = 0;
 
-#define BUFFER_SIZE                         (14)
-
-#define LPC_SSP           LPC_SSP1
 #define SSP_IRQ           SSP1_IRQn
 #define SSPIRQHANDLER     SSP1_IRQHandler
 
 #define CS 0, 7
 
-
 #define LED0 2, 10
-/* Tx buffer */
-static uint8_t Tx_Buf[BUFFER_SIZE];
-/* Rx buffer */
-static uint8_t Rx_Buf[BUFFER_SIZE];
-
+static CELL_INFO_T readings;
 volatile uint32_t msTicks;
+
+static char str[100];
+
+void PrintCellGroupsHelper(uint16_t num);
+void PrintCellGroups(void);
 
 void SysTick_Handler(void) {
 	msTicks++;
@@ -31,11 +28,6 @@ static void delay(uint32_t dlyTicks) {
 	uint32_t curTicks = msTicks;
 	while ((msTicks - curTicks) < dlyTicks);
 }
-
-static char str[100];
-
-static SSP_ConfigFormat ssp_format;
-static Chip_SSP_DATA_SETUP_T xf_setup;
 
 static void GPIO_Config(void) {
 	Chip_GPIO_Init(LPC_GPIO);
@@ -47,186 +39,44 @@ static void LED_Config(void) {
 
 }
 
-static void LTC6804_Wake(void) {
-	Tx_Buf[0] = 0x00;
-	Tx_Buf[1] = 0x00;
-
-
-}
-
-static void SendCommand(uint8_t CMD1, uint8_t CMD2, uint8_t *data, uint8_t read) {
-	Tx_Buf[1] = CMD1;
-	Tx_Buf[2] = CMD2;
-	uint16_t pec = ltc6804_calculate_pec(Tx_Buf+1, 2);
-
-}
-
-static void ConfigureChip(void) {
-
-	// For now send junk to chip to wake up
-	xf_setup.length = 7;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-    Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-
-    Tx_Buf[0] = 0x00;
-    Tx_Buf[1] = 0x01;
-    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-    Tx_Buf[2] = pec >> 8;
-    Tx_Buf[3] = pec & 0x00FF;
-    Tx_Buf[4] = 0xF8; // GPIO OFF with ADC Option 0
-    Tx_Buf[5] = 0x00;
-    Tx_Buf[6] = 0x00;
-    Tx_Buf[7] = 0x00;
-    Tx_Buf[8] = 0x00;
-    Tx_Buf[9] = 0x00;
-    pec = ltc6804_calculate_pec(Tx_Buf+4, 6);
-    Tx_Buf[10] = pec >> 8;
-    Tx_Buf[11] = pec & 0xFF;
-
-    xf_setup.length = 12;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-}
-
-static void OpenWireTest(uint8_t pup_bit) {
-	Tx_Buf[0] = 0x03;
-    if(pup_bit == 0) {
-	    Tx_Buf[1] = 0x28;
+void PrintCellGroupsHelper(uint16_t num) {
+    Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+    if(num == 0) {
+        Chip_UART_SendBlocking(LPC_USART, str, 1);
     } else {
-	    Tx_Buf[1] = 0x68;
+        Chip_UART_SendBlocking(LPC_USART, str, 4);
     }
-	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-	Tx_Buf[2] = pec >> 8;
-	Tx_Buf[3] = pec & 0xFF;
-
-	xf_setup.length = 4;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+    Chip_UART_SendBlocking(LPC_USART, " ", 2);
 }
 
-static void StartADC(void) {
-	Tx_Buf[0] = 0x03;
-	Tx_Buf[1] = 0x60;
-	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-	Tx_Buf[2] = pec >> 8;
-	Tx_Buf[3] = pec & 0xFF;
-
-	xf_setup.length = 4;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-}
-
-//read voltages of cells 1-2
-static uint32_t ReadVoltageGroupA(void) {
-	Tx_Buf[0] = 0x00;
-	Tx_Buf[1] = 0x04;
-	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-	Tx_Buf[2] = pec >> 8;
-	Tx_Buf[3] = pec & 0xFF;
-	int i;
-	for(i = 5; i < 12; i++){
-		Tx_Buf[i] = 0;
-	}
-
-	xf_setup.length = 12;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-
-	return (Rx_Buf[4])|(Rx_Buf[5]<<8)|(Rx_Buf[6]<<16)|(Rx_Buf[7]<<24);
-}
-
-//read voltages of cells 7-8
-static uint32_t ReadVoltageGroupC(void) {
-	Tx_Buf[0] = 0x00;
-	Tx_Buf[1] = 0x08;
-	uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-	Tx_Buf[2] = pec >> 8;
-	Tx_Buf[3] = pec & 0xFF;
-	int i;
-	for(i = 5; i < 12; i++){
-		Tx_Buf[i] = 0;
-	}
-
-	xf_setup.length = 12;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-
-	return (Rx_Buf[4])|(Rx_Buf[5]<<8)|(Rx_Buf[6]<<16)|(Rx_Buf[7]<<24);
-}
-
-static void CVSelfTest(void) {
-    Tx_Buf[0] = 0x03;
-    Tx_Buf[1] = 0x27;
-    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-    Tx_Buf[2] = pec >> 8;
-    Tx_Buf[3] = pec & 0xFF;
-
-    xf_setup.length = 4;
-    xf_setup.rx_cnt = 0;
-    xf_setup.tx_cnt = 0;
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-    Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-}
-
-static void ReadConfig(void) {
-
-	uint16_t i;
-    Tx_Buf[0] = 0x00;
-    Tx_Buf[1] = 0x02;
-    // Hard coding PEC, use erpo's PEC code for later
-    uint16_t pec = ltc6804_calculate_pec(Tx_Buf, 2);
-    Tx_Buf[2] = pec >> 8;
-    Tx_Buf[3] = pec & 0x00FF;
-
-    for(i = 5; i < 12; i++) {
-    	Tx_Buf[i] = 0;	
-    }
-
-    xf_setup.length = 12;
-	xf_setup.rx_cnt = 0;
-	xf_setup.tx_cnt = 0;
-
-    Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_RWFrames_Blocking(LPC_SSP, &xf_setup);
-	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
-}
-
-void PrintCellGroup(int *a) {
+void PrintCellGroups(void) {
     uint8_t i;
+
+    Chip_UART_SendBlocking(LPC_USART, "Group A: ", 9);
     for(i = 0; i < 3; i++) {
-        itoa(a[i], str, 16);
-        Chip_UART_SendBlocking(LPC_USART, "0x", 2);
-        if(a[i] == 0) {
-            Chip_UART_SendBlocking(LPC_USART, str, 1);
-        } else {
-            Chip_UART_SendBlocking(LPC_USART, str, 4);
-        }
-        Chip_UART_SendBlocking(LPC_USART, " ", 2);
+        itoa(readings.groupA[i], str, 16);
+        PrintCellGroupsHelper(readings.groupA[i]);
+    }
+    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+    Chip_UART_SendBlocking(LPC_USART, "Group B: ", 9);
+    for(i = 0; i < 3; i++) {
+        itoa(readings.groupB[i], str, 16);
+        PrintCellGroupsHelper(readings.groupB[i]);
+    }
+    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+    Chip_UART_SendBlocking(LPC_USART, "Group C: ", 9);
+    for(i = 0; i < 3; i++) {
+        itoa(readings.groupC[i], str, 16);
+        PrintCellGroupsHelper(readings.groupC[i]);
+    }
+    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+
+    Chip_UART_SendBlocking(LPC_USART, "Group D: ", 9);
+    for(i = 0; i < 3; i++) {
+        itoa(readings.groupD[i], str, 16);
+        PrintCellGroupsHelper(readings.groupD[i]);
     }
     Chip_UART_SendBlocking(LPC_USART, "\n", 1);
 }
@@ -257,98 +107,27 @@ int main(void)
 	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
 	Chip_UART_TXEnable(LPC_USART);
 
-	Chip_SSP_Init(LPC_SSP);
-	Chip_SSP_SetBitRate(LPC_SSP, 500000);
+    uint8_t Rx_Buf[12];
+    CELL_INFO_T readings;
 
-	ssp_format.frameFormat = SSP_FRAMEFORMAT_SPI;
-	ssp_format.bits = SSP_BITS_8;
-	ssp_format.clockMode = SSP_CLOCK_MODE3;  // may need to change
-	Chip_SSP_SetFormat(LPC_SSP, ssp_format.bits, ssp_format.frameFormat, ssp_format.clockMode);
-	Chip_SSP_SetMaster(LPC_SSP, true);
-	Chip_SSP_Enable(LPC_SSP);
-
-
-	Chip_GPIO_SetPinState(LPC_GPIO, LED0, true);
-
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* MISO1 */ 
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* MOSI1 */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* SCK1 */
-	Chip_GPIO_WriteDirBit(LPC_GPIO, CS, true);
-
-    xf_setup.rx_data = Rx_Buf;
-	xf_setup.tx_data = Tx_Buf;
+    LTC6804_Init(600000, 0, 7, msTicks);
+    LTC6804_StartADC(msTicks);
+    delay(5);
+    LTC6804_ReadVoltageGroup(Rx_Buf, &readings, CELL_GROUP_A, msTicks);
+    delay(5);
+    PrintCellGroups();
     
-	ConfigureChip();
-	delay(1);
-	// StartADC();
-    
-    int cellGroupA[3];
-    int cellGroupA2[3];
-    int cellGroupC[3];
-    int cellGroupC2[3];
+/*
+    LTC6804_ReadCFG(Rx_Buf, msTicks);
 
-	delay(5);
-    OpenWireTest(1);
-	delay(5);
-    OpenWireTest(1);
-	delay(5);
-
-	uint32_t a = ReadVoltageGroupA();
-    cellGroupA[0] = a & 0xFFFF;
-    cellGroupA[1] = a >> 16;
-    cellGroupA[2] = 0;
-
-	delay(5);
-	uint32_t c = ReadVoltageGroupC();
-    cellGroupC[0] = c & 0xFFFF;
-    cellGroupC[1] = c >> 16;
-    cellGroupC[2] = 0;
-
-    
-	delay(5);
-    OpenWireTest(0);
-	delay(5);
-    OpenWireTest(0);
-	delay(5);
-
-	uint32_t a2 = ReadVoltageGroupA(); // PUP down
-    cellGroupA2[0] = a2 & 0xFFFF;
-    cellGroupA2[1] = a2 >> 16;
-    cellGroupA2[2] = 0;
-
-	delay(5);
-	uint32_t c2 = ReadVoltageGroupC();
-    cellGroupC2[0] = c2 & 0xFFFF;
-    cellGroupC2[1] = c2 >> 16;
-    cellGroupC2[2] = 0;
-	delay(5);
-
-    PrintCellGroup(cellGroupA);
-    PrintCellGroup(cellGroupC);
-    PrintCellGroup(cellGroupA2);
-    PrintCellGroup(cellGroupC2);
-
-    
-    uint8_t i;
-    Chip_UART_SendBlocking(LPC_USART, "Cell Group A: ", 14);
-    for(i = 0; i < 2; i++) {
-        if(cellGroupA[i] - cellGroupA2[i] < -4000) {
-            Chip_UART_SendBlocking(LPC_USART, "(open) ", 7);
-        } else {
-            Chip_UART_SendBlocking(LPC_USART, "(not open)", 10);
-        }
+    int i;
+    for (i = 4; i < 12; i++) {
+        Chip_UART_SendBlocking(LPC_USART, "0x", 2);
+        itoa(Rx_Buf[i], str, 16);
+        Chip_UART_SendBlocking(LPC_USART, str, 2);
+        Chip_UART_SendBlocking(LPC_USART,", ",2);
     }
-    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
-    
-    Chip_UART_SendBlocking(LPC_USART, "Cell Group C: ", 14);
-    for(i = 0; i < 2; i++) {
-        if(cellGroupC[i] - cellGroupC2[i] < -4000) {
-            Chip_UART_SendBlocking(LPC_USART, "(open) ", 7);
-        } else {
-            Chip_UART_SendBlocking(LPC_USART, "(not open)", 10);
-        }
-    }
-    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
+*/
 
 	while(1) {
 		delay(5);

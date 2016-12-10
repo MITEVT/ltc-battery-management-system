@@ -8,6 +8,8 @@ const uint32_t OscRateIn = 0;
 
 #define SSP_IRQ           SSP1_IRQn
 #define SSPIRQHANDLER     SSP1_IRQHandler
+#define ADDR_LEN 3
+#define MAX_DATA_LEN 16
 
 #define LED0 2, 10
 volatile uint32_t msTicks;
@@ -15,6 +17,8 @@ volatile uint32_t msTicks;
 static char str[100];
 
 static uint8_t Rx_Buf[SPI_BUFFER_SIZE];
+static uint8_t eeprom_data[MAX_DATA_LEN];
+static uint8_t eeprom_address[ADDR_LEN];
 
 static void PrintRxBuffer(void);
 static void ZeroRxBuf(void);
@@ -71,8 +75,7 @@ int main(void) {
 	SystemCoreClockUpdate();
 
 	if (SysTick_Config (SystemCoreClock / 1000)) {
-		//Error
-		while(1);
+		while(1); // error state
 	}
 
 	GPIO_Config();
@@ -80,32 +83,8 @@ int main(void) {
 
     uart_init();
     LC1024_Init(600000, 0, 7);
-    
     ZeroRxBuf();
-
-    LC1024_WriteDisable();
-
-    LC1024_ReadStatusReg(&Rx_Buf[0]);
-    Chip_UART_SendBlocking(LPC_USART, "ST reg before wenb:\n", 20);
-    PrintRxBuffer();
-
     LC1024_WriteEnable();
-
-    LC1024_ReadStatusReg(&Rx_Buf[0]);
-    Chip_UART_SendBlocking(LPC_USART, "ST reg after wenb:\n", 19);
-    PrintRxBuffer();
-
-    LC1024_ReadMem(&Rx_Buf[0], 2);
-    Chip_UART_SendBlocking(LPC_USART, "ze mem before wmem:\n", 20);
-    PrintRxBuffer();
-
-    LC1024_WriteMem();
-    Chip_UART_SendBlocking(LPC_USART, "buf after write:\n", 14);
-    PrintRxBuffer();
-
-    LC1024_ReadMem(&Rx_Buf[0], 2);
-    Chip_UART_SendBlocking(LPC_USART, "mem read after write:\n", 22);
-    PrintRxBuffer();
 
 	while(1) {
 		delay(5);

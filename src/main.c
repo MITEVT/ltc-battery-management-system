@@ -42,8 +42,14 @@ static void PrintRxBuffer() {
     Chip_UART_SendBlocking(LPC_USART, "0x", 2);
     uint8_t i;
     for(i = 0; i < SPI_BUFFER_SIZE; i++) {
+        // Chip_UART_SendBlocking(LPC_USART, " ", 1);
         itoa(Rx_Buf[i], str, 16);
+        if(Rx_Buf[i] < 16) {
+            Chip_UART_SendBlocking(LPC_USART, "0", 1);
+        }
         Chip_UART_SendBlocking(LPC_USART, str, 2);
+        // itoa(Rx_Buf[i], str, 10);
+        // Chip_UART_SendBlocking(LPC_USART, str, 3);
     }
     Chip_UART_SendBlocking(LPC_USART, "\n", 1);
 }
@@ -116,6 +122,20 @@ static void WriteDisable(void) {
     // end write disable command
 }
 
+static void WriteStatusRegister(void) {
+    // write enable command
+    Chip_UART_SendBlocking(LPC_USART, "Sending write enable cmd...\n", 28);
+    Tx_Buf[0] = 0x01;
+    Tx_Buf[0] = 0x00;
+    ZeroTxBuf(1);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
+	Chip_SSP_WriteFrames_Blocking(LPC_SSP1, Tx_Buf, 1);
+	Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
+    Chip_UART_SendBlocking(LPC_USART, "Done write enable cmd...\n", 25);
+    // end write enable command
+
+}
+
 static void ReadStatusReg(void) {
     // read status register
     Chip_UART_SendBlocking(LPC_USART, "Sending read reg  cmd...\n", 25);
@@ -139,8 +159,9 @@ static void ReadMem(void) {
     Tx_Buf[0] = 0x3;
     Tx_Buf[1] = 0x0;
     Tx_Buf[2] = 0xF;
-    ZeroTxBuf(3);
-    xf_setup.length = 4; xf_setup.rx_cnt = 0; xf_setup.tx_cnt = 0;
+    Tx_Buf[3] = 0xF;
+    ZeroTxBuf(4);
+    xf_setup.length = 5; xf_setup.rx_cnt = 0; xf_setup.tx_cnt = 0;
     xf_setup.rx_data = Rx_Buf;
 
     Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
@@ -156,11 +177,12 @@ static void WriteMem(void) {
     Tx_Buf[0] = 0x2;
     Tx_Buf[1] = 0x0;
     Tx_Buf[2] = 0xF;
-    Tx_Buf[3] = 0xA;
-    ZeroTxBuf(4);
+    Tx_Buf[3] = 0xF;
+    Tx_Buf[4] = 0xA;
+    ZeroTxBuf(5);
 
     Chip_GPIO_SetPinState(LPC_GPIO, CS, false);
-	Chip_SSP_WriteFrames_Blocking(LPC_SSP1, Tx_Buf, 1);
+	Chip_SSP_WriteFrames_Blocking(LPC_SSP1, Tx_Buf, 5);
     Chip_GPIO_SetPinState(LPC_GPIO, CS, true);
 
     Chip_UART_SendBlocking(LPC_USART, "Done writing mem byte cmd...\n", 29);
@@ -189,9 +211,11 @@ int main(void)
     ZeroRxBuf();
     ZeroTxBuf(0);
 
-    ReadStatusReg();
-    Chip_UART_SendBlocking(LPC_USART, "ST reg before wenb:\n", 20);
-    PrintRxBuffer();
+    // WriteDisable();
+
+    // ReadStatusReg();
+    // Chip_UART_SendBlocking(LPC_USART, "ST reg before wenb:\n", 20);
+    // PrintRxBuffer();
 
     WriteEnable();
 

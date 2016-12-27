@@ -22,6 +22,17 @@ SIZE = $(TOOLCHAIN)size
 RM = rm -f
 
 #=============================================================================#
+# test configuration
+#=============================================================================#
+
+UNITY_BASE=../Unity
+CXX_TEST = g++
+CC_TEST = gcc
+AS_TEST = gcc -x assembler-with-cpp
+SIZE_TEST = size
+LINT = oclint
+
+#=============================================================================#
 # project configuration
 #=============================================================================#
 
@@ -36,6 +47,20 @@ LD_SCRIPT = gcc.ld
 
 # output folder (absolute or relative path, leave empty for in-tree compilation)
 OUT_DIR = bin
+
+# test out folder
+OUT_DIR_TEST = testbin
+
+# directories for testing sources
+TEST_SRCS_DIRS = test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
+
+# include directories for test
+INC_DIRS_TEST = $(INC_DIRS_CROSS) $(SRCS_DIRS) test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
+
+
+# c files for testing
+C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/SSM.c 
+
 
 # C++ definitions (e.g. "-Dsymbol_with_value=0xDEAD -Dsymbol_without_value")
 CXX_DEFS =
@@ -116,7 +141,7 @@ CLOCK_OSC = 12000
 # set the VPATH according to SRCS_DIRS
 #=============================================================================#
 
-VPATH = $(SRCS_DIRS)
+VPATH = $(SRCS_DIRS) test $(UNITY_BASE)/extras/fixture/src $(UNITY_BASE)/src devices
 
 #=============================================================================#
 # when using output folder, append trailing slash to its name
@@ -126,6 +151,16 @@ ifeq ($(strip $(OUT_DIR)), )
 	OUT_DIR_F =
 else
 	OUT_DIR_F = $(strip $(OUT_DIR))/
+endif
+
+#=============================================================================#
+# when using output folder, append trailing slash to its name
+#=============================================================================#
+
+ifeq ($(strip $(OUT_DIR_TEST)), )
+	OUT_DIR_TEST_F =
+else
+	OUT_DIR_TEST_F = $(strip $(OUT_DIR_TEST))/
 endif
 
 #=============================================================================#
@@ -166,6 +201,12 @@ endif
 # do some formatting
 #=============================================================================#
 
+CXX_OBJS_TEST = $(addprefix $(OUT_DIR_TEST_F), $(notdir $(CXX_SRCS_TEST:.$(CXX_EXT)=.o)))
+C_OBJS_TEST = $(addprefix $(OUT_DIR_TEST_F), $(notdir $(C_SRCS_TEST:.$(C_EXT)=.o)))
+AS_OBJS_TEST = $(addprefix $(OUT_DIR_TEST_F), $(notdir $(AS_SRCS_TEST:.$(AS_EXT)=.o)))
+
+TEST_OBJS = $(AS_OBJS_TEST) $(C_OBJS_TEST) $(CXX_OBJS_TEST)
+
 CXX_OBJS = $(addprefix $(OUT_DIR_F), $(notdir $(CXX_SRCS:.$(CXX_EXT)=.o)))
 C_OBJS = $(addprefix $(OUT_DIR_F), $(notdir $(C_SRCS:.$(C_EXT)=.o)))
 AS_OBJS = $(addprefix $(OUT_DIR_F), $(notdir $(AS_SRCS:.$(AS_EXT)=.o)))
@@ -174,11 +215,15 @@ DEPS = $(OBJS:.o=.d)
 INC_DIRS_F = -I. $(patsubst %, -I%, $(INC_DIRS))
 LIB_DIRS_F = $(patsubst %, -L%, $(LIB_DIRS))
 
+INC_DIRS_F_TEST = -I. $(patsubst %, -I%, $(INC_DIRS_TEST))
+
 ELF = $(OUT_DIR_F)$(PROJECT).elf
 HEX = $(OUT_DIR_F)$(PROJECT).hex
 BIN = $(OUT_DIR_F)$(PROJECT).bin
 LSS = $(OUT_DIR_F)$(PROJECT).lss
 DMP = $(OUT_DIR_F)$(PROJECT).dmp
+
+TEST_TARGET = $(OUT_DIR_TEST_F)$(PROJECT)
 
 # format final flags for tools, request dependancies for C++, C and asm
 CXX_FLAGS_F = $(CORE_FLAGS) $(OPTIMIZATION) $(CXX_WARNINGS) $(CXX_FLAGS)  $(CXX_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
@@ -186,8 +231,13 @@ C_FLAGS_F = $(CORE_FLAGS) $(OPTIMIZATION) $(C_WARNINGS) $(C_FLAGS) $(C_DEFS) -MD
 AS_FLAGS_F = $(CORE_FLAGS) $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 LD_FLAGS_F = $(CORE_FLAGS) $(LD_FLAGS) $(LIB_DIRS_F)
 
+CXX_FLAGS_F_TEST = $(OPTIMIZATION) $(CXX_WARNINGS) $(CXX_FLAGS) $(CXX_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST)
+C_FLAGS_F_TEST =  $(OPTIMIZATION) $(C_WARNINGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST)
+AS_FLAGS_F_TEST = $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST)
+LD_FLAGS_F_TEST = $(LIB_DIRS_F_TEST)
+
 #contents of output directory
-GENERATED = $(wildcard $(patsubst %, $(OUT_DIR_F)*.%, bin d dmp elf hex lss lst map o))
+GENERATED = $(wildcard $(patsubst %, $(OUT_DIR_F)*.%, bin d dmp elf hex lss lst map o)) $(wildcard $(OUT_DIR_TEST_F)*)
 
 #=============================================================================#
 # make all
@@ -195,10 +245,36 @@ GENERATED = $(wildcard $(patsubst %, $(OUT_DIR_F)*.%, bin d dmp elf hex lss lst 
 
 all : make_output_dir $(ELF) $(LSS) $(DMP) $(HEX) $(BIN) print_size
 
+test : CXX 		= $(CXX_TEST)
+test : CC 			= $(CC_TEST)
+test : AS 			= $(AS_TEST)
+test : OBJCOPY 	= $(OBJCOPY_TEST)
+test : OBJDUMP 	= $(OBJDUMP_TEST)
+test : SIZE 		= $(SIZE_TEST)
+test : CXX_FLAGS_F = $(CXX_FLAGS_F_TEST)
+test : C_FLAGS_F 	= $(C_FLAGS_F_TEST)
+test : AS_FLAGS_F 	= $(AS_FLAGS_F_TEST)
+test : LD_FLAGS_F 	= $(LD_FLAGS_F_TEST)
+
+.PHONY: test
+test : make_test_output_dir $(TEST_TARGET)
+	./$(TEST_TARGET)
+
 # make object files dependent on Makefile
 $(OBJS) : Makefile
+$(TEST_OBJS) : Makefile
 # make .elf file dependent on linker script
 $(ELF) : $(LD_SCRIPT)
+
+#-----------------------------------------------------------------------------#
+# test_linking - objects -> elf
+#-----------------------------------------------------------------------------#
+$(TEST_TARGET) : $(TEST_OBJS)	
+	@echo 'csrs'
+	@echo $(C_SRCS_TEST)
+	@echo 'Linking test target: $(TEST_TARGET)'
+	$(CXX) $(LD_FLAGS_F_TEST) $(TEST_OBJS) $(LIBS) -o $@
+	@echo ' '
 
 #-----------------------------------------------------------------------------#
 # linking - objects -> elf
@@ -218,6 +294,11 @@ $(OUT_DIR_F)%.o : %.$(CXX_EXT)
 	$(CXX) -c $(CXX_FLAGS_F) $< -o $@
 	@echo ' '
 
+$(OUT_DIR_TEST_F)%.o : %.$(CXX_EXT)
+	@echo 'Compiling file: $<'
+	$(CXX) -c $(CXX_FLAGS_F) $< -o $@
+	@echo ' '
+
 #-----------------------------------------------------------------------------#
 # compiling - C source -> objects
 #-----------------------------------------------------------------------------#
@@ -225,6 +306,11 @@ $(OUT_DIR_F)%.o : %.$(CXX_EXT)
 $(OUT_DIR_F)%.o : %.$(C_EXT)
 	@echo 'Compiling file: $<'
 	$(CC) -c $(C_FLAGS_F) $< -o $@
+	@echo ' '
+
+$(OUT_DIR_TEST_F)%.o : %.$(C_EXT)
+	@echo 'Compiling file: $<'
+	$(CC) -c $(C_FLAGS_F_TEST) $< -o $@
 	@echo ' '
 
 #-----------------------------------------------------------------------------#
@@ -286,6 +372,9 @@ print_size :
 
 make_output_dir :
 	$(shell mkdir $(OUT_DIR_F) 2>/dev/null)
+
+make_test_output_dir :
+	$(shell mkdir $(OUT_DIR_TEST_F) 2>/dev/null)
 
 #-----------------------------------------------------------------------------#
 # Write to flash of chip

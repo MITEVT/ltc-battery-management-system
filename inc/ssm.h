@@ -5,5 +5,6 @@
 
 void SSM_Init(BMS_STATE_T *state);
 void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
+void Process_Cmds(BMS_INPUT_T *input, BMS_STATE_T *state);
 
 #endif

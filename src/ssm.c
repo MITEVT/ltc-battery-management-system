@@ -3,11 +3,10 @@
 #include "discharge.h"
 #include "error.h"
 
-
 static void Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
-bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2);
-bool Is_State_Done(BMS_STATE_T *state);
-void Initialize_BMS_State(BMS_STATE_T *state);
+static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2);
+static bool Is_State_Done(BMS_STATE_T *state);
+static void Initialize_BMS_State(BMS_STATE_T *state);
 
 void Process_Cmds(BMS_INPUT_T *input, BMS_STATE_T *state) {
     // Process the config commands from terminal
@@ -17,7 +16,7 @@ static void Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
     // Load pack configuration from EEPROM
 }
 
-void Initialize_BMS_State(BMS_STATE_T *state) {
+static void Initialize_BMS_State(BMS_STATE_T *state) {
 }
 
 void SSM_Init(BMS_STATE_T *state) {
@@ -30,7 +29,7 @@ static void Init_Step(input, state, output) {
     // initialize some gud shit while in running in the init SM
 }
 
-bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
+static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
     if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_CHARGE) {
         return true;
     } else if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_BALANCE) {
@@ -47,7 +46,7 @@ bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
     return false;
 }
 
-bool Is_State_Done(BMS_STATE_T *state) {
+static bool Is_State_Done(BMS_STATE_T *state) {
     switch(state->curr_mode) {
         case BMS_SSM_MODE_CHARGE:
             return state->charge_state == BMS_CHARGE_MODE_DONE;

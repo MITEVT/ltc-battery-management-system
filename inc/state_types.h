@@ -5,25 +5,24 @@
 #include <stdbool.h>
 
 typedef struct {
-	uint32_t cellMin_mV;
-	uint32_t cellMax_mV;
-	uint32_t cellCapacity_cAh;
-	uint8_t packModules;
-	uint8_t *modulesCells;
+	uint32_t cell_min_mV;
+	uint32_t cell_max_mV;
+	uint32_t cell_capacity_cAh;
+	uint8_t num_modules;
+	uint8_t *num_cells_in_modules;
 	uint8_t packCellP;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {
-	uint32_t numCells;
-	uint32_t *cellVoltage_mV;
-	uint32_t packCurrent_mv;
-	uint32_t packVoltage_mv;
-	uint32_t prechargeVoltage;
+	uint32_t *cell_voltage_mV; // array size = #modules * cells/module
+	uint32_t pack_current_mV;
+	uint32_t pack_voltage_mV;
+	uint32_t precharge_voltage;
 	bool error;
 } BMS_PACK_STATUS_T;
 
 typedef struct BMS_CHARGER_STATUS {
-    bool connected;
+    bool connected; // example charger status
 	bool error;
 } BMS_CHARGER_STATUS_T;
 
@@ -63,7 +62,7 @@ typedef struct BMS_STATE {
 } BMS_STATE_T;
 
 typedef struct BMS_INPUT {
-    bool hard_reset_line;
+    bool hard_reset_line; // example hw input
 	BMS_SSM_MODE_T mode_request;
 } BMS_INPUT_T;
 
@@ -71,15 +70,14 @@ typedef struct BMS_INPUT {
  * HW request structs (this should be in output)
 */
 typedef struct BMS_BALANCE_REQ {
-	uint32_t numCells;
-	uint32_t *balanceStatus;
+	uint32_t *balance_status;
 } BMS_BALANCE_REQ_T;
 
 typedef struct BMS_CHARGE_REQ {
 	bool charging;
-	uint32_t maxCurrent_mA;
-	uint32_t maxVoltage_mV;
-	uint32_t errorStatus;
+	uint32_t max_current_mA;
+	uint32_t max_voltage_mV;
+	uint32_t error_status;
 } BMS_CHARGE_REQ_T;
 
 typedef enum BMS_CONTACTOR_REQ {

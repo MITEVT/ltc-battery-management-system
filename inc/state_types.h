@@ -30,9 +30,17 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_INIT,
 	BMS_SSM_MODE_STANDBY,
 	BMS_SSM_MODE_CHARGE,
+	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_DISCHARGE,
 	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
+
+typedef enum {
+	BMS_INIT_MODE_OFF,
+	BMS_INIT_MODE_INIT,
+	BMS_INIT_MODE_RUN,
+	BMS_INIT_MODE_DONE
+} BMS_INIT_MODE_T;
 
 typedef enum {
 	BMS_CHARGE_MODE_OFF,
@@ -57,8 +65,12 @@ typedef struct BMS_STATE {
     BMS_PACK_STATUS_T *pack_status;
     PACK_CONFIG_T *pack_config;
 	BMS_SSM_MODE_T curr_mode;
+
+    // sub state machine state
+	BMS_INIT_MODE_T init_state;
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;
+
 	BMS_ERROR_T error;
 } BMS_STATE_T;
 

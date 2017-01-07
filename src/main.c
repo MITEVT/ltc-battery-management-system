@@ -3,6 +3,7 @@
 #include "config.h"
 #include "lc1024.h"
 #include "state_types.h"
+#include "ssm.h"
 #include <string.h>
 
 #define SSP_IRQ           SSP1_IRQn
@@ -22,7 +23,9 @@ static uint8_t eeprom_address[ADDR_LEN];
 static void PrintRxBuffer(void);
 static void ZeroRxBuf(void);
 
-static BMS_PACK_STATUS_T pack_status;
+static BMS_INPUT_T bms_input;
+static BMS_OUTPUT_T bms_output;
+static BMS_STATE_T bms_state;
 
 void SysTick_Handler(void) {
 	msTicks++;
@@ -75,8 +78,8 @@ static void Init_GPIO(void) {
 }
 
 static void Init_UART(void) {
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* RXD */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* TXD */
 
 	Chip_UART_Init(LPC_USART);
 	Chip_UART_SetBaud(LPC_USART, UART_BAUD);
@@ -91,6 +94,21 @@ void Init_EEPROM(void) {
     LC1024_WriteEnable();
 }
 
+void Process_Input(BMS_INPUT_T* bms_input) {
+    // Read current mode request
+    // Read pack status
+    // Read hardware signal inputs
+}
+
+void Process_Output(BMS_OUTPUT_T* bms_output) {
+    // If SSM changed state, output appropriate visual indicators
+    // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+}
+
+void Process_Keyboard_Debug(void) {
+    // Process keyboard strokes and output correpsonding debug messages
+}
+
 int main(void) {
 
     Init_Core();
@@ -98,8 +116,13 @@ int main(void) {
     Init_UART();
     Init_EEPROM();
 
-	while(1) {
+    SSM_Init(&bms_state);
 
+	while(1) {
+        Process_Keyboard_Debug();
+        Process_Input(&bms_input);
+        SSM_Step(&bms_input, &bms_state, &bms_output); 
+        Process_Output(&bms_output);
 	}
 
 	return 0;

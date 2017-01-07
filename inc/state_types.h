@@ -10,11 +10,16 @@ typedef struct {
 	uint32_t cell_capacity_cAh;
 	uint8_t num_modules;
 	uint8_t *num_cells_in_modules;
-	uint8_t num_packcells_in_parallel;
+	uint16_t cell_charge_c_rating_cC;
+	uint32_t bal_on_thresh_mV;
+	uint32_t bal_off_thresh_mV;
+	uint8_t pack_cells_p;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {
 	uint32_t *cell_voltage_mV; // array size = #modules * cells/module
+	uint32_t pack_cell_max_mV;
+	uint32_t pack_cell_min_mV;
 	uint32_t pack_current_mV;
 	uint32_t pack_voltage_mV;
 	uint32_t precharge_voltage;
@@ -32,7 +37,6 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_CHARGE,
 	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_DISCHARGE,
-	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
 
@@ -44,12 +48,12 @@ typedef enum {
 } BMS_INIT_MODE_T;
 
 typedef enum {
-	BMS_CHARGE_MODE_OFF,
-	BMS_CHARGE_MODE_INIT,
-	BMS_CHARGE_MODE_CC,
-	BMS_CHARGE_MODE_CV,
-	BMS_CHARGE_MODE_BALANCE,
-	BMS_CHARGE_MODE_DONE
+	BMS_CHARGE_OFF,
+	BMS_CHARGE_INIT,
+	BMS_CHARGE_CC,
+	BMS_CHARGE_CV,
+	BMS_CHARGE_BAL,
+	BMS_CHARGE_DONE
 } BMS_CHARGE_MODE_T;
 
 typedef enum {
@@ -82,13 +86,14 @@ typedef struct BMS_INPUT {
 	BMS_SSM_MODE_T mode_request;
 	uint32_t balance_mV;
 	bool contactors_closed;
+
 } BMS_INPUT_T;
 
 /*
  * HW request structs (this should be in output)
 */
 typedef struct BMS_CHARGE_REQ {
-	bool charge_on;
+	bool charger_on;
 	uint32_t charge_current_mA;
 	uint32_t charge_voltage_mV;
 } BMS_CHARGE_REQ_T;
@@ -96,7 +101,7 @@ typedef struct BMS_CHARGE_REQ {
 typedef struct BMS_OUTPUT{
 	BMS_CHARGE_REQ_T *charge_req;
 	bool close_contactors;
-	uint16_t *balance_req;
+	bool *balance_req;
     BMS_ERROR_T *error;
 } BMS_OUTPUT_T;
 

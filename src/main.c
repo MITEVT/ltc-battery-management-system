@@ -6,12 +6,14 @@
 #include "ssm.h"
 #include "sysinit.h"
 
-
 #define ADDR_LEN 3
 #define MAX_DATA_LEN 16
 
 #define LED0 2, 10
 #define LED1 2, 8
+
+#define MAX_NUM_MODULES 20
+#define MAX_CELLS_PER_MODULE 12
 
 volatile uint32_t msTicks;
 
@@ -24,8 +26,23 @@ static uint8_t eeprom_address[ADDR_LEN];
 static void PrintRxBuffer(void);
 static void ZeroRxBuf(void);
 
-static BMS_INPUT_T bms_input;
+// memory allocation for BMS_OUTPUT_T
+static BMS_ERROR_T bms_errors[MAX_NUM_MODULES];
+static uint16_t balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
+static BMS_CHARGE_REQ_T charge_req;
 static BMS_OUTPUT_T bms_output;
+
+
+
+// memory allocation for BMS_INPUT_T
+static BMS_INPUT_T bms_input;
+
+// memory allocation for BMS_STATE_T
+static BMS_CHARGER_STATUS_T charger_status;
+static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
+static BMS_PACK_STATUS_T pack_status;
+static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
+static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
 
 void SysTick_Handler(void) {
@@ -81,6 +98,18 @@ void Init_EEPROM(void) {
     LC1024_WriteEnable();
 }
 
+void Init_BMS_Structs(void) {
+    bms_output.charge_req = &charge_req;
+    bms_output.balance_req = &balance_reqs;
+    bms_output.error = &bms_errors;
+
+    bms_state.charger_status = &charger_status;
+    pack_status.cell_voltage_mV = &cell_voltages;
+    bms_state.pack_status = &pack_status;
+    pack_config.num_cells_in_modules = &num_cells_in_modules;
+    bms_state.pack_config = &pack_config;
+}
+
 void Process_Input(BMS_INPUT_T* bms_input) {
     // Read current mode request
     // Read pack status
@@ -100,8 +129,8 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    // Init_UART();
     Init_EEPROM();
+    Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
 
     SSM_Init(&bms_state);

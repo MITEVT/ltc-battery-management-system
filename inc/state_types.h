@@ -2,6 +2,7 @@
 #define STATE_TYPES_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 typedef bool PACK_ERROR_T;
 typedef bool CHARGER_ERROR_T;

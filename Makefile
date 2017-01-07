@@ -37,7 +37,7 @@ LINT = oclint
 #=============================================================================#
 
 # project name
-PROJECT = template
+PROJECT = ltc_battery_controller
 
 # core type
 CORE = cortex-m0
@@ -66,7 +66,7 @@ C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/c
 CXX_DEFS =
 
 # C definitions
-C_DEFS = -DCORE_M0
+C_DEFS = -DCORE_M0 -DDEBUG_ENABLE
 
 # ASM definitions
 AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main -DRAM_MODE=1
@@ -134,7 +134,7 @@ C_STD = gnu89
 #=============================================================================#
 
 COMPORT = $(word 1, $(wildcard /dev/tty.usbserial-*) $(wildcard /dev/ttyUSB*))
-BAUDRATE = 57600
+BAUDRATE = 115200
 CLOCK_OSC = 12000
 
 #=============================================================================#
@@ -174,7 +174,7 @@ CORE_FLAGS = -mcpu=$(CORE) -mthumb
 CXX_FLAGS = -std=$(CXX_STD) -g -ggdb3 -fno-rtti -fno-exceptions -fverbose-asm -Wa,-ahlms=$(OUT_DIR_F)$(notdir $(<:.$(CXX_EXT)=.lst))
 
 # flags for C compiler
-C_FLAGS = -std=$(C_STD) -g -ggdb3 -fverbose-asm -Wa,-ahlms=$(OUT_DIR_F)$(notdir $(<:.$(C_EXT)=.lst))
+C_FLAGS = -std=$(C_STD) -g -ggdb3 -fverbose-asm -Wa,-ahlms=$(OUT_DIR_F)$(notdir $(<:.$(C_EXT)=.lst)) -DUART_BAUD=$(BAUDRATE)
 
 # flags for assembler
 AS_FLAGS = -g -ggdb3 -Wa,-amhls=$(OUT_DIR_F)$(notdir $(<:.$(AS_EXT)=.lst))

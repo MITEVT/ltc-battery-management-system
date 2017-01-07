@@ -5,8 +5,6 @@
 #include "state_types.h"
 #include <string.h>
 
-const uint32_t OscRateIn = 0;
-
 #define SSP_IRQ           SSP1_IRQn
 #define SSPIRQHANDLER     SSP1_IRQHandler
 #define ADDR_LEN 3

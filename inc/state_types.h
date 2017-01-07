@@ -1,5 +1,5 @@
-#ifndef STATE_TYPES_H
-#define STATE_TYPES_H
+#ifndef _STATE_TYPES_H
+#define _STATE_TYPES_H
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,13 +31,16 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_STANDBY,
 	BMS_SSM_MODE_CHARGE,
 	BMS_SSM_MODE_DISCHARGE,
+	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
 
 typedef enum {
 	BMS_CHARGE_MODE_OFF,
 	BMS_CHARGE_MODE_INIT,
-	BMS_CHARGE_MODE_RUN,
+	BMS_CHARGE_MODE_CC,
+	BMS_CHARGE_MODE_CV,
+	BMS_CHARGE_MODE_BALANCE,
 	BMS_CHARGE_MODE_DONE
 } BMS_CHARGE_MODE_T;
 
@@ -65,33 +68,23 @@ typedef struct BMS_STATE {
 typedef struct BMS_INPUT {
     bool hard_reset_line; // example hw input
 	BMS_SSM_MODE_T mode_request;
+	uint32_t balance_mV;
+	bool contactors_closed;
 } BMS_INPUT_T;
 
 /*
  * HW request structs (this should be in output)
 */
-typedef struct BMS_BALANCE_REQ {
-	uint32_t *balance_status;
-} BMS_BALANCE_REQ_T;
-
 typedef struct BMS_CHARGE_REQ {
-	bool charging;
-	uint32_t max_current_mA;
-	uint32_t max_voltage_mV;
-	uint32_t error_status;
+	bool charge_on;
+	uint32_t charge_current_mA;
+	uint32_t charge_voltage_mV;
 } BMS_CHARGE_REQ_T;
 
-typedef enum BMS_CONTACTOR_REQ {
-	CONTACTOR_OFF,
-	CONTACTOR_PRECHARGE,
-	CONTACTOR_ON_W_PRECHARGE,
-	CONTACTOR_ON
-} BMS_CONTACTOR_REQ_T;
-
 typedef struct BMS_OUTPUT{
-	BMS_BALANCE_REQ_T *balance_req;
 	BMS_CHARGE_REQ_T *charge_req;
-	BMS_CONTACTOR_REQ_T *contactor_req;
+	bool close_contactors;
+	uint16_t *balance_req;
     BMS_ERROR_T *error;
 } BMS_OUTPUT_T;
 

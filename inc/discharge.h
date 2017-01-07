@@ -1,25 +1,9 @@
 #ifndef DISCHARGE_H
 #define DISCHARGE_H
-
 #include "state_types.h"
 
-typedef enum {
-	BMS_DISCHARGE_MODE_OFF,
-	BMS_DISCHARGE_MODE_INIT,
-	BMS_DISCHARGE_MODE_RUN,
-	BMS_DISCHARGE_MODE_DONE
-} BMS_DISCHARGE_MODE_T;
-
-static BMS_DISCHARGE_MODE_T DISCHARGE_MODE;
-
-/*
- * public function prototypes
-*/
-
-void BMS_DISCHARGE_INIT(void);
-BMS_SM_OUTPUT_T BMS_DISCHARGE_STEP(BMS_SM_INPUT_T input);
-void BMS_DISCHARGE_RESET(void);
-BMS_SSM_DISCHARGE_T BMS_DISCHARGE_GET_MODE(void);
+void Discharge_Init(BMS_STATE_T *state);
+void Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
+void Discharge_Reset(BMS_STATE_T *state);
 
 #endif
-//DISCHARGE_H

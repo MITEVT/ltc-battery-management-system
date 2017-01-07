@@ -2,25 +2,8 @@
 #define CHARGE_H
 #include "state_types.h"
 
-const uint32_t OscRateIn = 0;
-
-typedef enum {
-	BMS_CHARGE_MODE_OFF,
-	BMS_CHARGE_MODE_INIT,
-	BMS_CHARGE_MODE_RUN,
-	BMS_CHARGE_MODE_DONE
-} BMS_CHARGE_MODE_T;
-
-static BMS_CHARGE_MODE_T CHARGE_MODE;
-
-/*
- * public function prototypes
-*/
-
-void BMS_CHARGE_INIT(void);
-BMS_SM_OUTPUT_T BMS_CHARGE_STEP(BMS_SM_INPUT_T input);
-void BMS_CHARGE_RESET(void);
-BMS_SM_OUTPUT_T BMS_CHARGE_GET_MODE(void);
+void Charge_Init(BMS_STATE_T *state);
+void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
+void Charge_Reset(BMS_STATE_T *state);
 
 #endif
-//CHARGE_H

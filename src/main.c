@@ -3,8 +3,8 @@
 #include "config.h"
 #include "lc1024.h"
 #include "state_types.h"
-#include "ssm.h"
 #include <string.h>
+#include "ssm.h"
 
 #define SSP_IRQ           SSP1_IRQn
 #define SSPIRQHANDLER     SSP1_IRQHandler
@@ -116,12 +116,12 @@ int main(void) {
     Init_UART();
     Init_EEPROM();
 
-    SSM_Init(&bms_state);
+    // SSM_Init(&bms_state);
 
 	while(1) {
         Process_Keyboard_Debug();
         Process_Input(&bms_input);
-        SSM_Step(&bms_input, &bms_state, &bms_output); 
+        // SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);
 	}
 

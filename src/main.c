@@ -1,9 +1,10 @@
+#include <string.h>
+#include "board.h"
 #include "chip.h"
 #include "util.h"
 #include "config.h"
 #include "lc1024.h"
 #include "state_types.h"
-#include <string.h>
 
 #define SSP_IRQ           SSP1_IRQn
 #define SSPIRQHANDLER     SSP1_IRQHandler

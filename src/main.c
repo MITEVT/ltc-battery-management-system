@@ -1,19 +1,19 @@
 #include <string.h>
 #include "board.h"
-#include "chip.h"
-#include "util.h"
 #include "config.h"
 #include "lc1024.h"
 #include "state_types.h"
 #include <string.h>
 #include "ssm.h"
+#include "sysinit.h"
 
-#define SSP_IRQ           SSP1_IRQn
-#define SSPIRQHANDLER     SSP1_IRQHandler
+
 #define ADDR_LEN 3
 #define MAX_DATA_LEN 16
 
 #define LED0 2, 10
+#define LED1 2, 8
+
 volatile uint32_t msTicks;
 
 static char str[100];
@@ -67,16 +67,13 @@ static void delay(uint32_t dlyTicks) {
  ****************************/
 
 static void Init_Core(void) {
-	SystemCoreClockUpdate();
-
-	if (SysTick_Config (SystemCoreClock / 1000)) {
-		while(1); // error state
-	}
+	SysTick_Config (TicksPerMS);
 }
 
 static void Init_GPIO(void) {
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
 }
 
 void Init_EEPROM(void) {
@@ -97,7 +94,7 @@ void Process_Output(BMS_OUTPUT_T* bms_output) {
 }
 
 void Process_Keyboard_Debug(void) {
-    // Process keyboard strokes and output correpsonding debug messages
+    // Process keyboard strokes and output corresponding debug messages
 }
 
 int main(void) {
@@ -117,9 +114,11 @@ int main(void) {
         Process_Input(&bms_input);
         // SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);
+        
+        // LED Heartbeat
         if (msTicks - last_count > 1000) {
-            Board_Println("PING\r\n");
             last_count = msTicks;
+            Chip_GPIO_SetPinState(LPC_GPIO, LED1, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED1));
         }
 	}
 

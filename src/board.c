@@ -37,9 +37,6 @@ void canBaudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
 	}
 }
 
-
-
-
 /**
  * @brief	CCAN Interrupt Handler
  * @return	Nothing
@@ -65,20 +62,20 @@ void UART_IRQHandler(void) {
 
 
 
-void Board_Print(char* str){
-	Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, strlen(str));
+uint32_t Board_Print(uint8_t *str) {
+	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, strlen(str));
 }
 
-void Board_Println(char* str){
-	Board_Print(str);
-	Board_Print("\r\n");
+uint32_t Board_Println(uint8_t *str) {
+	uint32_t count = Board_Print(str);
+	return count + Board_Print("\r\n");
 }
 
-void Board_Write(char* str, uint32_t count){
-
+uint32_t Board_Write(uint8_t *str, uint32_t count) {
+	
 }
 
-void Board_Read(){
+void Board_Read() {
 
 }
 

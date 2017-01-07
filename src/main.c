@@ -115,16 +115,23 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    Init_UART();
+    // Init_UART();
     Init_EEPROM();
+    Board_UART_Init(UART_BAUD);
 
     // SSM_Init(&bms_state);
+
+    uint32_t last_count = msTicks;
 
 	while(1) {
         Process_Keyboard_Debug();
         Process_Input(&bms_input);
         // SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);
+        if (msTicks - last_count > 1000) {
+            Board_Println("PING\r\n");
+            last_count = msTicks;
+        }
 	}
 
 	return 0;

@@ -53,21 +53,21 @@
  *
  * @param str string to print
  */
-void Board_Print(char* str);
+uint32_t Board_Print(uint8_t *str);
 
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *
  * @param str string to print
  */
-void Board_Println(char* str);
+uint32_t Board_Println(uint8_t *str);
 
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *
  * @param str string to print
  */
-void Board_Write(char* str, uint32_t count);
+uint32_t Board_Write(uint8_t *str, uint32_t count);
 
 
 /**

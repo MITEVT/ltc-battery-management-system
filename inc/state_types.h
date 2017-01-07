@@ -10,7 +10,7 @@ typedef struct {
 	uint32_t cell_capacity_cAh;
 	uint8_t num_modules;
 	uint8_t *num_cells_in_modules;
-	uint8_t packCellP;
+	uint8_t num_packcells_in_parallel;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {
@@ -28,8 +28,8 @@ typedef struct BMS_CHARGER_STATUS {
 
 typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_INIT,
+	BMS_SSM_MODE_STANDBY,
 	BMS_SSM_MODE_CHARGE,
-	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_DISCHARGE,
 	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
@@ -55,6 +55,7 @@ typedef enum BMS_ERROR {
 typedef struct BMS_STATE {
     BMS_CHARGER_STATUS_T *charger_status;
     BMS_PACK_STATUS_T *pack_status;
+    PACK_CONFIG_T *pack_config;
 	BMS_SSM_MODE_T curr_mode;
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;

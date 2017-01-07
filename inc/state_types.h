@@ -30,7 +30,6 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_INIT,
 	BMS_SSM_MODE_STANDBY,
 	BMS_SSM_MODE_CHARGE,
-	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_DISCHARGE,
 	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_ERROR
@@ -93,7 +92,7 @@ typedef struct BMS_CHARGE_REQ {
 	uint32_t charge_voltage_mV;
 } BMS_CHARGE_REQ_T;
 
-typedef struct BMS_OUTPUT{
+typedef struct BMS_OUTPUT {
 	BMS_CHARGE_REQ_T *charge_req;
 	bool close_contactors;
 	uint16_t *balance_req;

@@ -1,6 +1,13 @@
+#include <string.h>
 #include "board.h"
 
 const uint32_t OscRateIn = 0;
+
+#define UART_BUFFER_SIZE 42
+static RINGBUFF_T uart_rx_ring;
+static volatile uint8_t _uart_rx_ring[UART_BUFFER_SIZE];
+static RINGBUFF_T uart_tx_ring;
+static volatile uint8_t _uart_tx_ring[UART_BUFFER_SIZE];
 
 // ------------------------------------------------
 // Private Functions
@@ -43,34 +50,62 @@ void CAN_IRQHandler(void) {
 	LPC_CCAN_API->isr();
 }
 
+/**
+ * @brief	UART Interrupt Handler
+ * @return	Nothing
+ * @note	stuff more stuff into the buffer
+ */
+
+void UART_IRQHandler(void) {
+	Chip_UART_IRQRBHandler(LPC_USART, &uart_rx_ring, &uart_tx_ring);
+}
+
 // ------------------------------------------------
 // Public Functions
 
 
 
 void Board_Print(char* str){
-
+	Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, strlen(str));
 }
 
 void Board_Println(char* str){
-
+	Board_Print(str);
+	Board_Print("\r\n");
 }
 
 void Board_Write(char* str, uint32_t count){
 
 }
 
+void Board_Read(){
+
+}
+
+
 
 void Board_UART_Init(uint32_t baudRateHz) {
+	// Initialize UART Buffers
+	RingBuffer_Init(&uart_rx_ring, _uart_rx_ring, sizeof(uint8_t), UART_BUFFER_SIZE);
+	RingBuffer_Flush(&uart_rx_ring);
+	RingBuffer_Init(&uart_tx_ring, _uart_tx_ring, sizeof(uint8_t), UART_BUFFER_SIZE);
+	RingBuffer_Flush(&uart_tx_ring);
+
+
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
-
+ 
 	Chip_UART_Init(LPC_USART);
 	Chip_UART_SetBaudFDR(LPC_USART, baudRateHz);
-
 	Chip_UART_ConfigData(LPC_USART, (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS));
 	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
 	Chip_UART_TXEnable(LPC_USART);
+
+	Chip_UART_IntEnable(LPC_USART, UART_IER_RBRINT);
+	NVIC_ClearPendingIRQ(UART0_IRQn);
+	NVIC_EnableIRQ(UART0_IRQn);
+
+
 }
 
 void Board_SPI_Init(uint32_t baudRateHz) {

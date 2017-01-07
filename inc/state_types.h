@@ -26,24 +26,25 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
 
-typedef struct HW_INPUTS {
-    bool hard_reset_line;
-} HW_INPUTS_T;
+typedef enum BMS_ERROR {
+    BMS_BLEW_UP_ERROR
+} BMS_ERROR_T;
 
-typedef struct BMS_SM_INPUT {
-    HW_INPUTS_T hw_inputs;
-	BMS_SSM_MODE_T mode_request;
+typedef struct BMS_STATUS {
     BMS_CHARGER_STATUS_T charger_status;
     BMS_PACK_STATUS_T pack_status;
-} BMS_SM_INPUT_T;
+	BMS_SSM_MODE_T mode_request;
+	BMS_ERROR_T error;
+} BMS_STATE_T;
+
+typedef struct BMS_INPUT {
+    bool hard_reset_line;
+	BMS_SSM_MODE_T mode_request;
+} BMS_INPUT_T;
 
 /*
  * HW request structs (this should be in output)
 */
-typedef enum BMS_ERROR {
-    BLEW_UP_ERROR
-} BMS_ERROR_T;
-
 typedef struct BMS_BALANCE_REQ {
 	uint32_t 	numCells;
 	uint32_t * 	balanceStatus;
@@ -63,12 +64,12 @@ typedef enum BMS_CONTACTOR_REQ {
 	CONTACTOR_ON
 } BMS_CONTACTOR_REQ_T;
 
-typedef struct BMS_SM_OUTPUT{
+typedef struct BMS_OUTPUT{
 	BMS_BALANCE_REQ_T balance_req;
 	BMS_CHARGE_REQ_T charge_req;
 	BMS_CONTACTOR_REQ_T contactor_req;
     BMS_ERROR_T error;
-} BMS_SM_OUTPUT_T;
+} BMS_OUTPUT_T;
 
 #endif
 

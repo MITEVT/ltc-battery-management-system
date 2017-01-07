@@ -79,8 +79,6 @@ void Board_Read() {
 
 }
 
-
-
 void Board_UART_Init(uint32_t baudRateHz) {
 	// Initialize UART Buffers
 	RingBuffer_Init(&uart_rx_ring, _uart_rx_ring, sizeof(uint8_t), UART_BUFFER_SIZE);

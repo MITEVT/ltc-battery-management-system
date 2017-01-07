@@ -79,17 +79,6 @@ static void Init_GPIO(void) {
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
 }
 
-static void Init_UART(void) {
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* RXD */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* TXD */
-
-	Chip_UART_Init(LPC_USART);
-	Chip_UART_SetBaud(LPC_USART, UART_BAUD);
-	Chip_UART_ConfigData(LPC_USART, (UART_LCR_WLEN8 | UART_LCR_SBS_1BIT | UART_LCR_PARITY_DIS));
-	Chip_UART_SetupFIFOS(LPC_USART, (UART_FCR_FIFO_EN | UART_FCR_TRG_LEV2));
-	Chip_UART_TXEnable(LPC_USART);
-}
-
 void Init_EEPROM(void) {
     LC1024_Init(600000, 0, 7);
     ZeroRxBuf();

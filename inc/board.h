@@ -30,6 +30,8 @@
 #define SWITCH_GPIO 0
 #define SWITCH_PIN  1
 
+#define SPI_BUFFER_SIZE 20 // may need to change based on number of BMS size
+
 #define CONTACTOR_P_GPIO 	2
 #define CONTACTOR_P_PIN  	8
 #define CONTACTOR_N_GPIO 	2

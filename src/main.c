@@ -1,9 +1,8 @@
 #include <string.h>
+#include <stdlib.h>
 #include "board.h"
-#include "config.h"
 #include "lc1024.h"
 #include "state_types.h"
-#include <string.h>
 #include "ssm.h"
 #include "sysinit.h"
 
@@ -105,14 +104,14 @@ int main(void) {
     Init_EEPROM();
     Board_UART_Init(UART_BAUD);
 
-    // SSM_Init(&bms_state);
+    SSM_Init(&bms_state);
 
     uint32_t last_count = msTicks;
 
 	while(1) {
         Process_Keyboard_Debug();
         Process_Input(&bms_input);
-        // SSM_Step(&bms_input, &bms_state, &bms_output); 
+        SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);
         
         // LED Heartbeat

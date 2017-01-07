@@ -2,6 +2,7 @@
 #include "util.h"
 #include "config.h"
 #include "lc1024.h"
+#include "state_types.h"
 #include <string.h>
 
 const uint32_t OscRateIn = 0;
@@ -22,6 +23,8 @@ static uint8_t eeprom_address[ADDR_LEN];
 
 static void PrintRxBuffer(void);
 static void ZeroRxBuf(void);
+
+static BMS_PACK_STATUS_T pack_status;
 
 void SysTick_Handler(void) {
 	msTicks++;

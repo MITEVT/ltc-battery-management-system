@@ -4,8 +4,14 @@
 
 const uint32_t OscRateIn = 0;
 
+typedef enum {
+	BMS_CHARGE_MODE_OFF,
+	BMS_CHARGE_MODE_INIT,
+	BMS_CHARGE_MODE_RUN,
+	BMS_CHARGE_MODE_DONE
+} BMS_CHARGE_MODE_T;
 
-static BMS_DISCHARGE_MODE_T DISCHARGE_MODE;
+static BMS_CHARGE_MODE_T CHARGE_MODE;
 
 /*
  * public function prototypes

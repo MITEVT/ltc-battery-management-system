@@ -4,6 +4,15 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+typedef struct {
+	uint32_t cellMin_mV;
+	uint32_t cellMax_mV;
+	uint32_t cellCapacity_cAh;
+	uint8_t packModules;
+	uint8_t *modulesCells;
+	uint8_t packCellP;
+} PACK_CONFIG_T;
+
 typedef struct BMS_PACK_STATUS {
 	uint32_t numCells;
 	uint32_t *cellVoltage_mV;

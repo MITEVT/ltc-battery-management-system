@@ -48,20 +48,6 @@ LD_SCRIPT = gcc.ld
 # output folder (absolute or relative path, leave empty for in-tree compilation)
 OUT_DIR = bin
 
-# test out folder
-OUT_DIR_TEST = testbin
-
-# directories for testing sources
-TEST_SRCS_DIRS = test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
-
-# include directories for test
-INC_DIRS_TEST = $(INC_DIRS_CROSS) $(SRCS_DIRS) test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
-
-
-# c files for testing
-C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c 
-
-
 # C++ definitions (e.g. "-Dsymbol_with_value=0xDEAD -Dsymbol_without_value")
 CXX_DEFS =
 
@@ -73,7 +59,7 @@ AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main -DRAM_MODE=1
 
 # include directories (absolute or relative paths to additional folders with
 # headers, current folder is always included)
-INC_DIRS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
+INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
 
 # library directories (absolute or relative paths to additional folders with
 # libraries)
@@ -128,6 +114,22 @@ CXX_STD = gnu++98
 # C language standard ("c89" / "iso9899:1990", "iso9899:199409",
 # "c99" / "iso9899:1999", "gnu89" - default, "gnu99")
 C_STD = gnu89
+
+#=============================================================================#
+# Unit Testing Configuration
+#=============================================================================#
+
+# test out folder
+OUT_DIR_TEST = testbin
+
+# include directories for test
+INC_DIRS_TEST = $(INC_DIRS_CROSS) $(SRCS_DIRS) test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
+
+# directories for testing sources
+TEST_SRCS_DIRS = test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
+
+# c files for testing
+C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c src/discharge.c src/error.c
 
 #=============================================================================#
 # Write Configuration
@@ -212,7 +214,7 @@ C_OBJS = $(addprefix $(OUT_DIR_F), $(notdir $(C_SRCS:.$(C_EXT)=.o)))
 AS_OBJS = $(addprefix $(OUT_DIR_F), $(notdir $(AS_SRCS:.$(AS_EXT)=.o)))
 OBJS = $(AS_OBJS) $(C_OBJS) $(CXX_OBJS) $(USER_OBJS)
 DEPS = $(OBJS:.o=.d)
-INC_DIRS_F = -I. $(patsubst %, -I%, $(INC_DIRS))
+INC_DIRS_F = -I. $(patsubst %, -I%, $(INC_DIRS_CROSS))
 LIB_DIRS_F = $(patsubst %, -L%, $(LIB_DIRS))
 
 INC_DIRS_F_TEST = -I. $(patsubst %, -I%, $(INC_DIRS_TEST))
@@ -270,10 +272,7 @@ $(ELF) : $(LD_SCRIPT)
 # test_linking - objects -> elf
 #-----------------------------------------------------------------------------#
 $(TEST_TARGET) : $(TEST_OBJS)	
-	@echo 'csrs'
-	@echo $(C_SRCS_TEST)
-	@echo 'Linking test target: $(TEST_TARGET)'
-	$(CXX) $(LD_FLAGS_F_TEST) $(TEST_OBJS) $(LIBS) -o $@
+	@$(CC) $(LD_FLAGS_F_TEST) $(TEST_OBJS) $(LIBS) -o $@
 	@echo ' '
 
 #-----------------------------------------------------------------------------#
@@ -282,7 +281,7 @@ $(TEST_TARGET) : $(TEST_OBJS)
 
 $(ELF) : $(OBJS)
 	@echo 'Linking target: $(ELF)'
-	$(CXX) $(LD_FLAGS_F) $(OBJS) $(LIBS) -o $@
+	$(CC) $(LD_FLAGS_F) $(OBJS) $(LIBS) -o $@
 	@echo ' '
 
 #-----------------------------------------------------------------------------#

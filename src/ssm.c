@@ -25,7 +25,7 @@ void SSM_Init(BMS_STATE_T *state) {
     Initialize_BMS_State(state);
 }
 
-static void Init_Step(input, state, output) {
+static void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // initialize some gud shit while in running in the init SM
 }
 
@@ -91,6 +91,9 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
             break;
         case BMS_SSM_MODE_ERROR:
             Error_Step(input, state, output);
+            break;
+        case BMS_SSM_MODE_BALANCE:
+            //TODO
             break;
     }
 }

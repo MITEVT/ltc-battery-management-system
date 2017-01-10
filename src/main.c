@@ -28,7 +28,7 @@ static void ZeroRxBuf(void);
 
 // memory allocation for BMS_OUTPUT_T
 static BMS_ERROR_T bms_errors[MAX_NUM_MODULES];
-static uint16_t balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
+static bool balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static BMS_CHARGE_REQ_T charge_req;
 static BMS_OUTPUT_T bms_output;
 
@@ -100,13 +100,13 @@ void Init_EEPROM(void) {
 
 void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
-    bms_output.balance_req = &balance_reqs;
-    bms_output.error = &bms_errors;
+    bms_output.balance_req = balance_reqs;
+    bms_output.error = bms_errors;
 
     bms_state.charger_status = &charger_status;
-    pack_status.cell_voltage_mV = &cell_voltages;
+    pack_status.cell_voltage_mV = cell_voltages;
     bms_state.pack_status = &pack_status;
-    pack_config.num_cells_in_modules = &num_cells_in_modules;
+    pack_config.num_cells_in_modules = num_cells_in_modules;
     bms_state.pack_config = &pack_config;
 }
 

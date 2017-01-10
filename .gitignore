@@ -2,3 +2,4 @@ bin/
 testbin/
 */bin/
 *.o
+.DS_Store

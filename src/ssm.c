@@ -49,7 +49,7 @@ static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
 static bool Is_State_Done(BMS_STATE_T *state) {
     switch(state->curr_mode) {
         case BMS_SSM_MODE_CHARGE:
-            return state->charge_state == BMS_CHARGE_MODE_DONE;
+            return state->charge_state == BMS_CHARGE_DONE;
         case BMS_SSM_MODE_DISCHARGE:
             return state->discharge_state == BMS_DISCHARGE_MODE_DONE;
         case BMS_SSM_MODE_INIT:

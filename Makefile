@@ -138,6 +138,12 @@ BAUDRATE = 115200
 CLOCK_OSC = 12000
 
 #=============================================================================#
+# Lint Configuration
+#=============================================================================#
+
+MAX_LINE_SIZE = 140
+
+#=============================================================================#
 # set the VPATH according to SRCS_DIRS
 #=============================================================================#
 
@@ -182,6 +188,9 @@ AS_FLAGS = -g -ggdb3 -Wa,-amhls=$(OUT_DIR_F)$(notdir $(<:.$(AS_EXT)=.lst))
 # flags for linker
 LD_FLAGS = -T$(LD_SCRIPT) -g -Wl,-Map=$(OUT_DIR_F)$(PROJECT).map,--cref,--no-warn-mismatch
 
+# flags for lint
+LINT_FLAGS = -rc LONG_LINE=$(MAX_LINE_SIZE)
+
 # process option for removing unused code
 ifeq ($(REMOVE_UNUSED), 1)
 	LD_FLAGS += -Wl,--gc-sections
@@ -224,6 +233,12 @@ LSS = $(OUT_DIR_F)$(PROJECT).lss
 DMP = $(OUT_DIR_F)$(PROJECT).dmp
 
 TEST_TARGET = $(OUT_DIR_TEST_F)$(PROJECT)
+
+# format final flags for tools, request dependancies for C++, C and asm
+CXX_FLAGS_F_CROSS = $(CORE_FLAGS) $(OPTIMIZATION) $(CXX_WARNINGS) $(CXX_FLAGS)  $(CXX_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_CROSS)
+C_FLAGS_F_CROSS = $(CORE_FLAGS) $(OPTIMIZATION) $(C_WARNINGS) $(C_FLAGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_CROSS)
+AS_FLAGS_F_CROSS = $(CORE_FLAGS) $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_CROSS)
+LD_FLAGS_F_CROSS = $(CORE_FLAGS) $(LD_FLAGS) $(LIB_DIRS_F_CROSS)
 
 # format final flags for tools, request dependancies for C++, C and asm
 CXX_FLAGS_F = $(CORE_FLAGS) $(OPTIMIZATION) $(CXX_WARNINGS) $(CXX_FLAGS)  $(CXX_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
@@ -375,6 +390,14 @@ make_output_dir :
 
 make_test_output_dir :
 	$(shell mkdir $(OUT_DIR_TEST_F) 2>/dev/null)
+
+#-----------------------------------------------------------------------------#
+# Perform static analysis with lint
+#-----------------------------------------------------------------------------#
+
+lint: $(C_SRCS)
+	oclint $^ $(LINT_FLAGS) -- $(C_FLAGS_F_CROSS) -I/usr/local/Cellar/gcc-arm-none-eabi/20140805/arm-none-eabi/include/
+
 
 #-----------------------------------------------------------------------------#
 # Write to flash of chip

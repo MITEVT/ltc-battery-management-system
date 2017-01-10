@@ -65,7 +65,11 @@ TEST(Charge_Test, charge_off) {
 }
 
 TEST(Charge_Test, initialize) {
+	printf("Charge_Test charge_off...");
+	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 
+	input.mode_request = BMS_SSM_MODE_CHARGE;
+	printf("Done\r\n");
 }
 
 

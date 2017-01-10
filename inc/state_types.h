@@ -9,7 +9,7 @@ typedef struct {
 	uint32_t cell_max_mV;
 	uint32_t cell_capacity_cAh;
 	uint8_t num_modules;
-	uint8_t *num_cells_in_modules;
+	uint8_t *num_cells_in_modules; // [TODO] refactor to module_cell_count
 	uint16_t cell_charge_c_rating_cC;
 	uint32_t bal_on_thresh_mV;
 	uint32_t bal_off_thresh_mV;

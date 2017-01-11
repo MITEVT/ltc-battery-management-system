@@ -118,6 +118,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+    //
+    // Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
+    // Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
 }
 
 static char* Convert_Mode_Str(BMS_SSM_MODE_T mode) {

@@ -3,8 +3,6 @@
 #include "discharge.h"
 #include "error.h"
 
-static void Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
-static void Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
 static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2);
 static bool Is_State_Done(BMS_STATE_T *state);
 
@@ -12,24 +10,36 @@ void SSM_Init(BMS_STATE_T *state) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
     state->charge_state = BMS_CHARGE_OFF;
+    state->init_state = BMS_INIT_OFF;
     state->discharge_state = BMS_DISCHARGE_OFF;
     state->error_code = BMS_NO_ERROR;
 }
 
 void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-    Load_EEPROM_PackConfig(state->pack_config);
-    Check_PackConfig_With_LTC(state->pack_config);
-    state->curr_mode = BMS_SSM_MODE_STANDBY;
+    switch(state->init_state) {
+        case(BMS_INIT_OFF):
+            output->read_eeprom_packconfig = true;
+            state->init_state = BMS_INIT_READ_PACKCONFIG;
+            break;
+        case(BMS_INIT_READ_PACKCONFIG):
+            if(input->eeprom_packconfig_read_done) {
+                output->read_eeprom_packconfig = false;
+                output->check_packconfig_with_ltc = true;
+                state->init_state = BMS_INIT_CHECK_PACKCONFIG;
+            }
+            break;
+        case(BMS_INIT_CHECK_PACKCONFIG):
+            if(input->ltc_packconfig_check_done) {
+                output->check_packconfig_with_ltc = false;
+                state->init_state = BMS_INIT_DONE;
+                state->curr_mode = BMS_SSM_MODE_STANDBY;
+            }
+            break;
+        case(BMS_INIT_DONE):
+            state->curr_mode = BMS_SSM_MODE_STANDBY;
+            break;
+    }
 }
-
-static void Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
-    // Load pack configuration from EEPROM
-}
-
-static void Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
-    // Send/recieve SPI messages to make sure *pack_config is correct
-}
-
 
 static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
     if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_CHARGE) {
@@ -66,8 +76,6 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // If change state request made and possible, change state
     // Check if in standby:
     //     if in standby:
-    //          check if config commands in config buffer currently
-    //          (if so write those to EEPROM)
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
     

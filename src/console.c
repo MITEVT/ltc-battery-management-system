@@ -5,37 +5,104 @@
 #include "microrl.h"
 
 
-static const char *commands[NUMCOMMANDS] = { "get",
-                            "set",
-                            "help",
-                            "config",
-                            "bal"};
 
-static const char nargs[NUMCOMMANDS] = {  1 ,
-                        2 ,
-                        1 ,
-                        0 ,
-                        1};
-
-static const char *helpstring[NUMCOMMANDS] = {"get a value", "set a value", "this", "flash that sucker", "set ballence current"};
 
 static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
+
 void get(const char * const * argv) {
-    Board_Println("get");
-    // [TODO]
-}
-void set(const char * const * argv) {
-    Board_Println("set");
-}
-void help(const char * const * argv) {
-    uint32_t command_i = 0;
-    for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)
-    {
-        if (memcmp(argv[1],commands[command_i],3) == 0){
-            Board_Println(helpstring[command_i]);  
+    rw_loc_lable_t rwloc;
+    //loop over r/w entries
+    bool foundloc = false;
+    for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
+        if (strcmp(argv[1],locstring[rwloc]) == 0){
+            foundloc = true;
+            break; 
         }
     }
+
+    if (foundloc) {
+
+    }
+    else {
+        //loop over r/o entries
+        ro_loc_lable_t roloc;
+        for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+            if (strcmp(argv[1],locstring[roloc]) == 0){
+                foundloc = true;
+                break; 
+            }
+        }
+        if (foundloc) {
+            if (roloc == ROL_state) {
+                Board_Println(BMS_SSM_MODE_NAMES[console.bms_state->curr_mode]);
+                Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
+                Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
+                Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
+            }
+        }
+        else{
+            Board_Println("invalid location");
+        }
+    }
+    
+
+}
+void set(const char * const * argv) {
+    rw_loc_lable_t rwloc;
+    //loop over r/w entries
+    bool foundloc = false;
+    for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
+        if (strcmp(argv[1],locstring[rwloc]) == 0){
+            foundloc = true;
+            break; 
+        }
+    }
+    if (!foundloc) {
+        //loop over r/o entries
+        ro_loc_lable_t roloc;
+        for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+            if (strcmp(argv[1],locstring[roloc]) == 0){
+                foundloc = true;
+                Board_Println("this location is read only");
+                break; 
+            }
+        }
+    }
+    if (foundloc)
+    {
+        /* code */
+    }
+    else{
+        Board_Println("invalid location");
+    }
+}
+void help(const char * const * argv) {
+    command_label_t command_i = 0;
+    for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)
+    {
+        if (strcmp(argv[1],commands[command_i]) == 0){
+            Board_Println_BLOCKING(helpstring[command_i]); //blocking print
+
+            break; 
+        }
+    }
+    Board_Print("");
+
+    if (command_i == C_GET || command_i == C_SET)
+    {
+        rw_loc_lable_t i;
+        Board_Println_BLOCKING("------r/w entries------");
+        for (i = 0; i < RWL_LENGTH; ++i){
+            Board_Println_BLOCKING(locstring[i]); //blocking print.
+        }
+
+        Board_Println_BLOCKING("------r/o entries------");
+        for (i = ROL_FIRST; i < ROL_LENGTH; ++i){
+            Board_Println_BLOCKING(locstring[i]); //blocking print.
+        }
+    }
+
 }
 void config(const char * const * argv) {
     Board_Println("config");
@@ -45,6 +112,12 @@ void bal(const char * const * argv) {
     Board_Println("bal");
     // [TODO]
 }                       
+
+void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output){
+    console.bms_input = bms_input;
+    console.bms_state = bms_state;
+    console.bms_output = bms_output;
+}
 
 void executerl(uint32_t argc, const char * const * argv){
     uint32_t command_i = 0;

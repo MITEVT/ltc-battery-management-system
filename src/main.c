@@ -152,22 +152,6 @@ static char* Convert_Mode_Str(BMS_SSM_MODE_T mode) {
     return ret_str;
 }
 
-void Process_Keyboard_Debug(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-    // Process keyboard strokes and output corresponding debug messages
-    uint8_t count;
-    if ((count = Chip_UART_Read(LPC_USART, UART_Rx_Buf, UART_BUFFER_SIZE)) != 0) {
-        switch (UART_Rx_Buf[0]) {
-            case 's': 
-                DEBUG_Println("Test");
-                DEBUG_Println(Convert_Mode_Str(state->curr_mode));
-                break;
-            default:
-                DEBUG_Println(UART_Rx_Buf[0]);
-                DEBUG_Println("Command Unknown");
-        }
-    }
-}
-
 void Process_Keyboard(void) {
     uint32_t readln = Board_Read(str,50);
     uint32_t i;
@@ -193,7 +177,7 @@ int main(void) {
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
-
+    console_init(&bms_input, &bms_state, &bms_output);
 
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
@@ -202,9 +186,8 @@ int main(void) {
     // Board_Println(commands[0]);
 
 	while(1) {
-        // Process_Keyboard_Debug(&bms_input, &bms_state, &bms_output);
 
-        // Process_Keyboard(); do this if you want to add the command line
+        Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);

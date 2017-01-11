@@ -25,9 +25,7 @@ BMS_CHARGE_REQ_T _charge_req;
 bool balance_requests[NUM_MODULES];
 BMS_ERROR_T bms_errors[NUM_MODULES];
 
-
 void Test_Charge_SM_Shutdown(void);
-
 
 TEST_GROUP(Charge_Test);
 

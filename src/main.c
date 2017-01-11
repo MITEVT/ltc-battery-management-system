@@ -48,11 +48,6 @@ static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
 
-
-
-
-
-
 void SysTick_Handler(void) {
 	msTicks++;
 }
@@ -200,7 +195,7 @@ int main(void) {
     microrl_set_execute_callback(&rl, executerl);
 
 
-    SSM_Init(&bms_state);
+    SSM_Init(&bms_input, &bms_state, &bms_output);
 
     last_count = msTicks;
     // itoa(&commands,str,16);

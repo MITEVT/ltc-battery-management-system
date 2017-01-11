@@ -163,8 +163,3 @@ void Test_Charge_SM_Shutdown(void) {
 	TEST_ASSERT_FALSE(output.charge_req->charger_on);
 }
 
-
-
-
-
-

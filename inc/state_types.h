@@ -41,11 +41,6 @@ typedef enum BMS_SSM_MODE {
 } BMS_SSM_MODE_T;
 
 typedef enum {
-	BMS_INIT_RUNNING,
-	BMS_INIT_DONE
-} BMS_INIT_MODE_T;
-
-typedef enum {
 	BMS_CHARGE_OFF,
 	BMS_CHARGE_INIT,
 	BMS_CHARGE_CC,
@@ -73,10 +68,10 @@ typedef struct BMS_STATE {
 	BMS_SSM_MODE_T curr_mode;
 
     // sub state machine state
-	BMS_INIT_MODE_T init_state;
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;
-	BMS_ERROR_T error_desc;
+
+	BMS_ERROR_T error_code;
 } BMS_STATE_T;
 
 typedef struct BMS_INPUT {
@@ -84,7 +79,7 @@ typedef struct BMS_INPUT {
 	BMS_SSM_MODE_T mode_request;
 	uint32_t balance_mV;
 	bool contactors_closed;
-
+    uint32_t msTicks;
 } BMS_INPUT_T;
 
 /*
@@ -100,7 +95,6 @@ typedef struct BMS_OUTPUT {
 	BMS_CHARGE_REQ_T *charge_req;
 	bool close_contactors;
 	bool *balance_req;
-    BMS_ERROR_T *error;
 } BMS_OUTPUT_T;
 
 #endif

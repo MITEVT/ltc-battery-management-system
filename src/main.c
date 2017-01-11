@@ -147,6 +147,7 @@ static char* Convert_Mode_Str(BMS_SSM_MODE_T mode) {
 }
 
 void Process_Keyboard_Debug(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    // Process keyboard strokes and output corresponding debug messages
     uint8_t count;
     if ((count = Chip_UART_Read(LPC_USART, UART_Rx_Buf, UART_BUFFER_SIZE)) != 0) {
         switch (UART_Rx_Buf[0]) {
@@ -159,8 +160,6 @@ void Process_Keyboard_Debug(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T
                 DEBUG_Println("Command Unknown");
         }
     }
-    // Board_Println();
-    // Process keyboard strokes and output corresponding debug messages
 }
 
 int main(void) {

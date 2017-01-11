@@ -127,31 +127,6 @@ void Process_Output(BMS_OUTPUT_T* bms_output) {
     // Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
 }
 
-static char* Convert_Mode_Str(BMS_SSM_MODE_T mode) {
-    static char *ret_str;
-    switch(mode) {
-        case(BMS_SSM_MODE_INIT):
-            ret_str = "Init Mode!";
-            break;
-        case(BMS_SSM_MODE_STANDBY):
-            ret_str = "Standby Mode!";
-            break;
-        case(BMS_SSM_MODE_CHARGE):
-            ret_str = "Charge Mode!";
-            break;
-        case(BMS_SSM_MODE_BALANCE):
-            ret_str = "Balance Mode!";
-            break;
-        case(BMS_SSM_MODE_DISCHARGE):
-            ret_str = "Discharge Mode!";
-            break;
-        case(BMS_SSM_MODE_ERROR):
-            ret_str = "Error Mode!";
-            break;
-    }
-    return ret_str;
-}
-
 void Process_Keyboard(void) {
     uint32_t readln = Board_Read(str,50);
     uint32_t i;

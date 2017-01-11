@@ -49,20 +49,34 @@ void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 }
 
 bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
+
     if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_CHARGE) {
         return true;
     } else if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_BALANCE) {
         return true;
     } else if(mode1 == BMS_SSM_MODE_STANDBY && mode2 == BMS_SSM_MODE_DISCHARGE) {
         return true;
+
     } else if(mode1 == BMS_SSM_MODE_CHARGE && mode2 == BMS_SSM_MODE_STANDBY) {
+        return true;
+    } else if(mode1 == BMS_SSM_MODE_BALANCE && mode2 == BMS_SSM_MODE_STANDBY) {
         return true;
     } else if(mode1 == BMS_SSM_MODE_DISCHARGE && mode2 == BMS_SSM_MODE_STANDBY) {
         return true;
     } else if(mode1 == BMS_SSM_MODE_BALANCE && mode2 == BMS_SSM_MODE_STANDBY) {
         return true;
+
+    } else if(mode1 == BMS_SSM_MODE_BALANCE && mode2 == BMS_SSM_MODE_CHARGE) {
+        return true;
+    } else if(mode1 == BMS_SSM_MODE_CHARGE && mode2 == BMS_SSM_MODE_BALANCE) {
+        return true;
     }
     return false;
+}
+
+bool Is_Charge_Balance_Switch(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
+    return (mode1 == BMS_SSM_MODE_BALANCE && mode2 == BMS_SSM_MODE_CHARGE)
+        || (mode1 == BMS_SSM_MODE_CHARGE && mode2 == BMS_SSM_MODE_BALANCE);
 }
 
 bool Is_State_Done(BMS_STATE_T *state) {
@@ -71,6 +85,8 @@ bool Is_State_Done(BMS_STATE_T *state) {
             return state->charge_state == BMS_CHARGE_DONE;
         case BMS_SSM_MODE_DISCHARGE:
             return state->discharge_state == BMS_DISCHARGE_DONE;
+        case BMS_SSM_MODE_INIT:
+            return state->init_state == BMS_INIT_DONE;
         case BMS_SSM_MODE_ERROR:
             return false;
         default:
@@ -86,8 +102,9 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
     
-    if(Is_Valid_Jump(state->curr_mode, input->mode_request) 
-            && Is_State_Done(state)) {
+    if((Is_Valid_Jump(state->curr_mode, input->mode_request)
+            && Is_State_Done(state))
+            || Is_Charge_Balance_Switch(state->curr_mode, input->mode_request)) {
         state->curr_mode = input->mode_request;
     }
 
@@ -107,7 +124,7 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
             Error_Step(input, state, output);
             break;
         case BMS_SSM_MODE_BALANCE:
-            //TODO
+            Charge_Step(input, state, output);
             break;
     }
 }

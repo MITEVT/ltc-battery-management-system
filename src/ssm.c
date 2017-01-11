@@ -3,13 +3,19 @@
 #include "discharge.h"
 #include "error.h"
 
-void SSM_Init(BMS_STATE_T *state) {
+void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
     state->charge_state = BMS_CHARGE_OFF;
     state->init_state = BMS_INIT_OFF;
     state->discharge_state = BMS_DISCHARGE_OFF;
     state->error_code = BMS_NO_ERROR;
+
+    output->read_eeprom_packconfig = false;
+    output->check_packconfig_with_ltc = false;
+
+    input->ltc_packconfig_check_done = false;
+    input->eeprom_packconfig_read_done = false;
 }
 
 void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
@@ -17,12 +23,15 @@ void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         case(BMS_INIT_OFF):
             output->read_eeprom_packconfig = true;
             state->init_state = BMS_INIT_READ_PACKCONFIG;
+            input->eeprom_packconfig_read_done = false;
             break;
         case(BMS_INIT_READ_PACKCONFIG):
             if(input->eeprom_packconfig_read_done) {
                 output->read_eeprom_packconfig = false;
                 output->check_packconfig_with_ltc = true;
                 state->init_state = BMS_INIT_CHECK_PACKCONFIG;
+                input->ltc_packconfig_check_done = false;
+                input->eeprom_packconfig_read_done = false;
             }
             break;
         case(BMS_INIT_CHECK_PACKCONFIG):
@@ -30,6 +39,7 @@ void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
                 output->check_packconfig_with_ltc = false;
                 state->init_state = BMS_INIT_DONE;
                 state->curr_mode = BMS_SSM_MODE_STANDBY;
+                input->ltc_packconfig_check_done = false;
             }
             break;
         case(BMS_INIT_DONE):

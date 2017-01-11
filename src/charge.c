@@ -108,9 +108,29 @@ handler:
 				state->charge_state = BMS_CHARGE_CC;
 				goto handler;
 			} else {
-				// output->charge_voltage_mV = 
-				// if ()
+				output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
+				output->charge_req->charge_current_mA = cv_charge_voltage_mV;
+				output->charge_req->charger_on = true;
+				if (input->pack_status->pack_current_mA < state->pack_config->cv_min_current_mA) {
+					if ((input->msTicks - last_time_above_cv_min_curr) >= state->pack_config->cv_min_current_ms) {
+						output->charge_req->charger_on = false;
+						state->charge_state = BMS_CHARGE_DONE;
+						memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
+						break;
+					}
+				} else {
+					last_time_above_cv_min_curr = input->msTicks;
+				}
 			}
+
+			for (i = 0; i < total_num_cells; i++) {
+				if (output->balance_req[i]) {
+					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
+				} else {
+					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
+				}
+			}
+
 			break;
 		case BMS_CHARGE_BAL:
 			break;

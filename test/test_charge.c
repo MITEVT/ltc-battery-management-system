@@ -32,7 +32,7 @@ void Test_Charge_SM_Shutdown(void);
 TEST_GROUP(Charge_Test);
 
 TEST_SETUP(Charge_Test) {
-	printf("\rCharge_Test Setup...");
+	printf("\r(Charge_Test)Setup");
 	state.charger_status = &_charger_status;
 	state.pack_config = &config;
   	
@@ -58,27 +58,26 @@ TEST_SETUP(Charge_Test) {
 
 	Charge_Init(&state);
 	Charge_Config(&config);
-	printf("Done\r\n");
+	printf("...");
 }
 
 TEST_TEAR_DOWN(Charge_Test) {
-	printf("Charge_Test Teardown...");
+	printf("...");
 	input.mode_request = BMS_SSM_MODE_STANDBY;
 	input.balance_mV = 0;
 	input.contactors_closed = false;
 
 	Charge_Step(&input, &state, &output);
-	printf("Done\r\n");
+	printf("Teardown\r\n");
 }
 
 TEST(Charge_Test, charge_off) {
-	printf("Charge_Test off...");
+	printf("off");
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
-	printf("Done\r\n");
 }
 
 TEST(Charge_Test, initialize) {
-	printf("Charge_Test init...");
+	printf("init");
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 
 	input.mode_request = BMS_SSM_MODE_CHARGE;
@@ -91,11 +90,10 @@ TEST(Charge_Test, initialize) {
 	Charge_Step(&input, &state, &output);
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 	TEST_ASSERT_FALSE(output.close_contactors);
-	printf("Done\r\n");
 }
 
 TEST(Charge_Test, to_cc) {
-	printf("Charge_Test to_cc...");
+	printf("to_cc");
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 
 	input.mode_request = BMS_SSM_MODE_CHARGE;
@@ -113,11 +111,10 @@ TEST(Charge_Test, to_cc) {
 	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
 
 	Test_Charge_SM_Shutdown();
-	printf("Done\r\n");
 }
 
 TEST(Charge_Test, to_cc_with_balance) {
-	printf("Charge_Test to_cc...");
+	printf("to_cc_w_bal");
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 
 	input.mode_request = BMS_SSM_MODE_CHARGE;
@@ -137,7 +134,6 @@ TEST(Charge_Test, to_cc_with_balance) {
 	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
 
 	Test_Charge_SM_Shutdown();
-	printf("Done\r\n");
 }
 
 

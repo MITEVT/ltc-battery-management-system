@@ -15,6 +15,7 @@ typedef struct {
 	uint32_t bal_off_thresh_mV;
 	uint8_t pack_cells_p;
 	uint32_t cv_min_current_mA;
+	uint32_t cv_min_current_ms;
 	uint32_t cc_cell_voltage_mV;
 } PACK_CONFIG_T;
 
@@ -22,7 +23,7 @@ typedef struct BMS_PACK_STATUS {
 	uint32_t *cell_voltage_mV; // array size = #modules * cells/module
 	uint32_t pack_cell_max_mV;
 	uint32_t pack_cell_min_mV;
-	uint32_t pack_current_mV;
+	uint32_t pack_current_mA;
 	uint32_t pack_voltage_mV;
 	uint32_t precharge_voltage;
 	bool error;

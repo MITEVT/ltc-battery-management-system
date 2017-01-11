@@ -64,7 +64,7 @@ typedef enum ro_loc_label{
     ROL_pack_cell_min_mV,
     ROL_pack_current_mA,
     ROL_pack_voltage_mV,
-    ROL_precharge_voltag,
+    ROL_precharge_voltage,
     ROL_LENGTH
 } ro_loc_lable_t;
 
@@ -114,16 +114,13 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
                             {0,0}//"precharge_voltage"
 };
 
-
-typedef void (* const EXECUTE_HANDLER)(const char * const *);
-
-
-
 static void get(const char * const *);
 static void set(const char * const *);
 static void help(const char * const *);
 static void config(const char * const *);
 static void bal(const char * const *);
+typedef void (* const EXECUTE_HANDLER)(const char * const *);
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
 typedef struct console_t
 {

@@ -2,6 +2,7 @@
 #include "charge.h"
 #include "discharge.h"
 #include "error.h"
+#include "config.h"
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
@@ -93,6 +94,23 @@ bool Is_State_Done(BMS_STATE_T *state) {
             return true;
     }
 }
+
+void Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    // Close contactors
+    // Charger off request
+    // Turn off all balance requests
+    // Cancel any other hardware requests
+    // Make sure error code is valid (and not "no error")
+    output->close_contactors = false;
+    output->charge_req->charger_on = false;
+    uint8_t i = 0;
+    for(i = 0; i < MAX_NUM_MODULES*MAX_CELLS_PER_MODULE; i++) {
+        output->balance_req[i] = false;
+    }
+    output->read_eeprom_packconfig = false;
+    output->check_packconfig_with_ltc = false;
+}
+
 
 void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // OUTLINE:

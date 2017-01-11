@@ -100,6 +100,7 @@ static const char * const BMS_DISCHARGE_MODE_NAMES[] = {
 
 typedef enum BMS_ERROR {
     BMS_BLEW_UP_ERROR,
+    BMS_LTC_THERMAL_ERROR,
     BMS_NO_ERROR
 } BMS_ERROR_T;
 
@@ -123,6 +124,7 @@ typedef struct BMS_INPUT {
 	bool contactors_closed;
     uint32_t msTicks;
 	BMS_PACK_STATUS_T *pack_status;
+    bool ltc_thermal_shutdown;
 
     // for bms initialization
     bool eeprom_packconfig_read_done;

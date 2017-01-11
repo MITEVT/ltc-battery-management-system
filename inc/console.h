@@ -9,24 +9,7 @@
 
 
 // microrl object
-static microrl_t rl;
 
-typedef void (* const EXECUTE_HANDLER)(const char * const *);
-
-
-
-static void get(const char * const *);
-static void set(const char * const *);
-static void help(const char * const *);
-static void config(const char * const *);
-static void bal(const char * const *);
-
-typedef struct console_t
-{
-	BMS_INPUT_T 	* bms_input;
-	BMS_STATE_T 	* bms_state;
-	BMS_OUTPUT_T 	* bms_output;
-} console_t;
 
 typedef enum command_label{
     C_GET,
@@ -132,8 +115,31 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
 };
 
 
+typedef void (* const EXECUTE_HANDLER)(const char * const *);
 
 
 
-void console_init(void);
-void executerl(uint32_t argc, const char * const * argv);                    
+static void get(const char * const *);
+static void set(const char * const *);
+static void help(const char * const *);
+static void config(const char * const *);
+static void bal(const char * const *);
+
+typedef struct console_t
+{
+    BMS_INPUT_T     * bms_input;
+    BMS_STATE_T     * bms_state;
+    BMS_OUTPUT_T    * bms_output;
+} console_t;
+
+static microrl_t rl;
+static console_t console;
+
+void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output);
+void executerl(uint32_t argc, const char * const * argv);  
+
+
+
+
+
+

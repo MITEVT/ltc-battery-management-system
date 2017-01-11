@@ -20,7 +20,11 @@ void get(const char * const * argv) {
             break; 
         }
     }
-    if (!foundloc) {
+
+    if (foundloc) {
+
+    }
+    else {
         //loop over r/o entries
         ro_loc_lable_t roloc;
         for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
@@ -29,14 +33,20 @@ void get(const char * const * argv) {
                 break; 
             }
         }
+        if (foundloc) {
+            if (roloc == ROL_state) {
+                Board_Println(BMS_SSM_MODE_NAMES[console.bms_state->curr_mode]);
+                Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
+                Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
+                Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
+            }
+        }
+        else{
+            Board_Println("invalid location");
+        }
     }
-    if (foundloc)
-    {
-        /* code */
-    }
-    else{
-        Board_Println("invalid location");
-    }
+    
+
 }
 void set(const char * const * argv) {
     rw_loc_lable_t rwloc;
@@ -102,6 +112,12 @@ void bal(const char * const * argv) {
     Board_Println("bal");
     // [TODO]
 }                       
+
+void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output){
+    console.bms_input = bms_input;
+    console.bms_state = bms_state;
+    console.bms_output = bms_output;
+}
 
 void executerl(uint32_t argc, const char * const * argv){
     uint32_t command_i = 0;

@@ -107,6 +107,12 @@ void Init_BMS_Structs(void) {
 
     bms_state.charger_status = &charger_status;
     pack_status.cell_voltage_mV = cell_voltages;
+    pack_status.pack_cell_max_mV = 0;
+    pack_status.pack_cell_min_mV = 0;
+    pack_status.pack_current_mA = 0;
+    pack_status.pack_voltage_mV = 0;
+    pack_status.precharge_voltage = 0;
+    pack_status.error = 0;;
     pack_config.num_cells_in_modules = num_cells_in_modules;
     bms_state.pack_config = &pack_config;
 
@@ -141,7 +147,7 @@ int main(void) {
     Init_Core();
     Init_GPIO();
     Init_EEPROM();
-    // Init_BMS_Structs();
+    Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
 
     uint32_t last_count = msTicks;
@@ -149,6 +155,7 @@ int main(void) {
     }
 
     Board_Println("I'm Up");
+    
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);

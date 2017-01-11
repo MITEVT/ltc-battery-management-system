@@ -7,7 +7,6 @@
 
 
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
 
 void get(const char * const * argv) {
@@ -34,11 +33,39 @@ void get(const char * const * argv) {
             }
         }
         if (foundloc) {
-            if (roloc == ROL_state) {
-                Board_Println(BMS_SSM_MODE_NAMES[console.bms_state->curr_mode]);
-                Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
-                Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
-                Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
+            char tempstr[20];
+            switch (roloc) {
+                case ROL_state:
+                    Board_Println(BMS_SSM_MODE_NAMES[console.bms_state->curr_mode]);
+                    Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
+                    Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
+                    Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
+                    break;
+                case ROL_cell_voltage_mV:
+                    Board_Println("Unimplimented!");
+                    break;
+                case ROL_pack_cell_max_mV:
+                    utoa(console.bms_input->pack_status->pack_cell_max_mV, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_pack_cell_min_mV:
+                    utoa(console.bms_input->pack_status->pack_cell_min_mV, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_pack_current_mA:
+                    utoa(console.bms_input->pack_status->pack_current_mA, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_pack_voltage_mV:
+                    utoa(console.bms_input->pack_status->pack_voltage_mV, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_precharge_voltage:
+                    utoa(console.bms_input->pack_status->precharge_voltage, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_LENGTH:
+                    break;
             }
         }
         else{

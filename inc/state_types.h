@@ -14,6 +14,8 @@ typedef struct {
 	uint32_t bal_on_thresh_mV;
 	uint32_t bal_off_thresh_mV;
 	uint8_t pack_cells_p;
+	uint32_t cv_min_current_mA;
+	uint32_t cc_cell_voltage_mV;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {

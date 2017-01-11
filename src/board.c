@@ -80,7 +80,7 @@ uint32_t Board_Write(uint8_t *str, uint32_t count) {
 	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, count);
 }
 
-uint32_t Board_Read(uint8_t *str, uint32_t arr_size) {
+uint32_t Board_Read_line(uint8_t *str, uint32_t arr_size) {
 	// Board_Println("doing a read");
 	uint8_t charBuffer;
 	uint8_t count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, &charBuffer, 1);
@@ -105,6 +105,12 @@ uint32_t Board_Read(uint8_t *str, uint32_t arr_size) {
 		return bufcount;
 	}
 	return 0;
+}
+
+
+uint8_t Board_Read(char * charBuffer, uint32_t length) {
+	char count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, charBuffer, length);
+	return count;
 }
 
 

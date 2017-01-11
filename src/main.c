@@ -209,7 +209,7 @@ int main(void) {
 	while(1) {
         // Process_Keyboard_Debug(&bms_input, &bms_state, &bms_output);
 
-        // Process_Keyboard(); do this if you want to add the command line
+        Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);

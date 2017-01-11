@@ -8,25 +8,32 @@ static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2);
 static bool Is_State_Done(BMS_STATE_T *state);
 static void Initialize_BMS_State(BMS_STATE_T *state);
 
-void Process_Cmds(BMS_INPUT_T *input, BMS_STATE_T *state) {
-    // Process the config commands from terminal
-}
-
 static void Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
     // Load pack configuration from EEPROM
 }
 
 static void Initialize_BMS_State(BMS_STATE_T *state) {
+    state->curr_mode = BMS_SSM_MODE_INIT;
+    state->init_state = BMS_INIT_RUNNING;
+    state->charge_state = BMS_CHARGE_OFF;
+    state->discharge_state = BMS_DISCHARGE_OFF;
+    state->error_desc = BMS_NO_ERROR;
 }
 
 void SSM_Init(BMS_STATE_T *state) {
     // Initialize BMS state variables
-    Load_EEPROM_PackConfig(state->pack_config);
     Initialize_BMS_State(state);
 }
 
 static void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-    // initialize some gud shit while in running in the init SM
+    switch(state->init_state) {
+        case BMS_INIT_RUNNING:
+            Load_EEPROM_PackConfig(state->pack_config);
+            // CheckLTCConfig(state->pack_config);
+            break;
+        case BMS_INIT_DONE:
+            break;
+    }
 }
 
 static bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
@@ -51,9 +58,9 @@ static bool Is_State_Done(BMS_STATE_T *state) {
         case BMS_SSM_MODE_CHARGE:
             return state->charge_state == BMS_CHARGE_DONE;
         case BMS_SSM_MODE_DISCHARGE:
-            return state->discharge_state == BMS_DISCHARGE_MODE_DONE;
+            return state->discharge_state == BMS_DISCHARGE_DONE;
         case BMS_SSM_MODE_INIT:
-            return state->init_state == BMS_INIT_MODE_DONE;
+            return state->init_state == BMS_INIT_DONE;
         case BMS_SSM_MODE_ERROR:
             return false;
         default:
@@ -78,7 +85,6 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 
     switch(state->curr_mode) {
         case BMS_SSM_MODE_STANDBY:
-            Process_Cmds(input, state);
             break;
         case BMS_SSM_MODE_INIT:
             Init_Step(input, state, output);

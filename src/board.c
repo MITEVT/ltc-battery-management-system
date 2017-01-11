@@ -89,7 +89,7 @@ uint32_t Board_Read(uint8_t *str, uint32_t arr_size) {
 	}
 	uint8_t newlineFlag = 0;
 	while (count == 1) {
-		Board_Println("more!");
+		// Board_Println("more!");
 		if (charBuffer == '\n' || charBuffer == '\r') {
 			// Board_Println("newline");
 

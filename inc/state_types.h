@@ -69,7 +69,6 @@ typedef enum BMS_ERROR {
 
 typedef struct BMS_STATE {
     BMS_CHARGER_STATUS_T *charger_status;
-    BMS_PACK_STATUS_T *pack_status;
     PACK_CONFIG_T *pack_config;
 	BMS_SSM_MODE_T curr_mode;
 
@@ -86,7 +85,7 @@ typedef struct BMS_INPUT {
 	BMS_SSM_MODE_T mode_request;
 	uint32_t balance_mV;
 	bool contactors_closed;
-
+	BMS_PACK_STATUS_T *pack_status;
 } BMS_INPUT_T;
 
 /*

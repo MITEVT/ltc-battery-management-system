@@ -3,16 +3,12 @@
 
 const uint32_t OscRateIn = 0;
 
-#define UART_BUFFER_SIZE 42
+#define UART_BUFFER_SIZE 100
 static RINGBUFF_T uart_rx_ring;
 static volatile uint8_t _uart_rx_ring[UART_BUFFER_SIZE];
 static RINGBUFF_T uart_tx_ring;
 static volatile uint8_t _uart_tx_ring[UART_BUFFER_SIZE];
 
-
-#define LOCAL_BUFFER_SIZE 42
-static RINGBUFF_T local_rx_buffer_ring;
-static volatile uint8_t _local_rx_buffer_ring[LOCAL_BUFFER_SIZE];
 
 // ------------------------------------------------
 // Private Functions
@@ -80,37 +76,19 @@ uint32_t Board_Write(uint8_t *str, uint32_t count) {
 	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, count);
 }
 
-uint32_t Board_Read_line(uint8_t *str, uint32_t arr_size) {
-	// Board_Println("doing a read");
-	uint8_t charBuffer;
-	uint8_t count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, &charBuffer, 1);
-	if (count == 1) {
-		// Board_Println("found 1!");
-	}
-	uint8_t newlineFlag = 0;
-	while (count == 1) {
-		// Board_Println("more!");
-		if (charBuffer == '\n' || charBuffer == '\r') {
-			// Board_Println("newline");
-
-			newlineFlag = 1;
-			break;
-		}
-		RingBuffer_Insert(&local_rx_buffer_ring, &charBuffer);
-		count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, &charBuffer, 1); 
-	}
-	if (newlineFlag) {
-		uint32_t bufcount = RingBuffer_PopMult(&local_rx_buffer_ring, str, arr_size-1); // pop all elements
-		str[bufcount] = '\0';
-		return bufcount;
-	}
-	return 0;
-}
-
-
 uint8_t Board_Read(char * charBuffer, uint32_t length) {
 	char count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, charBuffer, length);
 	return count;
+}
+
+// USE THESE SPARINGLY. ONLY WHEN A PRINT WOULD RESULT IN A BUFFER OVERFLOW
+uint32_t Board_Print_BLOCKING(uint8_t *str) {
+	return Chip_UART_SendBlocking(LPC_USART, str, strlen(str));
+}
+
+uint32_t Board_Println_BLOCKING(uint8_t *str) {
+	uint32_t count = Board_Print_BLOCKING(str);
+	return count + Board_Print_BLOCKING("\r\n");
 }
 
 
@@ -121,10 +99,6 @@ void Board_UART_Init(uint32_t baudRateHz) {
 	RingBuffer_Flush(&uart_rx_ring);
 	RingBuffer_Init(&uart_tx_ring, _uart_tx_ring, sizeof(uint8_t), UART_BUFFER_SIZE);
 	RingBuffer_Flush(&uart_tx_ring);
-
-	RingBuffer_Init(&local_rx_buffer_ring, _local_rx_buffer_ring, sizeof(uint8_t), LOCAL_BUFFER_SIZE);
-	RingBuffer_Flush(&local_rx_buffer_ring);
-
 
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */

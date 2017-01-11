@@ -41,10 +41,8 @@ typedef enum BMS_SSM_MODE {
 } BMS_SSM_MODE_T;
 
 typedef enum {
-	BMS_INIT_MODE_OFF,
-	BMS_INIT_MODE_INIT,
-	BMS_INIT_MODE_RUN,
-	BMS_INIT_MODE_DONE
+	BMS_INIT_RUNNING,
+	BMS_INIT_DONE
 } BMS_INIT_MODE_T;
 
 typedef enum {
@@ -57,14 +55,15 @@ typedef enum {
 } BMS_CHARGE_MODE_T;
 
 typedef enum {
-	BMS_DISCHARGE_MODE_OFF,
-	BMS_DISCHARGE_MODE_INIT,
-	BMS_DISCHARGE_MODE_RUN,
-	BMS_DISCHARGE_MODE_DONE
+	BMS_DISCHARGE_OFF,
+	BMS_DISCHARGE_INIT,
+	BMS_DISCHARGE_RUN,
+	BMS_DISCHARGE_DONE
 } BMS_DISCHARGE_MODE_T;
 
 typedef enum BMS_ERROR {
-    BMS_BLEW_UP_ERROR
+    BMS_BLEW_UP_ERROR,
+    BMS_NO_ERROR
 } BMS_ERROR_T;
 
 typedef struct BMS_STATE {
@@ -76,8 +75,7 @@ typedef struct BMS_STATE {
 	BMS_INIT_MODE_T init_state;
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;
-
-	BMS_ERROR_T error;
+	BMS_ERROR_T error_desc;
 } BMS_STATE_T;
 
 typedef struct BMS_INPUT {

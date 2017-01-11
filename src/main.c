@@ -19,20 +19,20 @@ volatile uint32_t msTicks;
 
 static char str[100];
 
-static uint8_t Rx_Buf[SPI_BUFFER_SIZE];
+static uint8_t UART_Rx_Buf[UART_BUFFER_SIZE];
+
+static uint8_t SPI_Rx_Buf[SPI_BUFFER_SIZE];
 static uint8_t eeprom_data[MAX_DATA_LEN];
 static uint8_t eeprom_address[ADDR_LEN];
 
-static void PrintRxBuffer(void);
-static void ZeroRxBuf(void);
+static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size);
+static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size);
 
 // memory allocation for BMS_OUTPUT_T
 static BMS_ERROR_T bms_errors[MAX_NUM_MODULES];
 static bool balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static BMS_CHARGE_REQ_T charge_req;
 static BMS_OUTPUT_T bms_output;
-
-
 
 // memory allocation for BMS_INPUT_T
 static BMS_INPUT_T bms_input;
@@ -53,12 +53,12 @@ void SysTick_Handler(void) {
  *          HELPERS
  ****************************/
 
-static void PrintRxBuffer(void) {
+static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size) {
     Chip_UART_SendBlocking(LPC_USART, "0x", 2);
     uint8_t i;
-    for(i = 0; i < SPI_BUFFER_SIZE; i++) {
-        itoa(Rx_Buf[i], str, 16);
-        if(Rx_Buf[i] < 16) {
+    for(i = 0; i < size; i++) {
+        itoa(rx_buf[i], str, 16);
+        if(rx_buf[i] < 16) {
             Chip_UART_SendBlocking(LPC_USART, "0", 1);
         }
         Chip_UART_SendBlocking(LPC_USART, str, 2);
@@ -66,10 +66,10 @@ static void PrintRxBuffer(void) {
     Chip_UART_SendBlocking(LPC_USART, "\n", 1);
 }
 
-static void ZeroRxBuf(void) {
+static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size) {
 	uint8_t i;
-	for (i = 0; i < SPI_BUFFER_SIZE; i++) {
-		Rx_Buf[i] = 0;
+	for (i = 0; i < size; i++) {
+		rx_buf[i] = 0;
 	}
 }
 
@@ -94,7 +94,7 @@ static void Init_GPIO(void) {
 
 void Init_EEPROM(void) {
     LC1024_Init(600000, 0, 7);
-    ZeroRxBuf();
+    ZeroRxBuf(SPI_Rx_Buf, SPI_BUFFER_SIZE);
     LC1024_WriteEnable();
 }
 
@@ -121,7 +121,45 @@ void Process_Output(BMS_OUTPUT_T* bms_output) {
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
 }
 
-void Process_Keyboard_Debug(void) {
+static char* Convert_Mode_Str(BMS_SSM_MODE_T mode) {
+    static char *ret_str;
+    switch(mode) {
+        case(BMS_SSM_MODE_INIT):
+            ret_str = "Init Mode!";
+            break;
+        case(BMS_SSM_MODE_STANDBY):
+            ret_str = "Standby Mode!";
+            break;
+        case(BMS_SSM_MODE_CHARGE):
+            ret_str = "Charge Mode!";
+            break;
+        case(BMS_SSM_MODE_BALANCE):
+            ret_str = "Balance Mode!";
+            break;
+        case(BMS_SSM_MODE_DISCHARGE):
+            ret_str = "Discharge Mode!";
+            break;
+        case(BMS_SSM_MODE_ERROR):
+            ret_str = "Error Mode!";
+            break;
+    }
+    return ret_str;
+}
+
+void Process_Keyboard_Debug(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    uint8_t count;
+    if ((count = Chip_UART_Read(LPC_USART, UART_Rx_Buf, UART_BUFFER_SIZE)) != 0) {
+        switch (UART_Rx_Buf[0]) {
+            case 's': 
+                DEBUG_Println("Test");
+                DEBUG_Println(Convert_Mode_Str(state->curr_mode));
+                break;
+            default:
+                DEBUG_Println(UART_Rx_Buf[0]);
+                DEBUG_Println("Command Unknown");
+        }
+    }
+    // Board_Println();
     // Process keyboard strokes and output corresponding debug messages
 }
 
@@ -138,7 +176,7 @@ int main(void) {
     uint32_t last_count = msTicks;
 
 	while(1) {
-        Process_Keyboard_Debug();
+        // Process_Keyboard_Debug(&bms_input, &bms_state, &bms_output);
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_output);
@@ -146,7 +184,7 @@ int main(void) {
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Chip_GPIO_SetPinState(LPC_GPIO, LED1, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED1));
+            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));
         }
 	}
 

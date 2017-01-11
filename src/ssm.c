@@ -3,6 +3,7 @@
 #include "discharge.h"
 #include "error.h"
 #include "config.h"
+#include "bms_utils.h"
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
@@ -17,6 +18,9 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 
     input->ltc_packconfig_check_done = false;
     input->eeprom_packconfig_read_done = false;
+
+    input->eeprom_read_error = false;
+    input->ltc_error = LTC_NO_ERROR;
 }
 
 void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
@@ -96,19 +100,27 @@ bool Is_State_Done(BMS_STATE_T *state) {
 }
 
 void Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-    // Close contactors
-    // Charger off request
-    // Turn off all balance requests
-    // Cancel any other hardware requests
-    // Make sure error code is valid (and not "no error")
     output->close_contactors = false;
     output->charge_req->charger_on = false;
-    uint8_t i = 0;
-    for(i = 0; i < MAX_NUM_MODULES*MAX_CELLS_PER_MODULE; i++) {
-        output->balance_req[i] = false;
-    }
+	memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
     output->read_eeprom_packconfig = false;
     output->check_packconfig_with_ltc = false;
+}
+
+void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    // checks if there is a reported error
+    //    communicating with the eeprom or ltc
+    if(state->curr_mode == BMS_SSM_MODE_ERROR) return;
+    if(input->eeprom_read_error) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = BMS_EEPROM_ERROR;
+        return;
+    }
+    if(input->ltc_error != LTC_NO_ERROR) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = BMS_LTC_ERROR;
+        return;
+    }
 }
 
 
@@ -119,6 +131,7 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //     if in standby:
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
+    Check_Error(input, state, output);
     
     if((Is_Valid_Jump(state->curr_mode, input->mode_request)
             && Is_State_Done(state))

@@ -29,18 +29,17 @@ static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size);
 static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size);
 
 // memory allocation for BMS_OUTPUT_T
-static BMS_ERROR_T bms_errors[MAX_NUM_MODULES];
 static bool balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static BMS_CHARGE_REQ_T charge_req;
 static BMS_OUTPUT_T bms_output;
 
 // memory allocation for BMS_INPUT_T
+static BMS_PACK_STATUS_T pack_status;
 static BMS_INPUT_T bms_input;
 
 // memory allocation for BMS_STATE_T
 static BMS_CHARGER_STATUS_T charger_status;
 static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
-static BMS_PACK_STATUS_T pack_status;
 static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
@@ -101,13 +100,13 @@ void Init_EEPROM(void) {
 void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
     bms_output.balance_req = balance_reqs;
-    bms_output.error = bms_errors;
 
     bms_state.charger_status = &charger_status;
     pack_status.cell_voltage_mV = cell_voltages;
-    bms_state.pack_status = &pack_status;
     pack_config.num_cells_in_modules = num_cells_in_modules;
     bms_state.pack_config = &pack_config;
+
+    bms_input.pack_status = &pack_status;
 }
 
 void Process_Input(BMS_INPUT_T* bms_input) {

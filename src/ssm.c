@@ -11,7 +11,6 @@ static bool Is_State_Done(BMS_STATE_T *state);
 void SSM_Init(BMS_STATE_T *state) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
-    state->init_state = BMS_INIT_RUNNING;
     state->charge_state = BMS_CHARGE_OFF;
     state->discharge_state = BMS_DISCHARGE_OFF;
     state->error_code = BMS_NO_ERROR;
@@ -55,8 +54,6 @@ static bool Is_State_Done(BMS_STATE_T *state) {
             return state->charge_state == BMS_CHARGE_DONE;
         case BMS_SSM_MODE_DISCHARGE:
             return state->discharge_state == BMS_DISCHARGE_DONE;
-        case BMS_SSM_MODE_INIT:
-            return state->init_state == BMS_INIT_DONE;
         case BMS_SSM_MODE_ERROR:
             return false;
         default:

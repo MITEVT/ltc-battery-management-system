@@ -23,7 +23,7 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     input->ltc_error = LTC_NO_ERROR;
 }
 
-void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+uint8_t Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     switch(state->init_state) {
         case(BMS_INIT_OFF):
             output->read_eeprom_packconfig = true;
@@ -51,6 +51,7 @@ void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
             state->curr_mode = BMS_SSM_MODE_STANDBY;
             break;
     }
+    return 0;
 }
 
 bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
@@ -99,12 +100,13 @@ bool Is_State_Done(BMS_STATE_T *state) {
     }
 }
 
-void Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+uint8_t Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     output->close_contactors = false;
     output->charge_req->charger_on = false;
 	memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
     output->read_eeprom_packconfig = false;
     output->check_packconfig_with_ltc = false;
+    return 0;
 }
 
 void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
@@ -139,23 +141,29 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         state->curr_mode = input->mode_request;
     }
 
+    uint8_t err = 0;
     switch(state->curr_mode) {
         case BMS_SSM_MODE_STANDBY:
             break;
         case BMS_SSM_MODE_INIT:
-            Init_Step(input, state, output);
+            err = Init_Step(input, state, output);
             break;
         case BMS_SSM_MODE_CHARGE:
-            Charge_Step(input, state, output);
+            err = Charge_Step(input, state, output);
             break;
         case BMS_SSM_MODE_DISCHARGE:
-            Discharge_Step(input, state, output);
+            err = Discharge_Step(input, state, output);
             break;
         case BMS_SSM_MODE_ERROR:
-            Error_Step(input, state, output);
+            err = Error_Step(input, state, output);
             break;
         case BMS_SSM_MODE_BALANCE:
-            Charge_Step(input, state, output);
+            err = Charge_Step(input, state, output);
             break;
+    }
+
+    if(err) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = err;
     }
 }

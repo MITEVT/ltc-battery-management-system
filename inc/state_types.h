@@ -99,9 +99,9 @@ static const char * const BMS_DISCHARGE_MODE_NAMES[] = {
 };
 
 typedef enum BMS_ERROR {
+    BMS_NO_ERROR, // KEEP AT TOP SO NO_ERROR IS 0
     BMS_LTC_ERROR,
-    BMS_EEPROM_ERROR,
-    BMS_NO_ERROR
+    BMS_EEPROM_ERROR
 } BMS_ERROR_T;
 
 typedef struct BMS_STATE {

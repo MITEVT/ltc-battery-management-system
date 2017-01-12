@@ -168,9 +168,9 @@ TEST(SSM_Test, ssm_step_start) {
 
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
     bms_state.charge_state = BMS_CHARGE_OFF;
-    bms_input.mode_request = BMS_SSM_MODE_CHARGE;
+    bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
 	SSM_Step(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_CHARGE);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 
     bms_state.curr_mode = BMS_SSM_MODE_BALANCE;
     bms_state.charge_state = BMS_CHARGE_BAL;
@@ -188,7 +188,7 @@ TEST(SSM_Test, ssm_step_start) {
 TEST(SSM_Test, ssm_step) {
     printf("ssm_step");
 
-    bms_input.mode_request = BMS_SSM_MODE_CHARGE;
+    bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
     SSM_Step(&bms_input, &bms_state, &bms_output); 
 	TEST_ASSERT(bms_output.read_eeprom_packconfig);
 	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
@@ -208,7 +208,7 @@ TEST(SSM_Test, ssm_step) {
 
     SSM_Step(&bms_input, &bms_state, &bms_output); 
 	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_CHARGE);
+	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 }
 
 TEST(SSM_Test, error_step) {

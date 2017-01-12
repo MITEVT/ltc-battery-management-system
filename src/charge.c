@@ -23,7 +23,7 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 	last_time_above_cv_min_curr = 0;
 }
 
-void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+uint8_t Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 
 		case BMS_SSM_MODE_INIT:
@@ -145,6 +145,7 @@ handler:
 			break;
 
 	}
+    return 0;
 }
 
 void Charge_Reset(BMS_STATE_T *state){

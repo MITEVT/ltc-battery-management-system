@@ -8,15 +8,15 @@ typedef struct {
 	uint32_t cell_min_mV;
 	uint32_t cell_max_mV;
 	uint32_t cell_capacity_cAh;
-	uint8_t num_modules;
-	uint8_t *num_cells_in_modules; // [TODO] refactor to module_cell_count
+	uint32_t num_modules;
 	uint16_t cell_charge_c_rating_cC;
 	uint32_t bal_on_thresh_mV;
 	uint32_t bal_off_thresh_mV;
-	uint8_t pack_cells_p;
+	uint32_t pack_cells_p;
 	uint32_t cv_min_current_mA;
 	uint32_t cv_min_current_ms;
 	uint32_t cc_cell_voltage_mV;
+	uint8_t *num_cells_in_modules; // [TODO] refactor to module_cell_count
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {

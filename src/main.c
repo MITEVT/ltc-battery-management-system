@@ -6,6 +6,7 @@
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
+#include "eeprom_config.h"
 #include "config.h"
 
 #define ADDR_LEN 3

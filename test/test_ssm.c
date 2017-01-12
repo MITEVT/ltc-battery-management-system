@@ -213,12 +213,34 @@ TEST(SSM_Test, ssm_step) {
 
 TEST(SSM_Test, error_step) {
     printf("error_step");
-    // Error_Step(&bms_input, &bms_state, &bms_output);
+    
+    bms_state.curr_mode = BMS_SSM_MODE_ERROR;
+    bms_input.mode_request = BMS_SSM_MODE_BALANCE;
+    bms_output.close_contactors = true;
+    Error_Step(&bms_input, &bms_state, &bms_output);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_ERROR);
+    TEST_ASSERT_FALSE(bms_output.close_contactors);
+    TEST_ASSERT_FALSE(bms_output.read_eeprom_packconfig);
+    TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
+    TEST_ASSERT_FALSE(bms_output.charge_req->charger_on);
 }
 
 TEST(SSM_Test, jumping_to_error) {
     printf("jumping_to_error");
-    // Error_Step(&bms_input, &bms_state, &bms_output);
+
+    // same as above
+    bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
+    SSM_Step(&bms_input, &bms_state, &bms_output); 
+	TEST_ASSERT(bms_output.read_eeprom_packconfig);
+	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
+
+    // now make eeprom error out
+    bms_input.eeprom_packconfig_read_done = false;
+    bms_input.eeprom_read_error = true;
+    
+    SSM_Step(&bms_input, &bms_state, &bms_output); 
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_ERROR);
+    TEST_ASSERT_EQUAL(bms_state.error_code, BMS_EEPROM_ERROR);
 }
 
 TEST_GROUP_RUNNER(SSM_Test) {

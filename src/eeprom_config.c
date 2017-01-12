@@ -1,4 +1,6 @@
  #include "state_types.h"
+#include "lc1024.h"
+
 
 
 bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {

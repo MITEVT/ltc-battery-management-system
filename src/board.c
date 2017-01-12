@@ -76,8 +76,8 @@ uint32_t Board_Write(uint8_t *str, uint32_t count) {
 	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, count);
 }
 
-uint8_t Board_Read(char * charBuffer, uint32_t length) {
-	char count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, charBuffer, length);
+uint32_t Board_Read(char * charBuffer, uint32_t length) {
+	uint32_t count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, charBuffer, length);
 	return count;
 }
 

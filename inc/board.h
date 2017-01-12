@@ -74,6 +74,8 @@ uint32_t Board_Println(uint8_t *str);
  */
 uint32_t Board_Write(uint8_t *str, uint32_t count);
 
+uint32_t Board_Read(char * charBuffer, uint32_t length);
+
 
 /**
  * @details Initialize the UART used for debugging

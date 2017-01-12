@@ -89,6 +89,11 @@ static void Init_GPIO(void) {
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+    
+    //SSP for EEPROM
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MOSI1 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK1 */
 }
 
 void Init_EEPROM(void) {

@@ -4,11 +4,6 @@
 #include "board.h"
 #include "microrl.h"
 
-
-
-
-
-
 void get(const char * const * argv) {
     rw_loc_lable_t rwloc;
     //loop over r/w entries
@@ -21,6 +16,56 @@ void get(const char * const * argv) {
     }
 
     if (foundloc) {
+        char tempstr[20];
+        switch (rwloc) {
+            case RWL_cell_min_mV:
+                utoa(console.bms_state->pack_config->cell_min_mV, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_cell_max_mV:
+                utoa(console.bms_state->pack_config->cell_max_mV, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_cell_capacity_cAh:
+                utoa(console.bms_state->pack_config->cell_capacity_cAh, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_num_modules:
+                utoa(console.bms_state->pack_config->num_modules, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_num_cells_in_modules:
+                Board_Println("Unimplimented!");
+                break;
+            case RWL_cell_charge_c_rating_cC:
+                utoa(console.bms_state->pack_config->cell_charge_c_rating_cC, tempstr,10);
+                Board_Println(tempstr);
+                break;  
+            case RWL_bal_on_thresh_mV:
+                utoa(console.bms_state->pack_config->bal_on_thresh_mV, tempstr,10);
+                Board_Println(tempstr);
+                break;  
+            case RWL_bal_off_thresh_mV:
+                utoa(console.bms_state->pack_config->bal_off_thresh_mV, tempstr,10);
+                Board_Println(tempstr);
+                break; 
+            case RWL_pack_cells_p:
+                utoa(console.bms_state->pack_config->pack_cells_p, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_cv_min_current_mA:
+                utoa(console.bms_state->pack_config->cv_min_current_mA, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_cv_min_current_ms:
+                utoa(console.bms_state->pack_config->cv_min_current_ms, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_cc_cell_voltage_mV:
+                utoa(console.bms_state->pack_config->cc_cell_voltage_mV, tempstr,10);
+                Board_Println(tempstr);
+                break;
+        }
 
     }
     else {
@@ -136,8 +181,11 @@ void config(const char * const * argv) {
     // [TODO]
 }
 void bal(const char * const * argv) {
-    Board_Println("bal");
-    // [TODO]
+    if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY 
+        || console.bms_state->curr_mode != BMS_SSM_MODE_BALANCE) {
+        Board_Println("Must be in standy or balance");
+    }
+    
 }                       
 
 void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output){
@@ -151,7 +199,7 @@ void executerl(uint32_t argc, const char * const * argv){
     bool found_command = false;
     for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)
     {
-        if (memcmp(argv[0],commands[command_i],3) == 0){
+        if (strcmp(argv[0],commands[command_i]) == 0){
             found_command = true;  
             break;
         }

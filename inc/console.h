@@ -37,7 +37,7 @@ static const char nargs[NUMCOMMANDS] = {  1 ,
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
 							"Set a value. Possible options:", "This", 
 							"flash that sucker", 
-							"set ballence current"};
+							"set balance current"};
 
 typedef enum rw_loc_label{
     RWL_cell_min_mV,

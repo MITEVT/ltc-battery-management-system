@@ -6,6 +6,7 @@
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
+#include "eeprom_config.h"
 #include "config.h"
 
 #define ADDR_LEN 3
@@ -120,12 +121,19 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
 }
 
-void Process_Output(BMS_OUTPUT_T* bms_output) {
+void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
-    //
-    // Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
-    // Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
+    if (bms_output->read_eeprom_packconfig){
+        bms_input->eeprom_packconfig_read_done = 
+            Load_EEPROM_PackConfig(&pack_config);
+        
+    }
+    else if (bms_output->check_packconfig_with_ltc) {
+        bms_input->ltc_packconfig_check_done = 
+            Check_PackConfig_With_LTC(&pack_config);
+    }
+    
 }
 
 void Process_Keyboard(void) {
@@ -167,7 +175,7 @@ int main(void) {
         Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
-        Process_Output(&bms_output);
+        Process_Output(&bms_input, &bms_output);
         
         // LED Heartbeat
         if (msTicks - last_count > 1000) {

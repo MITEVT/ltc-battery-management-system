@@ -1,4 +1,5 @@
 #include "charge.h"
+#include "bms_utils.h"
 
 static uint16_t total_num_cells;
 static uint32_t cc_charge_voltage_mV;
@@ -12,11 +13,7 @@ void Charge_Init(BMS_STATE_T *state) {
 }
 
 void Charge_Config(PACK_CONFIG_T *pack_config) {
-	total_num_cells = 0;
-	int i;
-	for (i = 0; i < pack_config->num_modules; i++) {
-		total_num_cells += pack_config->num_cells_in_modules[i];
-	}
+	total_num_cells = Get_Total_Cell_Count(pack_config);
 
 	cc_charge_voltage_mV = pack_config->cell_max_mV * total_num_cells;
 	cc_charge_current_mA = pack_config->cell_capacity_cAh * pack_config->cell_charge_c_rating_cC * pack_config->pack_cells_p / 10;
@@ -30,7 +27,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 
 		case BMS_SSM_MODE_INIT:
-			break; // Invalid, Charge_Step shouldn't be called by SSM
+			break; // Invalid, Charge_Step shouldn't be called from Init
 		case BMS_SSM_MODE_STANDBY:
 			state->charge_state = (state->charge_state == BMS_CHARGE_OFF) ? BMS_CHARGE_OFF : BMS_CHARGE_DONE;
 			break;

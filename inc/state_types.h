@@ -99,7 +99,8 @@ static const char * const BMS_DISCHARGE_MODE_NAMES[] = {
 };
 
 typedef enum BMS_ERROR {
-    BMS_BLEW_UP_ERROR,
+    BMS_LTC_ERROR,
+    BMS_EEPROM_ERROR,
     BMS_NO_ERROR
 } BMS_ERROR_T;
 
@@ -116,6 +117,11 @@ typedef struct BMS_STATE {
 	BMS_ERROR_T error_code;
 } BMS_STATE_T;
 
+typedef enum LTC_ERROR {
+    LTC_THERMAL_ERROR,
+    LTC_NO_ERROR
+} LTC_ERROR_T;
+
 typedef struct BMS_INPUT {
     bool hard_reset_line; // example hw input
 	BMS_SSM_MODE_T mode_request;
@@ -127,6 +133,9 @@ typedef struct BMS_INPUT {
     // for bms initialization
     bool eeprom_packconfig_read_done;
     bool ltc_packconfig_check_done;
+
+    bool eeprom_read_error;
+    LTC_ERROR_T ltc_error;
 } BMS_INPUT_T;
 
 /*

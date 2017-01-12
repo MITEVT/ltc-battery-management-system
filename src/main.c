@@ -6,18 +6,13 @@
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
-
+#include "config.h"
 
 #define ADDR_LEN 3
 #define MAX_DATA_LEN 16
 
 #define LED0 2, 10
 #define LED1 2, 8
-
-#define MAX_NUM_MODULES 20
-#define MAX_CELLS_PER_MODULE 12
-#define NUMCOMMANDS  5
-
 
 volatile uint32_t msTicks;
 

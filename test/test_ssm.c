@@ -38,9 +38,8 @@ TEST_SETUP(SSM_Test) {
     bms_state.pack_config = &pack_config;
 
     bms_input.pack_status = &pack_status;
-    bms_output.read_eeprom_packconfig = false;
+
     SSM_Init(&bms_input, &bms_state, &bms_output);
-    
 }
 
 TEST_TEAR_DOWN(SSM_Test) {
@@ -212,6 +211,16 @@ TEST(SSM_Test, ssm_step) {
 	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_CHARGE);
 }
 
+TEST(SSM_Test, error_step) {
+    printf("error_step");
+    // Error_Step(&bms_input, &bms_state, &bms_output);
+}
+
+TEST(SSM_Test, jumping_to_error) {
+    printf("jumping_to_error");
+    // Error_Step(&bms_input, &bms_state, &bms_output);
+}
+
 TEST_GROUP_RUNNER(SSM_Test) {
 	RUN_TEST_CASE(SSM_Test, ssm_init);
 	RUN_TEST_CASE(SSM_Test, init_step_complete);
@@ -220,5 +229,7 @@ TEST_GROUP_RUNNER(SSM_Test) {
 	RUN_TEST_CASE(SSM_Test, is_state_done);
 	RUN_TEST_CASE(SSM_Test, ssm_step_start);
 	RUN_TEST_CASE(SSM_Test, ssm_step);
+	RUN_TEST_CASE(SSM_Test, error_step);
+	RUN_TEST_CASE(SSM_Test, jumping_to_error);
 }
 

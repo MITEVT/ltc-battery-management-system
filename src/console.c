@@ -3,6 +3,21 @@
 #include "console.h"
 #include "board.h"
 #include "microrl.h"
+#include "console_types.h"
+
+uint32_t myAtou(char *str)
+{
+    uint32_t res = 0; // Initialize result
+  
+    // Iterate through all characters of input string and
+    // update result
+    uint32_t i;
+    for ( i = 0; str[i] != '\0'; ++i)
+        res = res*10 + str[i] - '0';
+  
+    // return result.
+    return res;
+}
 
 void get(const char * const * argv) {
     rw_loc_lable_t rwloc;
@@ -121,6 +136,10 @@ void get(const char * const * argv) {
 
 }
 void set(const char * const * argv) {
+    if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
+    {
+        return;
+    }
     rw_loc_lable_t rwloc;
     //loop over r/w entries
     bool foundloc = false;
@@ -130,7 +149,10 @@ void set(const char * const * argv) {
             break; 
         }
     }
-    if (!foundloc) {
+    if(foundloc){
+        Change_Config(rwloc,myAtou(argv[2]));
+    }
+    else {
         //loop over r/o entries
         ro_loc_lable_t roloc;
         for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
@@ -177,7 +199,11 @@ void help(const char * const * argv) {
 
 }
 void config(const char * const * argv) {
-    Board_Println("config");
+    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
+    {
+        console.bms_state->curr_mode = BMS_SSM_MODE_INIT;
+        console.bms_state->init_state = BMS_INIT_OFF;
+    }
     // [TODO]
 }
 void bal(const char * const * argv) {

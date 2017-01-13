@@ -4,21 +4,17 @@
 #include "microrl.h"
 #include "state_types.h"
 #include "util.h"
+#include "console_types.h"
+#include "eeprom_config.h"
 
-
+#ifndef _CONSOLE_H
+#define _CONSOLE_H
 
 
 // microrl object
 
 
-typedef enum command_label{
-    C_GET,
-    C_SET,
-    C_HELP,
-    C_CONFIG,
-    C_BAL,
-    NUMCOMMANDS
-} command_label_t;
+
 
 static const char * const commands[NUMCOMMANDS] = { "get",
                             "set",
@@ -39,34 +35,8 @@ static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible opti
 							"flash that sucker", 
 							"set balance current"};
 
-typedef enum rw_loc_label{
-    RWL_cell_min_mV,
-    RWL_cell_max_mV,
-    RWL_cell_capacity_cAh,
-    RWL_num_modules,
-    RWL_num_cells_in_modules, //need to think through how this will work
-    RWL_cell_charge_c_rating_cC,
-    RWL_bal_on_thresh_mV,
-    RWL_bal_off_thresh_mV,
-    RWL_pack_cells_p,
-    RWL_cv_min_current_mA,
-    RWL_cv_min_current_ms,
-    RWL_cc_cell_voltage_mV,
-    RWL_LENGTH
-} rw_loc_lable_t;
 
-#define ROL_FIRST RWL_LENGTH
 
-typedef enum ro_loc_label{
-    ROL_state = ROL_FIRST,
-    ROL_cell_voltage_mV,
-    ROL_pack_cell_max_mV,
-    ROL_pack_cell_min_mV,
-    ROL_pack_current_mA,
-    ROL_pack_voltage_mV,
-    ROL_precharge_voltage,
-    ROL_LENGTH
-} ro_loc_lable_t;
 
 static const char * const locstring[] =  {
                             "cell_min_mV",
@@ -136,7 +106,7 @@ void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T
 void executerl(uint32_t argc, const char * const * argv);  
 
 
-
+#endif
 
 
 

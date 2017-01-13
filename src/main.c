@@ -6,7 +6,7 @@
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
-#include "eeprom_config.h"
+// #include "eeprom_config.h"
 #include "config.h"
 
 #define ADDR_LEN 3
@@ -17,7 +17,7 @@
 
 volatile uint32_t msTicks;
 
-static char str[50];
+static char str[10];
 
 static uint8_t UART_Rx_Buf[UART_BUFFER_SIZE];
 
@@ -132,6 +132,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     if (bms_output->read_eeprom_packconfig){
         bms_input->eeprom_packconfig_read_done = 
             Load_EEPROM_PackConfig(&pack_config);
+        // Board_Println("LOADED EEPROM");
         
     }
     else if (bms_output->check_packconfig_with_ltc) {
@@ -157,6 +158,7 @@ int main(void) {
     Init_EEPROM();
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
+    Default_Config();
 
     uint32_t last_count = msTicks;
     while (msTicks - last_count > 1000) {

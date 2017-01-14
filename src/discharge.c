@@ -100,6 +100,10 @@ handler:
                                     state->pack_config->cell_discharge_c_rating_cC,
                                     state->pack_config->pack_cells_p,
                                     input->pack_status->max_cell_temp_C);
+            if(input->pack_status->pack_current_mA > max_pack_current_mA) {
+                return BMS_OVER_CURRENT;
+            }
+
 			output->close_contactors = true;
 			break;
 

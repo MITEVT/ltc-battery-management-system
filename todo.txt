@@ -1,5 +1,6 @@
 grep "WUT"
 grep "TODO"
+SOC estimation
 - can messaging
 - ltc driver
 - eeprom driver (?)

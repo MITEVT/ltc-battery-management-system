@@ -25,27 +25,32 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 
 uint8_t Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
-
 		case BMS_SSM_MODE_INIT:
-			break; // Invalid, Charge_Step shouldn't be called from Init
-		case BMS_SSM_MODE_STANDBY:
-			state->charge_state = (state->charge_state == BMS_CHARGE_OFF) ? BMS_CHARGE_OFF : BMS_CHARGE_DONE;
-			break;
+            // Invalid, shouldn't be called from init
+			return BMS_INVALID_SSM_STATE_ERROR;
+            
 		case BMS_SSM_MODE_CHARGE:
-			if (state->charge_state == BMS_CHARGE_OFF || state->charge_state == BMS_CHARGE_BAL) {
+			if (state->charge_state == BMS_CHARGE_OFF 
+                    || state->charge_state == BMS_CHARGE_BAL) {
 				state->charge_state = BMS_CHARGE_INIT;
 			}
 			break;
+
 		case BMS_SSM_MODE_BALANCE:
-			if (state->charge_state == BMS_CHARGE_OFF || state->charge_state == BMS_CHARGE_CC || state->charge_state == BMS_CHARGE_CV) {
+			if (state->charge_state == BMS_CHARGE_OFF 
+                    || state->charge_state == BMS_CHARGE_CC 
+                    || state->charge_state == BMS_CHARGE_CV) {
 				state->charge_state = BMS_CHARGE_INIT;
 			}
 			break;
-		case BMS_SSM_MODE_DISCHARGE:
-			state->charge_state = (state->charge_state == BMS_CHARGE_OFF) ? BMS_CHARGE_OFF : BMS_CHARGE_DONE;
-			break; 
-		case BMS_SSM_MODE_ERROR:
-			state->charge_state = (state->charge_state == BMS_CHARGE_OFF) ? BMS_CHARGE_OFF : BMS_CHARGE_DONE;
+
+        // we want to switch states (either to STANDBY/DISCHARGE/ERROR)
+		default:
+            if(state->charge_state == BMS_CHARGE_OFF) {
+                state->charge_state = BMS_CHARGE_OFF;
+            } else {
+                state->charge_state = BMS_CHARGE_DONE;
+            }
 			break;
 	}
 
@@ -77,6 +82,8 @@ handler:
 			}
 			break;
 		case BMS_CHARGE_CC:
+            // WUT WHERE IS TEMPERATURE MONITORING
+            
 			if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
 				// Need to go to CV Mode
 				state->charge_state = BMS_CHARGE_CV;
@@ -89,6 +96,9 @@ handler:
 			}
 			
 			int i;
+            // checks that each cell is within some threshold of the minimum cell
+            //  voltage. uses two different thresholds based on whether 
+            //  we were just balancing or not (account for hysteresis)
 			for (i = 0; i < total_num_cells; i++) {
 				if (output->balance_req[i]) {
 					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
@@ -130,6 +140,7 @@ handler:
 
 			break;
 		case BMS_CHARGE_BAL:
+            // WUT WHAT DOES THIS DO (ANSWER: NOT FINISHED YET !!)
 			break;
 		case BMS_CHARGE_DONE:
 			output->close_contactors = false;
@@ -137,18 +148,22 @@ handler:
 			// output->charge_req->charge_current_mA = 0;
 			// output->charge_req->charge_voltage_mV = 0;
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
+
+            // WUT
+            //      this outer if-check is incorrect i believe (should be removed)
+            //      it's possible to get stuck in BMS_CHARGE_DONE if you are
+            //      requesting BMS mode charge, because the CHARGE_DONE doesn't 
+            //      get switched to init unless currently in BMS_CHARGE_OFF
+
+            // this is for looping in charge done when we have 
+            // finished charging to max battery capacity...
+            // but probably a little better
 			if (input->mode_request != BMS_SSM_MODE_CHARGE && input->mode_request != BMS_SSM_MODE_BALANCE) {
 				if (!input->contactors_closed) {
 					state->charge_state = BMS_CHARGE_OFF;
 				}
 			}
 			break;
-
 	}
     return 0;
 }
-
-void Charge_Reset(BMS_STATE_T *state){
-
-}
-

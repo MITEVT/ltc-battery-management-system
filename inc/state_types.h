@@ -17,6 +17,9 @@ typedef struct {
 	uint32_t cv_min_current_ms;
 	uint32_t cc_cell_voltage_mV;
 	uint8_t *num_cells_in_modules; // [TODO] refactor to module_cell_count
+
+	uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
+    uint32_t max_cell_temp_C;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {
@@ -26,6 +29,7 @@ typedef struct BMS_PACK_STATUS {
 	uint32_t pack_current_mA;
 	uint32_t pack_voltage_mV;
 	uint32_t precharge_voltage;
+	uint16_t max_cell_temp_C;
 	bool error;
 } BMS_PACK_STATUS_T;
 
@@ -101,7 +105,10 @@ static const char * const BMS_DISCHARGE_MODE_NAMES[] = {
 typedef enum BMS_ERROR {
     BMS_NO_ERROR, // KEEP AT TOP SO NO_ERROR IS 0
     BMS_LTC_ERROR,
-    BMS_EEPROM_ERROR
+    BMS_EEPROM_ERROR,
+    BMS_INVALID_SSM_STATE_ERROR,
+    BMS_CONTACTORS_ERRONEOUS_STATE,
+    BMS_CELL_UNDER_VOLTAGE,
 } BMS_ERROR_T;
 
 typedef struct BMS_STATE {
@@ -125,7 +132,7 @@ typedef enum LTC_ERROR {
 typedef struct BMS_INPUT {
     bool hard_reset_line; // example hw input
 	BMS_SSM_MODE_T mode_request;
-	uint32_t balance_mV;
+	uint32_t balance_mV; // console request balance to mV
 	bool contactors_closed;
     uint32_t msTicks;
 	BMS_PACK_STATUS_T *pack_status;

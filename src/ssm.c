@@ -8,9 +8,7 @@
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
-    state->charge_state = BMS_CHARGE_OFF;
     state->init_state = BMS_INIT_OFF;
-    state->discharge_state = BMS_DISCHARGE_OFF;
     state->error_code = BMS_NO_ERROR;
 
     output->read_eeprom_packconfig = false;
@@ -21,6 +19,9 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 
     input->eeprom_read_error = false;
     input->ltc_error = LTC_NO_ERROR;
+
+	Charge_Init(state);
+	Discharge_Init(state);
 }
 
 uint8_t Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {

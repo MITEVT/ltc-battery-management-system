@@ -90,7 +90,7 @@ handler:
             }
 
 			if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
-                return BMS_CELL_UNDER_VOLTAGE;
+                return BMS_CELL_OVER_TEMP;
             }
 
             // recalculate max current with new temperature

@@ -47,7 +47,6 @@ uint8_t Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
 
         // we want to switch states (either to STANDBY/CHARGE/ERROR)
 		default: 
-            printf("here");
             if(state->discharge_state == BMS_DISCHARGE_OFF) {
                 state->curr_mode = input->mode_request;
             } else {

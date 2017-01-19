@@ -19,7 +19,6 @@ uint32_t Calculate_Max_Current(
         uint16_t cell_temp_C
     ) {
     return cell_capacity_cAh * discharge_rating_cC * pack_cells_p / 10;
-
 }
 
 void Discharge_Config(PACK_CONFIG_T *pack_config) {
@@ -37,7 +36,7 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 uint8_t Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 		case BMS_SSM_MODE_INIT:
-            // Invalid, shouldn't be called from init
+            // Invalid, shouldn't be requestable
 			return BMS_INVALID_SSM_STATE_ERROR;
 
 		case BMS_SSM_MODE_DISCHARGE:
@@ -48,8 +47,9 @@ uint8_t Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
 
         // we want to switch states (either to STANDBY/CHARGE/ERROR)
 		default: 
+            printf("here");
             if(state->discharge_state == BMS_DISCHARGE_OFF) {
-                state->discharge_state = BMS_DISCHARGE_OFF;
+                state->curr_mode = input->mode_request;
             } else {
                 state->discharge_state = BMS_DISCHARGE_DONE;
             }
@@ -119,3 +119,6 @@ handler:
     return 0;
 }
 
+uint32_t Read_Max_Current(void) {
+    return max_pack_current_mA;
+}

@@ -10,6 +10,7 @@ static uint32_t last_time_above_cv_min_curr;
 
 void Charge_Init(BMS_STATE_T *state) {
 	state->charge_state = BMS_CHARGE_OFF;
+	last_time_above_cv_min_curr = 0;
 }
 
 void Charge_Config(PACK_CONFIG_T *pack_config) {
@@ -20,7 +21,6 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 
 	cv_charge_voltage_mV = pack_config->cell_max_mV * total_num_cells;
 	cv_charge_current_mA = cc_charge_current_mA;
-	last_time_above_cv_min_curr = 0;
 }
 
 uint8_t Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
@@ -116,7 +116,7 @@ handler:
 				goto handler;
 			} else {
 				output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
-				output->charge_req->charge_current_mA = cv_charge_voltage_mV;
+				output->charge_req->charge_current_mA = cv_charge_current_mA;
 				output->charge_req->charger_on = true;
 				if (input->pack_status->pack_current_mA < state->pack_config->cv_min_current_mA) {
 					if ((input->msTicks - last_time_above_cv_min_curr) >= state->pack_config->cv_min_current_ms) {
@@ -138,9 +138,9 @@ handler:
 				}
 			}
 
+			// [TODO] add errors such as contactors opening
 			break;
 		case BMS_CHARGE_BAL:
-            // WUT WHAT DOES THIS DO (ANSWER: NOT FINISHED YET !!)
 			output->close_contactors = false;
 			output->charge_req->charger_on = false;
 
@@ -154,34 +154,41 @@ handler:
 				if (output->balance_req[i]) balancing = true;
 			}
 
+			// Done balancing
 			if (!balancing) {
 				state->charge_state = BMS_CHARGE_DONE;
 				goto handler;
 			}
 
+			// [TODO] add errors such as contactors opening
 			break;
 		case BMS_CHARGE_DONE:
 			output->close_contactors = false;
 			output->charge_req->charger_on = false;
-			// output->charge_req->charge_current_mA = 0;
-			// output->charge_req->charge_voltage_mV = 0;
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 
-            // WUT
-            //      this outer if-check is incorrect i believe (should be removed)
-            //      it's possible to get stuck in BMS_CHARGE_DONE if you are
-            //      requesting BMS mode charge, because the CHARGE_DONE doesn't 
-            //      get switched to init unless currently in BMS_CHARGE_OFF
-
-            // this is for looping in charge done when we have 
-            // finished charging to max battery capacity...
-            // but probably a little better
+            // if not in Charge or Balance, that means SSM is trying to switch to another mode so wait for contactors to close
+            // if in charge or balance, make sure we don't need to go back to charge or balance
+            //		if we do, go back to init
 			if (input->mode_request != BMS_SSM_MODE_CHARGE && input->mode_request != BMS_SSM_MODE_BALANCE) {
 				if (!input->contactors_closed) {
 					state->charge_state = BMS_CHARGE_OFF;
 				}
+			} else {
+				if(input->mode_request == BMS_SSM_MODE_CHARGE) {
+					if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
+						state->charge_state = BMS_CHARGE_INIT;
+						goto handler;
+					}
+				} else if (input->mode_request == BMS_SSM_MODE_BALANCE) {
+					for (i = 0; i < total_num_cells; i++) {
+						if (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV) {
+							state->charge_state = BMS_CHARGE_INIT;
+							goto handler;
+						}
+					}
+				}
 			}
-			break;
 	}
     return 0;
 }

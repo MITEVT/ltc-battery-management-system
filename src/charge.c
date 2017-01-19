@@ -141,6 +141,24 @@ handler:
 			break;
 		case BMS_CHARGE_BAL:
             // WUT WHAT DOES THIS DO (ANSWER: NOT FINISHED YET !!)
+			output->close_contactors = false;
+			output->charge_req->charger_on = false;
+
+			bool balancing = false;
+			for (i = 0; i < total_num_cells; i++) {
+				if (output->balance_req[i]) {
+					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
+				} else {
+					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
+				}
+				if (output->balance_req[i]) balancing = true;
+			}
+
+			if (!balancing) {
+				state->charge_state = BMS_CHARGE_DONE;
+				goto handler;
+			}
+
 			break;
 		case BMS_CHARGE_DONE:
 			output->close_contactors = false;

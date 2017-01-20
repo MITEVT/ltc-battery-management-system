@@ -113,6 +113,17 @@ typedef enum BMS_ERROR {
     BMS_OVER_CURRENT,
 } BMS_ERROR_T;
 
+static const char * const BMS_ERROR_NAMES[] = {
+	"BMS_NO_ERROR",
+	"BMS_LTC_ERROR",
+	"BMS_EEPROM_ERROR",
+    "BMS_INVALID_SSM_STATE_ERROR",
+    "BMS_CONTACTORS_ERRONEOUS_STATE",
+    "BMS_CELL_UNDER_VOLTAGE",
+    "BMS_CELL_OVER_TEMP",
+    "BMS_OVER_CURRENT"
+};
+
 typedef struct BMS_STATE {
     BMS_CHARGER_STATUS_T *charger_status;
     PACK_CONFIG_T *pack_config;

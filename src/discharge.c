@@ -33,7 +33,7 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
                             max_cell_temp_thres_C); // approx. initialization pt
 }
 
-uint8_t Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 		case BMS_SSM_MODE_INIT:
             // Invalid, shouldn't be requestable
@@ -115,7 +115,7 @@ handler:
 			break;
 	}
 
-    return 0;
+    return BMS_NO_ERROR;
 }
 
 uint32_t Read_Max_Current(void) {

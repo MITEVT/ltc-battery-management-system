@@ -23,7 +23,7 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 	cv_charge_current_mA = cc_charge_current_mA;
 }
 
-uint8_t Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 		case BMS_SSM_MODE_INIT:
             // Invalid, shouldn't be called from init
@@ -190,5 +190,5 @@ handler:
 				}
 			}
 	}
-    return 0;
+    return BMS_NO_ERROR;
 }

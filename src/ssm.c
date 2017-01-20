@@ -24,7 +24,7 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	Discharge_Init(state);
 }
 
-uint8_t Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     switch(state->init_state) {
         case(BMS_INIT_OFF):
             output->read_eeprom_packconfig = true;
@@ -101,7 +101,7 @@ bool Is_State_Done(BMS_STATE_T *state) {
     }
 }
 
-uint8_t Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     output->close_contactors = false;
     output->charge_req->charger_on = false;
 	memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
@@ -142,7 +142,7 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         state->curr_mode = input->mode_request;
     }
 
-    uint8_t err = 0;
+    BMS_ERROR_T err = 0;
     switch(state->curr_mode) {
         case BMS_SSM_MODE_STANDBY:
             break;

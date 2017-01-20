@@ -6,7 +6,7 @@ uint32_t Calculate_Max_Current(uint32_t cell_capacity_cAh, uint32_t discharge_ra
 
 void Discharge_Init(BMS_STATE_T *state);
 void Discharge_Config(PACK_CONFIG_T *pack_config);
-uint8_t Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
+BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
 uint32_t Read_Max_Current(void);
 
 #endif

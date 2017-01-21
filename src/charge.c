@@ -1,5 +1,6 @@
 #include "charge.h"
 #include "bms_utils.h"
+#include "board.h"
 
 static uint16_t total_num_cells;
 static uint32_t cc_charge_voltage_mV;

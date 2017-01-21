@@ -167,11 +167,14 @@ int main(void) {
 
 	while(1) {
 
-        bms_input.msTicks = msTicks;
         Process_Keyboard(); //do this if you want to add the command line
-        Process_Input(&bms_input);
-        SSM_Step(&bms_input, &bms_state, &bms_output); 
-        Process_Output(&bms_input, &bms_output);
+        // if ((msTicks - bms_input.msTicks) < 1) {
+            bms_input.msTicks = msTicks;
+
+            Process_Input(&bms_input);
+            SSM_Step(&bms_input, &bms_state, &bms_output); 
+            Process_Output(&bms_input, &bms_output);
+        // }
         
         // LED Heartbeat
         if (msTicks - last_count > 1000) {

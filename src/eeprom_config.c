@@ -124,7 +124,7 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
 	pack_config->cc_cell_voltage_mV = pack_config_defaults.cc_cell_voltage_mV;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
-    Change_Config(RWL_cell_min_mV, 0); //[TODO] LOLWUT IS DIS SHIT
+    Change_Config(RWL_cell_min_mV, 0); //[TODO] WUT IS DIS MEAN
 	// pack_config->*num_cells_in_modules; // [TODO] refactor to module_cell_count
 }
 

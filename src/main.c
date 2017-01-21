@@ -6,7 +6,7 @@
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
-// #include "eeprom_config.h"
+#include "eeprom_config.h"
 #include "config.h"
 
 #define ADDR_LEN 3
@@ -20,10 +20,6 @@ volatile uint32_t msTicks;
 static char str[10];
 
 static uint8_t UART_Rx_Buf[UART_BUFFER_SIZE];
-
-static uint8_t SPI_Rx_Buf[SPI_BUFFER_SIZE];
-static uint8_t eeprom_data[MAX_DATA_LEN];
-static uint8_t eeprom_address[ADDR_LEN];
 
 static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size);
 static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size);
@@ -65,13 +61,6 @@ static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size) {
     Chip_UART_SendBlocking(LPC_USART, "\n", 1);
 }
 
-static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size) {
-	uint8_t i;
-	for (i = 0; i < size; i++) {
-		rx_buf[i] = 0;
-	}
-}
-
 static void delay(uint32_t dlyTicks) {
 	uint32_t curTicks = msTicks;
 	while ((msTicks - curTicks) < dlyTicks);
@@ -96,10 +85,8 @@ static void Init_GPIO(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK1 */
 }
 
-void Init_EEPROM(void) {
-    LC1024_Init(LPC_SSP1, 600000, 0, 7);
-    ZeroRxBuf(SPI_Rx_Buf, SPI_BUFFER_SIZE);
-    LC1024_WriteEnable();
+void Init_EEPROM_config(void) {
+    init_eeprom(LPC_SSP1, 600000, 0, 7);
 }
 
 void Init_BMS_Structs(void) {
@@ -156,7 +143,7 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    Init_EEPROM();
+    Init_EEPROM_config();
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
     Default_Config();

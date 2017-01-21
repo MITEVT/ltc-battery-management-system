@@ -17,6 +17,9 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     input->ltc_packconfig_check_done = false;
     input->eeprom_packconfig_read_done = false;
 
+    input->hard_reset_line = false;
+    input->pack_status->max_cell_temp_C = 0;
+
     input->eeprom_read_error = false;
     input->ltc_error = LTC_NO_ERROR;
 
@@ -114,6 +117,7 @@ void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // checks if there is a reported error
     //    communicating with the eeprom or ltc
     if(state->curr_mode == BMS_SSM_MODE_ERROR) return;
+    
     if(input->eeprom_read_error) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_EEPROM_ERROR;
@@ -126,7 +130,7 @@ void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     }
 
     uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
-    if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
+    if(input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_CELL_OVER_TEMP;
         return;

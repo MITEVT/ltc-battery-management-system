@@ -112,6 +112,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read pack status
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
+    bms_input->msTicks = msTicks;
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {

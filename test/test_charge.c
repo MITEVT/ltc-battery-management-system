@@ -52,7 +52,7 @@ TEST_SETUP(Charge_Test) {
 	input.contactors_closed = false;
 	input.pack_status = &_pack_status;
 	input.pack_status->cell_voltage_mV = cell_voltages_mV;
-
+    
 	output.charge_req = &_charge_req;
 	output.balance_req = balance_requests;
 

@@ -1,3 +1,4 @@
+#include "chip.h"
 #include "eeprom_config.h"
 #include "state_types.h"
 #include "lc1024.h"
@@ -16,6 +17,10 @@ static PACK_CONFIG_T pack_config_defaults = {
     .cc_cell_voltage_mV = 3600,
     .num_cells_in_modules = 0 // [TODO] refactor to module_cell_count
 };
+
+void init_eeprom(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
+    LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
+}
 
 bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
 	load_table_eeprom(eeprom_table_buffer);

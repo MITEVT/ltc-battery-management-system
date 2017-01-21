@@ -21,8 +21,7 @@ bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
 	load_table_eeprom(eeprom_table_buffer);
 	if (!validate_table_eeprom(eeprom_table_buffer)){
 		write_set_config_defaults_eeprom(eeprom_table_buffer,pack_config);
-	}
-	else {
+	} else {
 		set_config_eeprom(eeprom_table_buffer, pack_config);
 	}
 	return true;
@@ -47,7 +46,8 @@ void Default_Config(void){
     pack_config_defaults.num_cells_in_modules = 0; // [TODO] refactor to module_cell_coun
 }
 
-void Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
+// SHOULD ONLY BE CALLED IN STANDBY MODE
+uint8_t Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
     switch (rw_loc) {
         case RWL_cell_min_mV:
             pack_config_defaults.cell_min_mV = val;
@@ -62,8 +62,8 @@ void Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
             pack_config_defaults.num_modules = val;
             break;
         case RWL_num_cells_in_modules:
-            //Unimplimented
-            break;
+            // UNIMPLEMENTED
+            return 1;
         case RWL_cell_charge_c_rating_cC:
             pack_config_defaults.cell_charge_c_rating_cC = val;
             break;  
@@ -85,7 +85,15 @@ void Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
         case RWL_cc_cell_voltage_mV:
             pack_config_defaults.cc_cell_voltage_mV = val;
             break;
+        case RWL_cell_discharge_c_rating_cC:
+            pack_config_defaults.cell_discharge_c_rating_cC = val;
+            break;
+        case RWL_max_cell_temp_C:
+            pack_config_defaults.max_cell_temp_C = val;
+            break;
     }
+    // write config to eeprom
+    return 0;
 }
 
 
@@ -116,7 +124,7 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
 	pack_config->cc_cell_voltage_mV = pack_config_defaults.cc_cell_voltage_mV;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
-    Change_Config(RWL_cell_min_mV, 0); //[TODO] REMOVEME
+    Change_Config(RWL_cell_min_mV, 0); //[TODO] LOLWUT IS DIS SHIT
 	// pack_config->*num_cells_in_modules; // [TODO] refactor to module_cell_count
 }
 

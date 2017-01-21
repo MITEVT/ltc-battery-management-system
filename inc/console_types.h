@@ -1,7 +1,6 @@
 #ifndef _CONSOLE_TYPES_H
 #define _CONSOLE_TYPES_H
 
-
 typedef enum command_label{
     C_GET,
     C_SET,
@@ -24,6 +23,8 @@ typedef enum rw_loc_label{
     RWL_cv_min_current_mA,
     RWL_cv_min_current_ms,
     RWL_cc_cell_voltage_mV,
+    RWL_cell_discharge_c_rating_cC,
+    RWL_max_cell_temp_C,
     RWL_LENGTH
 } rw_loc_lable_t;
 
@@ -37,10 +38,9 @@ typedef enum ro_loc_label{
     ROL_pack_current_mA,
     ROL_pack_voltage_mV,
     ROL_precharge_voltage,
+    ROL_max_cell_temp_C,
+    ROL_error,
     ROL_LENGTH
 } ro_loc_lable_t;
-
-
-
 
 #endif

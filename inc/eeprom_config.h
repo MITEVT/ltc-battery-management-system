@@ -24,8 +24,7 @@ static void write_checksum_eeprom(uint8_t* eeprom_table_buffer);
 static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config);
 static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config);
 
-void Change_Config(rw_loc_lable_t rw_loc, uint32_t val);
-
+uint8_t Change_Config(rw_loc_lable_t rw_loc, uint32_t val);
 
 bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
 

@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include "console.h"
 #include "board.h"
+#include "bms_utils.h"
 #include "microrl.h"
 #include "console_types.h"
 
-uint32_t myAtou(char *str)
+uint32_t my_atou(char *str)
 {
     uint32_t res = 0; // Initialize result
   
@@ -21,6 +22,8 @@ uint32_t myAtou(char *str)
 
 void get(const char * const * argv) {
     rw_loc_lable_t rwloc;
+    uint8_t i;
+
     //loop over r/w entries
     bool foundloc = false;
     for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
@@ -50,7 +53,11 @@ void get(const char * const * argv) {
                 Board_Println(tempstr);
                 break;
             case RWL_num_cells_in_modules:
-                Board_Println("Unimplimented!");
+                for(i = 0; i < console.bms_state->pack_config->num_modules; i++) {
+                    utoa(console.bms_state->pack_config->num_cells_in_modules[i],
+                            tempstr, 10);
+                    Board_Println(tempstr);
+                }
                 break;
             case RWL_cell_charge_c_rating_cC:
                 utoa(console.bms_state->pack_config->cell_charge_c_rating_cC, tempstr,10);
@@ -80,6 +87,14 @@ void get(const char * const * argv) {
                 utoa(console.bms_state->pack_config->cc_cell_voltage_mV, tempstr,10);
                 Board_Println(tempstr);
                 break;
+            case RWL_cell_discharge_c_rating_cC:
+                utoa(console.bms_state->pack_config->cell_discharge_c_rating_cC, tempstr,10);
+                Board_Println(tempstr);
+                break;
+            case RWL_max_cell_temp_C:
+                utoa(console.bms_state->pack_config->max_cell_temp_C, tempstr,10);
+                Board_Println(tempstr);
+                break;
         }
 
     }
@@ -100,9 +115,13 @@ void get(const char * const * argv) {
                     Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
                     Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
                     Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
+                    Board_Println(BMS_ERROR_NAMES[console.bms_state->error_code]);
                     break;
                 case ROL_cell_voltage_mV:
-                    Board_Println("Unimplimented!");
+                    for(i = 0; i < Get_Total_Cell_Count(console.bms_state->pack_config); i++) {
+                       utoa(console.bms_input->pack_status->cell_voltage_mV[i], tempstr, 10);
+                       Board_Println(tempstr);
+                    }
                     break;
                 case ROL_pack_cell_max_mV:
                     utoa(console.bms_input->pack_status->pack_cell_max_mV, tempstr,10);
@@ -124,20 +143,31 @@ void get(const char * const * argv) {
                     utoa(console.bms_input->pack_status->precharge_voltage, tempstr,10);
                     Board_Println(tempstr);
                     break;
+                case ROL_max_cell_temp_C:
+                    utoa(console.bms_input->pack_status->max_cell_temp_C, tempstr,10);
+                    Board_Println(tempstr);
+                    break;
+                case ROL_error:
+                    if(console.bms_input->pack_status->error) {
+                        Board_Println("Pack has error!");
+                    } else {
+                        Board_Println("Pack has no error!");
+                    } 
+                    break;
                 case ROL_LENGTH:
                     break;
             }
         }
         else{
-            Board_Println("invalid location");
+            Board_Println("invalid get location");
         }
     }
-    
-
 }
+
 void set(const char * const * argv) {
     if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
     {
+        Board_Println("Set failed (not in standby mode)!");
         return;
     }
     rw_loc_lable_t rwloc;
@@ -150,24 +180,21 @@ void set(const char * const * argv) {
         }
     }
     if(foundloc){
-        Change_Config(rwloc,myAtou(argv[2]));
-    }
-    else {
+        uint8_t ret;
+        ret = Change_Config(rwloc,my_atou(argv[2]));
+        if(ret != 0) {
+            Board_Println("Set failed (command not yet implemented?)!");
+        }
+    } else {
         //loop over r/o entries
         ro_loc_lable_t roloc;
         for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
                 Board_Println("this location is read only");
-                break; 
+                return; 
             }
         }
-    }
-    if (foundloc)
-    {
-        /* code */
-    }
-    else{
         Board_Println("invalid location");
     }
 }
@@ -204,14 +231,17 @@ void config(const char * const * argv) {
         console.bms_state->curr_mode = BMS_SSM_MODE_INIT;
         console.bms_state->init_state = BMS_INIT_OFF;
     }
-    // [TODO]
 }
 void bal(const char * const * argv) {
     if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY 
         || console.bms_state->curr_mode != BMS_SSM_MODE_BALANCE) {
-        Board_Println("Must be in standy or balance");
+        Board_Println("Must be in standby or balance");
+    } else {
+        // [TODO] implement matching with:
+        //      bal on [target voltage] # jump to balance and balance to target
+        //      bal off  # stop balancing, keep in balance mode
+        //      bal quit # stop balancing, exit balance mode
     }
-    
 }                       
 
 void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output){
@@ -236,7 +266,7 @@ void executerl(uint32_t argc, const char * const * argv){
             handlers[command_i](argv);
         }
         else {
-            Board_Println("inccorrect number of args");
+            Board_Println("incorrect number of args");
         }
     }
     else{

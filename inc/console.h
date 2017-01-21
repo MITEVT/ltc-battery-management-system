@@ -13,16 +13,11 @@
 
 // microrl object
 
-
-
-
 static const char * const commands[NUMCOMMANDS] = { "get",
                             "set",
                             "help",
                             "config",
                             "bal"};
-
-
 
 static const char nargs[NUMCOMMANDS] = {  1 ,
                         2 ,
@@ -34,9 +29,6 @@ static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible opti
 							"Set a value. Possible options:", "This", 
 							"flash that sucker", 
 							"set balance current"};
-
-
-
 
 static const char * const locstring[] =  {
                             "cell_min_mV",
@@ -51,6 +43,8 @@ static const char * const locstring[] =  {
                             "cv_min_current_mA",
                             "cv_min_current_ms",
                             "cc_cell_voltage_mV",
+                            "cell_discharge_c_rating_cC",
+                            "max_cell_temp_C",
                             //can't write to the follwing
                             "state",
                             "cell_voltage_mV",
@@ -59,6 +53,8 @@ static const char * const locstring[] =  {
                             "pack_current_mA",
                             "pack_voltage_mV",
                             "precharge_voltage"
+                            "max_cell_temp_C",
+                            "error"
 };
 
 static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
@@ -74,6 +70,8 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
                             {1, 0,UINT32_MAX},//"cv_min_current_mA",
                             {1, 0,UINT32_MAX},//"cv_min_current_ms",
                             {1, 0,UINT32_MAX},//"cc_cell_voltage_mV",
+                            {1, 0,UINT32_MAX},//"cell_discharge_c_rating_cC",
+                            {1, 0,UINT32_MAX},//"max_cell_temp_C",
                             //can't write to the follwing
                             {0,0},//"state",
                             {0,0},//"*cell_voltage_mV",
@@ -81,7 +79,9 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
                             {0,0},//"pack_cell_min_mV",
                             {0,0},//"pack_current_mA",
                             {0,0},//"pack_voltage_mV",
-                            {0,0}//"precharge_voltage"
+                            {0,0},//"precharge_voltage"
+                            {0,0},//"max_cell_temp_C"
+                            {0,0}//"error"
 };
 
 static void get(const char * const *);
@@ -107,6 +107,3 @@ void executerl(uint32_t argc, const char * const * argv);
 
 
 #endif
-
-
-

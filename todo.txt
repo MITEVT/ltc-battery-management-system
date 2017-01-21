@@ -4,3 +4,11 @@ SOC estimation
 - can messaging
 - ltc driver
 - eeprom driver (?)
+
+CONSOLE
+ - implement 'bal' cmd
+ - implement 'set num_cells_in_modules' in ChangeConfig and various defaults
+ - config changed to commit
+
+EEPROM
+ - fill in eeprom_config

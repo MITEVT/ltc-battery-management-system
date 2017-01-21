@@ -97,7 +97,7 @@ static void Init_GPIO(void) {
 }
 
 void Init_EEPROM(void) {
-    LC1024_Init(600000, 0, 7);
+    LC1024_Init(LPC_SSP1, 600000, 0, 7);
     ZeroRxBuf(SPI_Rx_Buf, SPI_BUFFER_SIZE);
     LC1024_WriteEnable();
 }

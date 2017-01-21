@@ -39,6 +39,9 @@ TEST_SETUP(SSM_Test) {
 
     bms_input.pack_status = &pack_status;
 
+    bms_state.pack_config->max_cell_temp_C = 5;
+    bms_input.pack_status->max_cell_temp_C = 1;
+
     SSM_Init(&bms_input, &bms_state, &bms_output);
 }
 

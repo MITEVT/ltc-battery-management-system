@@ -124,6 +124,13 @@ void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         state->error_code = BMS_LTC_ERROR;
         return;
     }
+
+    uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
+    if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = BMS_CELL_OVER_TEMP;
+        return;
+    }
 }
 
 

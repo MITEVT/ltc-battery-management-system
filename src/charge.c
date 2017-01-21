@@ -59,13 +59,11 @@ handler:
 	switch (state->charge_state) {
 
 		case BMS_CHARGE_OFF:
-			output->close_contactors = false; 						// Open Contactors
-			output->charge_req->charger_on = false;					// Turn off charger
-			// for (i = 0; i < state->pack_config->num_modules; i++) { // Turn off balancing
-			// 	output->balance_req[i] = 0;	
-			// }
+			output->close_contactors = false;
+			output->charge_req->charger_on = false;
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			break;
+
 		case BMS_CHARGE_INIT:
 			output->close_contactors = (input->mode_request == BMS_SSM_MODE_CHARGE);
 			output->charge_req->charger_on = false;
@@ -82,8 +80,7 @@ handler:
 			}
 			break;
 		case BMS_CHARGE_CC:
-            // WUT WHERE IS TEMPERATURE MONITORING
-            
+
 			if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
 				// Need to go to CV Mode
 				state->charge_state = BMS_CHARGE_CV;
@@ -107,9 +104,13 @@ handler:
 				}
 			}
 
-			// [TODO] add errors such as contactors opening
+            if(!input->contactors_closed) {
+                return BMS_CONTACTORS_ERRONEOUS_STATE;
+            }
+
 			break;
 		case BMS_CHARGE_CV:
+
 			if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
 				// Need to go back to CC Mode
 				state->charge_state = BMS_CHARGE_CC;
@@ -138,14 +139,19 @@ handler:
 				}
 			}
 
-			// [TODO] add errors such as contactors opening
+            if(!input->contactors_closed) {
+                return BMS_CONTACTORS_ERRONEOUS_STATE;
+            }
+
 			break;
+
 		case BMS_CHARGE_BAL:
 			output->close_contactors = false;
 			output->charge_req->charger_on = false;
 
 			bool balancing = false;
 			for (i = 0; i < total_num_cells; i++) {
+                // (need to ask erpo) but OFF_THRES is smaller than ON_THRES
 				if (output->balance_req[i]) {
 					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
 				} else {

@@ -2,7 +2,10 @@
 #include "eeprom_config.h"
 #include "state_types.h"
 #include "lc1024.h"
+#include "config.h"
 
+
+static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config_defaults = {
     .cell_min_mV = 2700,
     .cell_max_mV = 3700,
@@ -15,28 +18,30 @@ static PACK_CONFIG_T pack_config_defaults = {
     .cv_min_current_mA = 1000,
     .cv_min_current_ms = 1000,
     .cc_cell_voltage_mV = 3600,
-    .num_cells_in_modules = 0 // [TODO] refactor to module_cell_count
+    .num_cells_in_modules = &num_cells_in_modules // [TODO] refactor to module_cell_count
 };
 
 void init_eeprom(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
     LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
 }
 
+// entry from Process_Output(..) in main.c, executed during start
 bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
 	load_table_eeprom(eeprom_table_buffer);
 	if (!validate_table_eeprom(eeprom_table_buffer)){
-		write_set_config_defaults_eeprom(eeprom_table_buffer,pack_config);
+		write_set_config_defaults_eeprom(eeprom_table_buffer, pack_config);
 	} else {
 		set_config_eeprom(eeprom_table_buffer, pack_config);
 	}
-	return true;
+    return true;
 }
 
 bool Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
 	return true;
 }
 
-void Default_Config(void){
+// called exactly once in main.c
+void Default_Config(void) {
     pack_config_defaults.cell_min_mV = 2700;
     pack_config_defaults.cell_max_mV = 3700;
     pack_config_defaults.cell_capacity_cAh = 400;
@@ -48,7 +53,7 @@ void Default_Config(void){
     pack_config_defaults.cv_min_current_mA = 1000;
     pack_config_defaults.cv_min_current_ms = 1000;
     pack_config_defaults.cc_cell_voltage_mV = 3600;
-    pack_config_defaults.num_cells_in_modules = 0; // [TODO] refactor to module_cell_coun
+    pack_config_defaults.num_cells_in_modules = &num_cells_in_modules; 
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE

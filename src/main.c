@@ -121,7 +121,13 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     if (bms_output->read_eeprom_packconfig){
         bms_input->eeprom_packconfig_read_done = 
             Load_EEPROM_PackConfig(&pack_config);
-        // Board_Println("LOADED EEPROM");
+        if(bms_input->eeprom_packconfig_read_done) {
+            Board_Println("Was able to load Pack Config from EEPROM !!");
+        } else {
+            Board_Println("Wasn't able to load Pack Config from EEPROM :(");
+        }
+        Charge_Config(&pack_config);
+        Discharge_Config(&pack_config);
         
     }
     else if (bms_output->check_packconfig_with_ltc) {
@@ -153,7 +159,7 @@ int main(void) {
     while (msTicks - last_count > 1000) {
     }
 
-    Board_Println("I'm Up");
+    Board_Println("I'm Up!");
     
     //setup readline
     microrl_init(&rl, Board_Print);

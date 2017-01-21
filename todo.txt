@@ -1,10 +1,7 @@
-grep "WUT"
 grep "TODO"
 SOC estimation
 - can messaging
 - ltc driver
-
-- dont check error during init
 
 CONSOLE
  - implement 'bal' cmd

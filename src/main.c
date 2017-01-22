@@ -91,20 +91,66 @@ void Init_EEPROM_config(void) {
 
 void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
+    bms_output.close_contactors = false;
     bms_output.balance_req = balance_reqs;
+    bms_output.read_eeprom_packconfig = false;
+    bms_output.check_packconfig_with_ltc = false;
+
+    charge_req.charger_on = 0;
+    charge_req.charge_current_mA = 0;
+    charge_req.charge_voltage_mV = 0;
+
+
 
     bms_state.charger_status = &charger_status;
+    bms_state.pack_config = &pack_config;
+    bms_state.curr_mode = BMS_SSM_MODE_INIT;
+    bms_state.init_state = BMS_INIT_OFF;
+    bms_state.charge_state = BMS_CHARGE_OFF;
+    bms_state.discharge_state = BMS_DISCHARGE_OFF;
+    bms_state.error_code = BMS_NO_ERROR;
+
+    charger_status.connected = true;
+    charger_status.error = false;
+
+    pack_config.num_cells_in_modules = num_cells_in_modules;
+    pack_config.cell_min_mV = 0;
+    pack_config.cell_max_mV = 0;
+    pack_config.cell_capacity_cAh = 0;
+    pack_config.num_modules = 0;
+    pack_config.cell_charge_c_rating_cC = 0;
+    pack_config.bal_on_thresh_mV = 0;
+    pack_config.bal_off_thresh_mV = 0;
+    pack_config.pack_cells_p = 0;
+    pack_config.cv_min_current_mA = 0;
+    pack_config.cv_min_current_ms = 0;
+    pack_config.cc_cell_voltage_mV = 0;
+
+    pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
+    pack_config.max_cell_temp_C = 0;
+
+
+    //assign bms_inputs
+    bms_input.hard_reset_line = false;
+    bms_input.mode_request = BMS_SSM_MODE_STANDBY;
+    bms_input.balance_mV = 0; // console request balance to mV
+    bms_input.contactors_closed = false;
+    bms_input.msTicks = msTicks;
+    bms_input.pack_status = &pack_status;
+    bms_input.eeprom_packconfig_read_done = false;
+    bms_input.ltc_packconfig_check_done = false;
+    bms_input.eeprom_read_error = false;
+    bms_input.ltc_error = LTC_NO_ERROR; //[TODO] change to the type provided by the library
+
     pack_status.cell_voltage_mV = cell_voltages;
     pack_status.pack_cell_max_mV = 0;
     pack_status.pack_cell_min_mV = 0;
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.precharge_voltage = 0;
+    pack_status.max_cell_temp_C = 0;
     pack_status.error = 0;;
-    pack_config.num_cells_in_modules = num_cells_in_modules;
-    bms_state.pack_config = &pack_config;
 
-    bms_input.pack_status = &pack_status;
 }
 
 void Process_Input(BMS_INPUT_T* bms_input) {
@@ -119,13 +165,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
     if (bms_output->read_eeprom_packconfig){
-        bms_input->eeprom_packconfig_read_done = 
-            Load_EEPROM_PackConfig(&pack_config);
-        if(bms_input->eeprom_packconfig_read_done) {
-            Board_Println("Was able to load Pack Config from EEPROM !!");
-        } else {
-            Board_Println("Wasn't able to load Pack Config from EEPROM :(");
-        }
+        bms_input->eeprom_packconfig_read_done = Load_EEPROM_PackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
         
@@ -134,6 +174,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->ltc_packconfig_check_done = 
             Check_PackConfig_With_LTC(&pack_config);
     }
+    bms_input->contactors_closed = bms_output->close_contactors; ///test;lkaysd;fjas [TODO] remove
     
 }
 
@@ -175,13 +216,22 @@ int main(void) {
 	while(1) {
 
         Process_Keyboard(); //do this if you want to add the command line
-        // if ((msTicks - bms_input.msTicks) < 1) {
+        if ((msTicks - bms_input.msTicks) > 1000) {
+            // Board_Println(BMS_SSM_MODE_NAMES[bms_state.curr_mode]);
+            // Board_Println(BMS_INIT_MODE_NAMES[bms_state.init_state]);
+            // Board_Println(BMS_CHARGE_MODE_NAMES[bms_state.charge_state]);
+            // Board_Println(BMS_DISCHARGE_MODE_NAMES[bms_state.discharge_state]);
+            // Board_Println(BMS_ERROR_NAMES[bms_state.error_code]);
+            // delay(1000);
+
+            // Board_Println("\n\nagain");
             bms_input.msTicks = msTicks;
 
             Process_Input(&bms_input);
             SSM_Step(&bms_input, &bms_state, &bms_output); 
             Process_Output(&bms_input, &bms_output);
-        // }
+
+        }
         
         // LED Heartbeat
         if (msTicks - last_count > 1000) {

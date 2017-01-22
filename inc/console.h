@@ -57,7 +57,7 @@ static const char * const locstring[] =  {
                             "error"
 };
 
-static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
+static const uint32_t locparam[23][3] = {
                             {1, 0,UINT32_MAX},//"cell_min_mV",
                             {1, 0,UINT32_MAX},//"cell_max_mV",
                             {1, 0,UINT32_MAX},//"cell_capacity_cAh",

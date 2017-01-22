@@ -5,12 +5,12 @@
 #include "config.h"
 
 
-static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
+static uint8_t num_cells_in_modules[] = {4};
 static PACK_CONFIG_T pack_config_defaults = {
     .cell_min_mV = 2700,
     .cell_max_mV = 3700,
     .cell_capacity_cAh = 400,
-    .num_modules = 10,
+    .num_modules = 1,
     .cell_charge_c_rating_cC = 200,
     .bal_on_thresh_mV = 20,
     .bal_off_thresh_mV = 5,
@@ -45,7 +45,7 @@ void Default_Config(void) {
     pack_config_defaults.cell_min_mV = 2700;
     pack_config_defaults.cell_max_mV = 3700;
     pack_config_defaults.cell_capacity_cAh = 400;
-    pack_config_defaults.num_modules = 10;
+    pack_config_defaults.num_modules = 1;
     pack_config_defaults.cell_charge_c_rating_cC = 200;
     pack_config_defaults.bal_on_thresh_mV = 20;
     pack_config_defaults.bal_off_thresh_mV = 5;
@@ -132,6 +132,7 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
 	pack_config->cv_min_current_mA = pack_config_defaults.cv_min_current_mA;
 	pack_config->cv_min_current_ms = pack_config_defaults.cv_min_current_ms;
 	pack_config->cc_cell_voltage_mV = pack_config_defaults.cc_cell_voltage_mV;
+    pack_config->num_cells_in_modules[0] = 4;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
     Change_Config(RWL_cell_min_mV, 0); //[TODO] WUT IS DIS MEAN

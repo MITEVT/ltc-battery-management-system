@@ -73,10 +73,10 @@ static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size) {
     Chip_UART_SendBlocking(LPC_USART, "\n", 1);
 }
 
-// static void delay(uint32_t dlyTicks) {
-// 	uint32_t curTicks = msTicks;
-// 	while ((msTicks - curTicks) < dlyTicks);
-// }
+static void delay(uint32_t dlyTicks) {
+	uint32_t curTicks = msTicks;
+	while ((msTicks - curTicks) < dlyTicks);
+}
 
 /****************************
  *       INITIALIZERS
@@ -134,7 +134,7 @@ void Init_BMS_Structs(void) {
     pack_config.cv_min_current_mA = 50;
     pack_config.cv_min_current_ms = 60000;
     pack_config.cc_cell_voltage_mV = 4300;
-    num_cells_in_modules[0] = 4;
+    num_cells_in_modules[0] = 12;
 
     pack_config.cell_discharge_c_rating_cC = 200; // at 27 degrees C
     pack_config.max_cell_temp_C = 50;
@@ -142,6 +142,40 @@ void Init_BMS_Structs(void) {
     bms_state.pack_config = &pack_config;
 
     bms_input.pack_status = &pack_status;
+}
+
+static LTC6804_CONFIG_T ltc6804_config;
+static LTC6804_STATE_T ltc6804_state;
+static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
+static uint8_t ltc6804_tx_buf[4+15*6];
+static uint8_t ltc6804_rx_buf[4+15*6];
+static uint8_t ltc6804_cfg[6];
+static LTC6804_ADC_RES_T ltc6804_adc_res;
+
+void Init_LTC6805(void) {
+// For now do all LTC6804 Init here, 100k Baud, Port 0_7 for CS
+    
+    ltc6804_config.pSSP = LPC_SSP1;
+    ltc6804_config.baud = 1000000;
+    ltc6804_config.cs_gpio = 0;
+    ltc6804_config.cs_pin = 7;
+
+    ltc6804_config.num_modules = pack_config.num_modules;
+    ltc6804_config.module_cell_count = num_cells_in_modules;
+
+    ltc6804_config.min_cell_mV = pack_config.cell_min_mV;
+    ltc6804_config.max_cell_mV = pack_config.cell_max_mV;
+
+    ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
+    
+    ltc6804_state.xf = &ltc6804_xf_setup;
+    ltc6804_state.tx_buf = ltc6804_tx_buf;
+    ltc6804_state.rx_buf = ltc6804_rx_buf;
+    ltc6804_state.cfg = ltc6804_cfg;;
+
+    ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltage_mV;
+
+    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 }
 
 void Process_Input(BMS_INPUT_T* bms_input) {
@@ -159,6 +193,38 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
     } else {
         bms_input->mode_request = BMS_SSM_MODE_STANDBY;
+    }
+
+    // LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
+    // if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVoltages FAIL");
+    // if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVoltages PEC_ERROR");
+    // if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_GetCellVoltages SPI_ERROR");
+    // if (res == LTC6804_PASS) {
+    //     Board_Println("");
+    //     int i;
+    //     for (i = 0; i < 12; i++) {
+    //         itoa(ltc6804_adc_res.cell_voltages_mV[i], str, 10);
+    //         Board_Print(str);
+    //         Board_Print(", ");
+    //     }
+    //     Board_Println("");
+    //     LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+    // }
+
+    LTC6804_STATUS_T res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
+    if (res == LTC6804_FAIL) Board_Println("LTC6804_CVST FAIL");
+    if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_CVST PEC_ERROR");
+    if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_CVST SPI_ERROR");
+    if (res == LTC6804_PASS) {
+        // Board_Println("");
+        // int i;
+        // for (i = 0; i < 12; i++) {
+        //     itoa(ltc6804_adc_res.cell_voltages_mV[i], str, 10);
+        //     Board_Print(str);
+        //     Board_Print(", ");
+        // }
+        // Board_Println("");
+        LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
     }
 }
 
@@ -189,73 +255,57 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    Init_EEPROM();
+    //Init_EEPROM();
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
     Default_Config();
 
     Board_Println("Started Up");
 
-    // For now do all LTC6804 Init here, 100k Baud, Port 0_7 for CS
-    LTC6804_CONFIG_T ltc6804_config;
-    ltc6804_config.pSSP = LPC_SSP1;
-    ltc6804_config.baud = 100000;
-    ltc6804_config.cs_gpio = 0;
-    ltc6804_config.cs_pin = 7;
+    Init_LTC6805();
+    Board_Print("LTC6804 Initialized. Verifying..");
 
-    ltc6804_config.num_modules = pack_config.num_modules;
-    ltc6804_config.module_cell_count = num_cells_in_modules;
-
-    ltc6804_config.min_cell_mV = pack_config.cell_min_mV;
-    ltc6804_config.max_cell_mV = pack_config.cell_max_mV;
-
-    ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
-
-    LTC6804_STATE_T ltc6804_state;
-    Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
-    uint8_t ltc6804_tx_buf[4+15*6];
-    uint8_t ltc6804_rx_buf[4+15*6];
-    uint8_t ltc6804_cfg[6];
-    ltc6804_state.xf = &ltc6804_xf_setup;
-    ltc6804_state.tx_buf = ltc6804_tx_buf;
-    ltc6804_state.rx_buf = ltc6804_rx_buf;
-    ltc6804_state.cfg = ltc6804_cfg;;
-
-    LTC6804_ADC_RES_T ltc6804_adc_res;
-    ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltage_mV;
-
-    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
     if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-        Board_Println("");
-        Board_Println("LTC6804 failed cfg verification");
-        
-        int i;
-        for (i = 0; i < 12; i++) {
-            itoa(ltc6804_state.rx_buf[i], str, 16);
-            Board_Println(str);
-        }
-        Board_Println("");
-    } 
+        Board_Print(".FAIL. ");
+    } else {
+        Board_Print(".PASS. ");
+    }
 
+    Board_Print("CVST..");
     LTC6804_STATUS_T res;
+    res = LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+    if (res == LTC6804_SPI_ERROR) {
+        Board_Println(".SPI_ERROR");
+    } else {
+        Board_Print("!");
+    }
+
+    delay(2000);
+    LTC6804_WriteCFG(&ltc6804_config, &ltc6804_state, msTicks);
+    delay(5);
     while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
         if (res == LTC6804_FAIL) {
-            Board_Println("");
-            Board_Println("LTC6804 failed cvst");
-            break;
-        }
-    }  
+            Board_Print(".FAIL (");
 
-    // Test Balance States
-    // balance_reqs[0] = 1; balance_reqs[1] = true;
-    // balance_reqs[2] = 1; balance_reqs[3] = false;
-    // LTC6804_SetBalanceStates(&ltc6804_config, &ltc6804_state, balance_reqs, msTicks);
-    // Board_Println("");
-    // int i;
-    // for (i = 0; i < 12; i++) {
-    //     itoa(ltc6804_state.tx_buf[i], str, 16);
-    //     Board_Println(str);
-    // }
+            int i;
+            for (i = 0; i < 12; i++) {
+                itoa(ltc6804_state.rx_buf[i], str, 16);
+                Board_Print(str);
+                Board_Print(", ");
+            }
+            Board_Println(")");
+            break;
+        } else if (res == LTC6804_SPI_ERROR) {
+            Board_Println(".SPI_ERROR");
+            break;
+        } else if (res == LTC6804_PEC_ERROR) {
+            Board_Println(".PEC_ERROR");
+            break;
+        } else {
+            Board_Print("*");
+        }
+    } 
+    if (res == LTC6804_PASS) Board_Println(".PASS");
     
     //setup readline
     microrl_init(&rl, Board_Print);
@@ -265,10 +315,12 @@ int main(void) {
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
     uint32_t last_count = msTicks;
+    uint8_t toggle = 0;
 
 	while(1) {
         bms_input.msTicks = msTicks;
         Process_Keyboard(); //do this if you want to add the command line
+
         Process_Input(&bms_input);
 
         SSM_Step(&bms_input, &bms_state, &bms_output);
@@ -282,35 +334,9 @@ int main(void) {
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));
-
-            while((res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks)) != LTC6804_PASS) {
-                if (res == LTC6804_FAIL) {
-                    Board_Println("");
-                    Board_Println("LTC6804 failed get_cell_voltages");
-                    break;
-                } else if (res == LTC6804_SPI_ERROR) {
-                    Board_Println("");
-                    Board_Println("LTC6804 spi_error get_cell_voltages");
-                    break;
-                } else if (res == LTC6804_PEC_ERROR) {
-                    Board_Println("");
-                    Board_Println("LTC6804 pec_error get_cell_voltages");
-                    break;
-                }
-            }  
-
-            int i;
-            for (i = 0; i < pack_config.num_cells_in_modules[0]; i++) {
-                Board_Println(" ");
-                itoa(pack_status.cell_voltage_mV[i], str, 10);
-                Board_Print(str);
-                Board_Print(", ");
-            }
-
-            Board_Println(" ");         
+            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
-	}
+    }
 
 	return 0;
 }

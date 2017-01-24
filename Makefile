@@ -183,19 +183,22 @@ CXX_FLAGS = -std=$(CXX_STD) -g -ggdb3 -fno-rtti -fno-exceptions -fverbose-asm -W
 
 # flags for C compiler
 C_FLAGS = -fdiagnostics-color=always -std=$(C_STD) -g -ggdb3 -fverbose-asm -Wa,-ahlms=$(OUT_DIR_F)$(notdir $(<:.$(C_EXT)=.lst)) -DUART_BAUD=$(BAUDRATE)
+#			add diagnostic colors		c standard	debug(?) extra comments	
 
 # flags for assembler
 AS_FLAGS = -g -ggdb3 -Wa,-amhls=$(OUT_DIR_F)$(notdir $(<:.$(AS_EXT)=.lst))
 
 # flags for linker
-LD_FLAGS = -T$(LD_SCRIPT) -g -Wl,-Map=$(OUT_DIR_F)$(PROJECT).map,--cref,--no-warn-mismatch
+LD_FLAGS = -T$(LD_SCRIPT) -g -Wl,-Map=$(OUT_DIR_F)$(PROJECT).map,--cref
 
 # flags for lint
 LINT_FLAGS = -rc LONG_LINE=$(MAX_LINE_SIZE)
 
 # process option for removing unused code
 ifeq ($(REMOVE_UNUSED), 1)
+	# enable garbage collection of unused sections
 	LD_FLAGS += -Wl,--gc-sections
+	# put functions and data into their own sections
 	OPTIMIZATION += -ffunction-sections -fdata-sections
 endif
 

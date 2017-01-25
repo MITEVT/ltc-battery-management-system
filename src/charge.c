@@ -120,6 +120,7 @@ handler:
 				output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
 				output->charge_req->charge_current_mA = cv_charge_current_mA;
 				output->charge_req->charger_on = true;
+				// [TODO] change to cv_min_current times num p
 				if (input->pack_status->pack_current_mA < state->pack_config->cv_min_current_mA) {
 					if ((input->msTicks - last_time_above_cv_min_curr) >= state->pack_config->cv_min_current_ms) {
 						output->charge_req->charger_on = false;

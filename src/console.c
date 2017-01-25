@@ -6,6 +6,9 @@
 #include "microrl.h"
 #include "console_types.h"
 
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
+
+
 uint32_t my_atou(char *str)
 {
     uint32_t res = 0; // Initialize result
@@ -94,6 +97,8 @@ void get(const char * const * argv) {
             case RWL_max_cell_temp_C:
                 utoa(console.bms_state->pack_config->max_cell_temp_C, tempstr,10);
                 Board_Println(tempstr);
+                break;
+            case RWL_LENGTH:
                 break;
         }
 
@@ -258,7 +263,7 @@ void executerl(uint32_t argc, const char * const * argv){
         }
     }
     if (found_command) {
-        if (nargs[command_i] == argc-1)
+        if (nargs[command_i] == (uint32_t)(argc-1))
         {
             handlers[command_i](argv);
         }

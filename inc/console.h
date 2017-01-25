@@ -73,15 +73,15 @@ static const uint32_t locparam[23][3] = {
                             {1, 0,UINT32_MAX},//"cell_discharge_c_rating_cC",
                             {1, 0,UINT32_MAX},//"max_cell_temp_C",
                             //can't write to the follwing
-                            {0,0},//"state",
-                            {0,0},//"*cell_voltage_mV",
-                            {0,0},//"pack_cell_max_mV",
-                            {0,0},//"pack_cell_min_mV",
-                            {0,0},//"pack_current_mA",
-                            {0,0},//"pack_voltage_mV",
-                            {0,0},//"precharge_voltage"
-                            {0,0},//"max_cell_temp_C"
-                            {0,0}//"error"
+                            {0,0,0},//"state",
+                            {0,0,0},//"*cell_voltage_mV",
+                            {0,0,0},//"pack_cell_max_mV",
+                            {0,0,0},//"pack_cell_min_mV",
+                            {0,0,0},//"pack_current_mA",
+                            {0,0,0},//"pack_voltage_mV",
+                            {0,0,0},//"precharge_voltage"
+                            {0,0,0},//"max_cell_temp_C"
+                            {0,0,0}//"error"
 };
 
 static void get(const char * const *);
@@ -89,8 +89,8 @@ static void set(const char * const *);
 static void help(const char * const *);
 static void config(const char * const *);
 static void bal(const char * const *);
+
 typedef void (* const EXECUTE_HANDLER)(const char * const *);
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
 typedef struct console_t
 {

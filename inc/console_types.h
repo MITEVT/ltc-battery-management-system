@@ -31,7 +31,7 @@ typedef enum rw_loc_label{
 #define ROL_FIRST RWL_LENGTH
 
 typedef enum ro_loc_label{
-    ROL_state = ROL_FIRST,
+    ROL_state = (int)ROL_FIRST,
     ROL_cell_voltage_mV,
     ROL_pack_cell_max_mV,
     ROL_pack_cell_min_mV,

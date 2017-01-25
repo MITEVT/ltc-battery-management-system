@@ -58,6 +58,7 @@ void SysTick_Handler(void) {
  *          HELPERS
  ****************************/
 
+// [TODO] Remove
 static void delay(uint32_t dlyTicks) {
 	uint32_t curTicks = msTicks;
 	while ((msTicks - curTicks) < dlyTicks);

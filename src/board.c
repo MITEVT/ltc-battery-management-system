@@ -5,9 +5,9 @@ const uint32_t OscRateIn = 0;
 
 #define UART_BUFFER_SIZE 100
 static RINGBUFF_T uart_rx_ring;
-static volatile uint8_t _uart_rx_ring[UART_BUFFER_SIZE];
+static uint8_t _uart_rx_ring[UART_BUFFER_SIZE];
 static RINGBUFF_T uart_tx_ring;
-static volatile uint8_t _uart_tx_ring[UART_BUFFER_SIZE];
+static uint8_t _uart_tx_ring[UART_BUFFER_SIZE];
 
 
 // ------------------------------------------------
@@ -63,30 +63,30 @@ void UART_IRQHandler(void) {
 
 
 
-uint32_t Board_Print(uint8_t *str) {
+uint32_t Board_Print(const char *str) {
 	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, strlen(str));
 }
 
-uint32_t Board_Println(uint8_t *str) {
+uint32_t Board_Println(const char *str) {
 	uint32_t count = Board_Print(str);
 	return count + Board_Print("\r\n");
 }
 
-uint32_t Board_Write(uint8_t *str, uint32_t count) {
+uint32_t Board_Write(const char *str, uint32_t count) {
 	return Chip_UART_SendRB(LPC_USART, &uart_tx_ring, str, count);
 }
 
-uint32_t Board_Read(char * charBuffer, uint32_t length) {
+uint32_t Board_Read(char *charBuffer, uint32_t length) {
 	uint32_t count = Chip_UART_ReadRB(LPC_USART, &uart_rx_ring, charBuffer, length);
 	return count;
 }
 
 // USE THESE SPARINGLY. ONLY WHEN A PRINT WOULD RESULT IN A BUFFER OVERFLOW
-uint32_t Board_Print_BLOCKING(uint8_t *str) {
+uint32_t Board_Print_BLOCKING(const char *str) {
 	return Chip_UART_SendBlocking(LPC_USART, str, strlen(str));
 }
 
-uint32_t Board_Println_BLOCKING(uint8_t *str) {
+uint32_t Board_Println_BLOCKING(const char *str) {
 	uint32_t count = Board_Print_BLOCKING(str);
 	return count + Board_Print_BLOCKING("\r\n");
 }

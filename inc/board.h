@@ -40,8 +40,6 @@
 #define CONTACTOR_PRE_GPIO 	2
 #define CONTACTOR_PRE_PIN 	1
 
-#define DEBUG_ENABLE
-
 #ifdef DEBUG_ENABLE
 	#define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 	#define DEBUG_Println(str) {DEBUG_Print(str); DEBUG_Print("\r\n");}
@@ -58,23 +56,27 @@
  *
  * @param str string to print
  */
-uint32_t Board_Print(uint8_t *str);
+uint32_t Board_Print(const char *str);
 
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *
  * @param str string to print
  */
-uint32_t Board_Println(uint8_t *str);
+uint32_t Board_Println(const char *str);
 
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *
  * @param str string to print
  */
-uint32_t Board_Write(uint8_t *str, uint32_t count);
+uint32_t Board_Write(const char *str, uint32_t count);
 
-uint32_t Board_Read(char * charBuffer, uint32_t length);
+uint32_t Board_Read(char *charBuffer, uint32_t length);
+
+uint32_t Board_Print_BLOCKING(const char *str);
+
+uint32_t Board_Println_BLOCKING(const char *str);
 
 
 /**

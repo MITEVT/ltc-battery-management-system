@@ -206,12 +206,12 @@ DMP = $(OUT_DIR_F)$(PROJECT).dmp
 
 TEST_TARGET = $(OUT_DIR_TEST_F)$(PROJECT)
 
-# format final flags for tools, request dependancies for C++, C and asm
+# format final flags for tools, request dependancies for C and asm
 C_FLAGS_F_CROSS = $(CORE_FLAGS) $(OPTIMIZATION) $(C_WARNINGS) $(C_FLAGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 AS_FLAGS_F_CROSS = $(CORE_FLAGS) $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 LD_FLAGS_F_CROSS = $(CORE_FLAGS) $(LD_FLAGS) $(LIB_DIRS_F_CROSS)
 
-# format final flags for tools, request dependancies for C++, C and asm
+# format final flags for tools, request dependancies for C and asm
 C_FLAGS_F = $(CORE_FLAGS) $(OPTIMIZATION) $(C_WARNINGS) $(C_FLAGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 AS_FLAGS_F = $(CORE_FLAGS) $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 LD_FLAGS_F = $(CORE_FLAGS) $(LD_FLAGS) $(LIB_DIRS_F)

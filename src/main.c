@@ -211,20 +211,28 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     //     LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
     // }
 
-    LTC6804_STATUS_T res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
+    // LTC6804_STATUS_T res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
+    LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
     if (res == LTC6804_FAIL) Board_Println("LTC6804_CVST FAIL");
     if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_CVST PEC_ERROR");
     if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_CVST SPI_ERROR");
     if (res == LTC6804_PASS) {
-        // Board_Println("");
-        // int i;
-        // for (i = 0; i < 12; i++) {
-        //     itoa(ltc6804_adc_res.cell_voltages_mV[i], str, 10);
-        //     Board_Print(str);
-        //     Board_Print(", ");
-        // }
-        // Board_Println("");
+        Board_Println("");
+        int i;
+        for (i = 0; i < 12; i++) {
+            itoa(ltc6804_adc_res.cell_voltages_mV[i], str, 10);
+            Board_Print(str);
+            Board_Print(", ");
+        }
+        Board_Print(": ");
+        itoa(ltc6804_adc_res.pack_cell_min_mV, str, 10);
+        Board_Print(str);
+        Board_Print(", ");
+        itoa(ltc6804_adc_res.pack_cell_max_mV, str, 10);
+        Board_Print(str);
+        Board_Println("");
         LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        delay(2000);
     }
 }
 
@@ -280,9 +288,7 @@ int main(void) {
         Board_Print("!");
     }
 
-    delay(2000);
-    LTC6804_WriteCFG(&ltc6804_config, &ltc6804_state, msTicks);
-    delay(5);
+    delay(2000); // Cause LTC6804 to fall asleep
     while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
         if (res == LTC6804_FAIL) {
             Board_Print(".FAIL (");
@@ -301,11 +307,21 @@ int main(void) {
         } else if (res == LTC6804_PEC_ERROR) {
             Board_Println(".PEC_ERROR");
             break;
-        } else {
-            Board_Print("*");
+        } else if (res == LTC6804_WAITING) {
+            Chip_UART_SendBlocking(LPC_USART, "*", 1);
+        } else if (res == LTC6804_WAITING_REFUP) {
+            Chip_UART_SendBlocking(LPC_USART, "#", 1);
         }
     } 
     if (res == LTC6804_PASS) Board_Println(".PASS");
+
+    Board_Print("Verifying..");
+
+    if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+        Board_Println(".FAIL. ");
+    } else {
+        Board_Println(".PASS. ");
+    }
     
     //setup readline
     microrl_init(&rl, Board_Print);

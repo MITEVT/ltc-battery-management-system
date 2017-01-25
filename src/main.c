@@ -8,21 +8,21 @@
 #include "console.h"
 #include "eeprom_config.h"
 #include "config.h"
-
-#define ADDR_LEN 3
-#define MAX_DATA_LEN 16
+#include "ltc6804.h"
 
 #define LED0 2, 10
 #define LED1 2, 8
 
+#define BAL_SW 1, 2
+#define IOCON_BAL_SW IOCON_PIO1_2
+#define CHRG_SW 1, 2
+#define IOCON_CHRG_SW IOCON_PIO1_2
+#define DISCHRG_SW 1, 2
+#define IOCON_DISCHRG_SW IOCON_PIO1_2
+
 volatile uint32_t msTicks;
 
 static char str[10];
-
-static uint8_t UART_Rx_Buf[UART_BUFFER_SIZE];
-
-static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size);
-static void ZeroRxBuf(uint8_t *rx_buf, uint32_t size);
 
 // memory allocation for BMS_OUTPUT_T
 static bool balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
@@ -33,12 +33,22 @@ static BMS_OUTPUT_T bms_output;
 static BMS_PACK_STATUS_T pack_status;
 static BMS_INPUT_T bms_input;
 
-//memory allocation for BMS_STATE_T
+// memory allocation for BMS_STATE_T
 static BMS_CHARGER_STATUS_T charger_status;
 static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
+
+// memory allocation for LTC6804
+// [TODO] remove magic numbers
+static LTC6804_CONFIG_T ltc6804_config;
+static LTC6804_STATE_T ltc6804_state;
+static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
+static uint8_t ltc6804_tx_buf[4+15*6];
+static uint8_t ltc6804_rx_buf[4+15*6];
+static uint8_t ltc6804_cfg[6];
+static LTC6804_ADC_RES_T ltc6804_adc_res;
 
 void SysTick_Handler(void) {
 	msTicks++;
@@ -47,19 +57,6 @@ void SysTick_Handler(void) {
 /****************************
  *          HELPERS
  ****************************/
-
-static void PrintRxBuffer(uint8_t *rx_buf, uint32_t size) {
-    Chip_UART_SendBlocking(LPC_USART, "0x", 2);
-    uint8_t i;
-    for(i = 0; i < size; i++) {
-        itoa(rx_buf[i], str, 16);
-        if(rx_buf[i] < 16) {
-            Chip_UART_SendBlocking(LPC_USART, "0", 1);
-        }
-        Chip_UART_SendBlocking(LPC_USART, str, 2);
-    }
-    Chip_UART_SendBlocking(LPC_USART, "\n", 1);
-}
 
 static void delay(uint32_t dlyTicks) {
 	uint32_t curTicks = msTicks;
@@ -78,6 +75,12 @@ static void Init_GPIO(void) {
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
     
     //SSP for EEPROM
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
@@ -86,7 +89,7 @@ static void Init_GPIO(void) {
 }
 
 void Init_EEPROM_config(void) {
-    init_eeprom(LPC_SSP1, 600000, 0, 7);
+    // init_eeprom(LPC_SSP0, 600000, 1, 7);
 }
 
 void Init_BMS_Structs(void) {
@@ -99,8 +102,6 @@ void Init_BMS_Structs(void) {
     charge_req.charger_on = 0;
     charge_req.charge_current_mA = 0;
     charge_req.charge_voltage_mV = 0;
-
-
 
     bms_state.charger_status = &charger_status;
     bms_state.pack_config = &pack_config;
@@ -129,7 +130,6 @@ void Init_BMS_Structs(void) {
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
     pack_config.max_cell_temp_C = 0;
 
-
     //assign bms_inputs
     bms_input.hard_reset_line = false;
     bms_input.mode_request = BMS_SSM_MODE_STANDBY;
@@ -142,6 +142,7 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_read_error = false;
     bms_input.ltc_error = LTC_NO_ERROR; //[TODO] change to the type provided by the library
 
+    memset(cell_voltages, 0, sizeof(cell_voltages));
     pack_status.cell_voltage_mV = cell_voltages;
     pack_status.pack_cell_max_mV = 0;
     pack_status.pack_cell_min_mV = 0;
@@ -149,8 +150,34 @@ void Init_BMS_Structs(void) {
     pack_status.pack_voltage_mV = 0;
     pack_status.precharge_voltage = 0;
     pack_status.max_cell_temp_C = 0;
-    pack_status.error = 0;;
+    pack_status.error = 0;
 
+}
+
+void Init_LTC6804(void) {
+    // [TODO] For now do all LTC6804 Init here, 100k Baud, Port 0_7 for CS
+    
+    ltc6804_config.pSSP = LPC_SSP1;
+    ltc6804_config.baud = 1000000;
+    ltc6804_config.cs_gpio = 0;
+    ltc6804_config.cs_pin = 7;
+
+    ltc6804_config.num_modules = pack_config.num_modules;
+    ltc6804_config.module_cell_count = num_cells_in_modules;
+
+    ltc6804_config.min_cell_mV = pack_config.cell_min_mV;
+    ltc6804_config.max_cell_mV = pack_config.cell_max_mV;
+
+    ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
+    
+    ltc6804_state.xf = &ltc6804_xf_setup;
+    ltc6804_state.tx_buf = ltc6804_tx_buf;
+    ltc6804_state.rx_buf = ltc6804_rx_buf;
+    ltc6804_state.cfg = ltc6804_cfg;
+
+    ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltage_mV;
+
+    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 }
 
 void Process_Input(BMS_INPUT_T* bms_input) {
@@ -159,6 +186,31 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
     bms_input->msTicks = msTicks;
+
+    // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
+    //     bms_input->balance_mV = 3300;
+    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
+    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+    // } else {
+    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
+    // }
+
+    // [TODO] add console stuff here with override
+
+    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+        LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
+        if (res == LTC6804_FAIL) Board_Println("LTC6804_CVST FAIL");
+        if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_CVST PEC_ERROR");
+        if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_CVST SPI_ERROR");
+        if (res == LTC6804_PASS) {
+            pack_status.pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+            pack_status.pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+            LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        }
+    }
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
@@ -173,9 +225,44 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
             Check_PackConfig_With_LTC(&pack_config);
+        Init_LTC6804();
+        Board_Print("Initializing LTC6804. Verifying..");
+        if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+            Board_Print(".FAIL. ");
+            bms_input->ltc_packconfig_check_done = false;
+        } else {
+            Board_Print(".PASS. ");
+        }
+
+        LTC6804_STATUS_T res;
+
+        Board_Print("CVST..");
+        while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
+            if (res == LTC6804_FAIL) {
+                Board_Print(".FAIL (");
+
+                int i;
+                for (i = 0; i < 12; i++) {
+                    itoa(ltc6804_state.rx_buf[i], str, 16);
+                    Board_Print(str);
+                    Board_Print(", ");
+                }
+                Board_Println(")");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            } else if (res == LTC6804_SPI_ERROR) {
+                Board_Println(".SPI_ERROR");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            } else if (res == LTC6804_PEC_ERROR) {
+                Board_Println(".PEC_ERROR");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            }
+        } 
+        if (res == LTC6804_PASS) Board_Println(".PASS");
     }
-    bms_input->contactors_closed = bms_output->close_contactors; ///test;lkaysd;fjas [TODO] remove
-    
+
 }
 
 void Process_Keyboard(void) {
@@ -192,16 +279,14 @@ int main(void) {
     Init_Core();
     Init_GPIO();
     Init_EEPROM_config();
+
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
     Default_Config();
 
-    uint32_t last_count = msTicks;
-    while (msTicks - last_count > 1000) {
-    }
-
-    Board_Println("I'm Up!");
+    Board_Println("Started Up");    
     
+
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
@@ -209,12 +294,10 @@ int main(void) {
 
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
-    last_count = msTicks;
-    // itoa(&commands,str,16);
-    // Board_Println(commands[0]);
+    uint32_t last_count = msTicks;
+    uint8_t toggle = 0;
 
 	while(1) {
-
         Process_Keyboard(); //do this if you want to add the command line
         if ((msTicks - bms_input.msTicks) > 1000) {
             // Board_Println(BMS_SSM_MODE_NAMES[bms_state.curr_mode]);
@@ -225,7 +308,6 @@ int main(void) {
             // delay(1000);
 
             // Board_Println("\n\nagain");
-            bms_input.msTicks = msTicks;
 
             Process_Input(&bms_input);
             SSM_Step(&bms_input, &bms_state, &bms_output); 
@@ -233,12 +315,16 @@ int main(void) {
 
         }
         
+        // Testing Code
+        bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
+        // Act as LTC6804 pack handler. ie balance and update pack_status
+
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));
+            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
-	}
+    }
 
 	return 0;
 }

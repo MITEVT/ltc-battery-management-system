@@ -96,7 +96,7 @@ static void Init_GPIO(void) {
 }
 
 void Init_EEPROM_config(void) {
-    init_eeprom(LPC_SSP0, 600000, 1, 7);
+    EEPROM_init(LPC_SSP0, 600000, 1, 7);
 }
 
 void Init_BMS_Structs(void) {

@@ -6,7 +6,6 @@
 #include "microrl.h"
 #include "console_types.h"
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
 
 uint32_t my_atou(char *str)
@@ -251,6 +250,8 @@ void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T
     console.bms_state = bms_state;
     console.bms_output = bms_output;
 }
+
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
 
 void executerl(uint32_t argc, const char * const * argv){
     uint32_t command_i = 0;

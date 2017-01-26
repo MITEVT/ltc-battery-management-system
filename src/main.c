@@ -87,10 +87,16 @@ static void Init_GPIO(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MOSI1 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK1 */
+
+    //SSP for LTC6804
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MISO0 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MOSI0 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
+    Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 }
 
 void Init_EEPROM_config(void) {
-    // init_eeprom(LPC_SSP0, 600000, 1, 7);
+    init_eeprom(LPC_SSP0, 600000, 1, 7);
 }
 
 void Init_BMS_Structs(void) {
@@ -158,10 +164,10 @@ void Init_BMS_Structs(void) {
 void Init_LTC6804(void) {
     // [TODO] For now do all LTC6804 Init here, 100k Baud, Port 0_7 for CS
     
-    ltc6804_config.pSSP = LPC_SSP1;
-    ltc6804_config.baud = 1000000;
+    ltc6804_config.pSSP = LPC_SSP0;
+    ltc6804_config.baud = 500000;
     ltc6804_config.cs_gpio = 0;
-    ltc6804_config.cs_pin = 7;
+    ltc6804_config.cs_pin = 2;
 
     ltc6804_config.num_modules = pack_config.num_modules;
     ltc6804_config.module_cell_count = num_cells_in_modules;

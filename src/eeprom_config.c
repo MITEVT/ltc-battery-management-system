@@ -1,28 +1,40 @@
-#include "chip.h"
 #include "eeprom_config.h"
-#include "state_types.h"
-#include "lc1024.h"
-#include "config.h"
 
 
-static uint8_t num_cells_in_modules[] = {12};
-static PACK_CONFIG_T pack_config_defaults = {
-    .cell_min_mV = 2700,
-    .cell_max_mV = 3700,
-    .cell_capacity_cAh = 400,
-    .num_modules = 1,
-    .cell_charge_c_rating_cC = 200,
-    .bal_on_thresh_mV = 20,
-    .bal_off_thresh_mV = 5,
-    .pack_cells_p = 64,
-    .cv_min_current_mA = 1000,
-    .cv_min_current_ms = 1000,
-    .cc_cell_voltage_mV = 3600,
-    .num_cells_in_modules = &num_cells_in_modules // [TODO] refactor to module_cell_count
-};
+uint8_t eeprom_table_buffer[TABLE_SIZE];
+
+uint8_t num_cells_in_modules[] = {12};
+
+static void load_table_eeprom(uint8_t* eeprom_table_buffer);
+static bool validate_table_eeprom(uint8_t* eeprom_table_buffer);
+static void write_table_eeprom(uint8_t* eeprom_table_buffer);
+static void write_checksum_eeprom(uint8_t* eeprom_table_buffer);
+static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config);
+static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config);
+
+
+PACK_CONFIG_T pack_config_defaults;
+
+static void EEPROM_Default_Config(void) {
+    pack_config_defaults.cell_min_mV = 2500;
+    pack_config_defaults.cell_max_mV = 4200;
+    pack_config_defaults.cell_capacity_cAh = 530;
+    pack_config_defaults.num_modules = 1;
+    pack_config_defaults.cell_charge_c_rating_cC = 70;
+    pack_config_defaults.bal_on_thresh_mV = 4;
+    pack_config_defaults.bal_off_thresh_mV = 1;
+    pack_config_defaults.pack_cells_p = 6;
+    pack_config_defaults.cv_min_current_mA = 50;
+    pack_config_defaults.cv_min_current_ms = 60000;
+    pack_config_defaults.cc_cell_voltage_mV = 4300;
+    pack_config_defaults.cell_discharge_c_rating_cC = 200; // at 27 degrees C
+    pack_config_defaults.max_cell_temp_C = 50;
+    pack_config_defaults.num_cells_in_modules = &num_cells_in_modules; // [TODO] Fix
+}
 
 void EEPROM_init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
     LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
+    EEPROM_Default_Config();
 }
 
 // entry from Process_Output(..) in main.c, executed during start
@@ -40,23 +52,7 @@ bool EEPROM_Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
 	return true;
 }
 
-// called exactly once in main.c
-void EEPROM_Default_Config(void) {
-    pack_config_defaults.cell_min_mV = 2500;
-    pack_config_defaults.cell_max_mV = 4200;
-    pack_config_defaults.cell_capacity_cAh = 530;
-    pack_config_defaults.num_modules = 1;
-    pack_config_defaults.cell_charge_c_rating_cC = 70;
-    pack_config_defaults.bal_on_thresh_mV = 4;
-    pack_config_defaults.bal_off_thresh_mV = 1;
-    pack_config_defaults.pack_cells_p = 6;
-    pack_config_defaults.cv_min_current_mA = 50;
-    pack_config_defaults.cv_min_current_ms = 60000;
-    pack_config_defaults.cc_cell_voltage_mV = 4300;
-    pack_config_defaults.cell_discharge_c_rating_cC = 200; // at 27 degrees C
-    pack_config_defaults.max_cell_temp_C = 50;
-    pack_config_defaults.num_cells_in_modules = &num_cells_in_modules; // [TODO] Fix
-}
+
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE
 uint8_t EEPROM_Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
@@ -137,7 +133,6 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
     pack_config->num_cells_in_modules[0] = 12;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
-    EEPROM_Change_Config(RWL_cell_min_mV, 0); //[TODO] WUT IS DIS MEAN
 	// pack_config->*num_cells_in_modules; // [TODO] refactor to module_cell_count
 }
 

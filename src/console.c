@@ -237,7 +237,8 @@ void config(const char * const * argv) {
     }
 }
 void bal(const char * const * argv) {
-    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY) {    
+    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY || 
+            console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY) {    
         Board_Println("going to bal");
         console.bms_input->mode_request = BMS_SSM_MODE_BALANCE;
     } else {

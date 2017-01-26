@@ -111,28 +111,41 @@ BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
     return 0;
 }
 
+// [TODO] All statemachines must clean up before entering error. also set outputs to none
 void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     (void)(output);
 
     // checks if there is a reported error
     //    communicating with the eeprom or ltc
-    if(state->curr_mode == BMS_SSM_MODE_ERROR) return;
+    if (state->curr_mode == BMS_SSM_MODE_ERROR) return;
     
-    if(input->eeprom_read_error) {
+    if (input->eeprom_read_error) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_EEPROM_ERROR;
         return;
     }
-    if(input->ltc_error != LTC_NO_ERROR) {
+    if (input->ltc_error != LTC_NO_ERROR) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_LTC_ERROR;
         return;
     }
 
     uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
-    if(input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
+    if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_CELL_OVER_TEMP;
+        return;
+    }
+
+    if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = BMS_CELL_UNDER_VOLTAGE;
+        return;
+    }
+
+    if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
+        state->curr_mode = BMS_SSM_MODE_ERROR;
+        state->error_code = BMS_CELL_OVER_VOLTAGE;
         return;
     }
 }
@@ -145,7 +158,10 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //     if in standby:
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
-    Check_Error(input, state, output);
+
+    if (state->curr_mode != BMS_SSM_MODE_INIT) {
+        Check_Error(input, state, output);
+    }
     
     if((Is_Valid_Jump(state->curr_mode, input->mode_request)
             && Is_State_Done(state))
@@ -168,6 +184,13 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
             break;
         case BMS_SSM_MODE_ERROR:
             err = Error_Step(input, state, output);
+
+            output->charge_req->charger_on = false;
+            output->close_contactors = false;
+            memset(output->balance_req, 0, sizeof(output->balance_req)*Get_Total_Cell_Count(state->pack_config)); // [TODO] Don't recalc
+
+            output->read_eeprom_packconfig = false;
+            output->check_packconfig_with_ltc = false;
             break;
         case BMS_SSM_MODE_BALANCE:
             err = Charge_Step(input, state, output);

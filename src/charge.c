@@ -186,12 +186,13 @@ handler:
 				if(input->mode_request == BMS_SSM_MODE_CHARGE) {
 					if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
 						state->charge_state = BMS_CHARGE_INIT;
-						goto handler;
+						goto handler; // [TODO] Really think hard about this
 					}
 				} else if (input->mode_request == BMS_SSM_MODE_BALANCE) {
 					for (i = 0; i < total_num_cells; i++) {
-						if (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV) {
+						if (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV) {
 							state->charge_state = BMS_CHARGE_INIT;
+							break;
 							goto handler;
 						}
 					}

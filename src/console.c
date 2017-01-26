@@ -241,9 +241,11 @@ static void config(const char * const * argv) {
 }
 static void bal(const char * const * argv) {
     UNUSED(argv);
-    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY) {    
+    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
+            console.bms_state->curr_mode == BMS_SSM_MODE_BALANCE) {    
         Board_Println("going to bal");
         console.bms_input->mode_request = BMS_SSM_MODE_BALANCE;
+        console.bms_input->balance_mV = my_atou(argv[1]);
     } else {
         Board_Println("Must be in standby");
     }

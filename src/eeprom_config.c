@@ -18,7 +18,7 @@ static PACK_CONFIG_T pack_config_defaults = {
     .cv_min_current_mA = 1000,
     .cv_min_current_ms = 1000,
     .cc_cell_voltage_mV = 3600,
-    .num_cells_in_modules = &num_cells_in_modules // [TODO] refactor to module_cell_count
+    .num_cells_in_modules = num_cells_in_modules // [TODO] refactor to module_cell_count
 };
 
 void EEPROM_init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
@@ -55,7 +55,7 @@ void EEPROM_Default_Config(void) {
     pack_config_defaults.cc_cell_voltage_mV = 4300;
     pack_config_defaults.cell_discharge_c_rating_cC = 200; // at 27 degrees C
     pack_config_defaults.max_cell_temp_C = 50;
-    pack_config_defaults.num_cells_in_modules = &num_cells_in_modules; // [TODO] Fix
+    pack_config_defaults.num_cells_in_modules = num_cells_in_modules; // [TODO] Fix
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE

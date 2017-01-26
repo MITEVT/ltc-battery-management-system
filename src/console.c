@@ -8,7 +8,7 @@
 
 
 
-uint32_t my_atou(char *str)
+uint32_t my_atou(const char *str)
 {
     uint32_t res = 0; // Initialize result
   
@@ -22,7 +22,7 @@ uint32_t my_atou(char *str)
     return res;
 }
 
-void get(const char * const * argv) {
+static void get(const char * const * argv) {
     rw_loc_lable_t rwloc;
     uint8_t i;
 
@@ -168,7 +168,7 @@ void get(const char * const * argv) {
     }
 }
 
-void set(const char * const * argv) {
+static void set(const char * const * argv) {
     if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
     {
         Board_Println("Set failed (not in standby mode)!");
@@ -202,7 +202,8 @@ void set(const char * const * argv) {
         Board_Println("invalid location");
     }
 }
-void help(const char * const * argv) {
+
+static void help(const char * const * argv) {
     command_label_t command_i = 0;
     for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)
     {
@@ -229,14 +230,17 @@ void help(const char * const * argv) {
     }
 
 }
-void config(const char * const * argv) {
+
+static void config(const char * const * argv) {
+    UNUSED(argv);
     if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
     {
         console.bms_state->curr_mode = BMS_SSM_MODE_INIT;
         console.bms_state->init_state = BMS_INIT_OFF;
     }
 }
-void bal(const char * const * argv) {
+static void bal(const char * const * argv) {
+    UNUSED(argv);
     if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY) {    
         Board_Println("going to bal");
         console.bms_input->mode_request = BMS_SSM_MODE_BALANCE;

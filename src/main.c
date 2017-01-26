@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "board.h"
-#include "lc1024.h"
-#include "state_types.h"
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
@@ -49,6 +47,9 @@ static uint8_t ltc6804_tx_buf[4+15*6];
 static uint8_t ltc6804_rx_buf[4+15*6];
 static uint8_t ltc6804_cfg[6];
 static LTC6804_ADC_RES_T ltc6804_adc_res;
+
+// memory for console
+static microrl_t rl;
 
 void SysTick_Handler(void) {
 	msTicks++;
@@ -302,7 +303,6 @@ int main(void) {
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
     uint32_t last_count = msTicks;
-    uint8_t toggle = 0;
 
 	while(1) {
         Process_Keyboard(); //do this if you want to add the command line

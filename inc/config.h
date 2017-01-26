@@ -3,6 +3,5 @@
 
 #define MAX_NUM_MODULES 15
 #define MAX_CELLS_PER_MODULE 12
-#define NUMCOMMANDS  5
 
 #endif

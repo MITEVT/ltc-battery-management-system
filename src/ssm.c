@@ -1,9 +1,5 @@
 #include "ssm.h"
-#include "charge.h"
-#include "discharge.h"
-#include "error.h"
-#include "config.h"
-#include "bms_utils.h"
+
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
@@ -105,6 +101,8 @@ bool Is_State_Done(BMS_STATE_T *state) {
 }
 
 BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    (void)(input);
+
     output->close_contactors = false;
     output->charge_req->charger_on = false;
 	memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
@@ -114,6 +112,8 @@ BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
 }
 
 void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    (void)(output);
+
     // checks if there is a reported error
     //    communicating with the eeprom or ltc
     if(state->curr_mode == BMS_SSM_MODE_ERROR) return;

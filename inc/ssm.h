@@ -2,6 +2,11 @@
 #define SSM_H
 
 #include "state_types.h"
+#include "charge.h"
+#include "discharge.h"
+#include "error.h"
+#include "config.h"
+#include "bms_utils.h"
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
 BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);

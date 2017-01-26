@@ -1,8 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "board.h"
-#include "lc1024.h"
-#include "state_types.h"
 #include "ssm.h"
 #include "sysinit.h"
 #include "console.h"
@@ -49,6 +47,9 @@ static uint8_t ltc6804_tx_buf[4+15*6];
 static uint8_t ltc6804_rx_buf[4+15*6];
 static uint8_t ltc6804_cfg[6];
 static LTC6804_ADC_RES_T ltc6804_adc_res;
+
+// memory for console
+static microrl_t rl;
 
 void SysTick_Handler(void) {
 	msTicks++;
@@ -152,7 +153,7 @@ void Init_BMS_Structs(void) {
     memset(cell_voltages, 0, sizeof(cell_voltages));
     pack_status.cell_voltage_mV = cell_voltages;
     pack_status.pack_cell_max_mV = 0;
-    pack_status.pack_cell_min_mV = 0;
+    pack_status.pack_cell_min_mV = 0xFFFFFFFF; // [TODO] this is a bodge fix
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.precharge_voltage = 0;
@@ -209,9 +210,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     if (false) { //bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
-        if (res == LTC6804_FAIL) Board_Println("LTC6804_CVST FAIL");
-        if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_CVST PEC_ERROR");
-        if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_CVST SPI_ERROR");
+        if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
+        if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVol PEC_ERROR");
+        if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_GetCellVol SPI_ERROR");
         if (res == LTC6804_PASS) {
             pack_status.pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
             pack_status.pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
@@ -232,42 +233,51 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
             EEPROM_Check_PackConfig_With_LTC(&pack_config);
-        // Init_LTC6804();
-        // Board_Print("Initializing LTC6804. Verifying..");
-        // if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-        //     Board_Print(".FAIL. ");
-        //     bms_input->ltc_packconfig_check_done = false;
-        // } else {
-        //     Board_Print(".PASS. ");
-        // }
+        Init_LTC6804();
+        Board_Print("Initializing LTC6804. Verifying..");
+        if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+            Board_Print(".FAIL. ");
+            bms_input->ltc_packconfig_check_done = false;
+        } else {
+            Board_Print(".PASS. ");
+        }
 
-        // LTC6804_STATUS_T res;
+        LTC6804_STATUS_T res;
+        Board_Print("CVST..");
+        while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
+            if (res == LTC6804_FAIL) {
+                Board_Print(".FAIL (");
 
-        // Board_Print("CVST..");
-        // while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
-        //     if (res == LTC6804_FAIL) {
-        //         Board_Print(".FAIL (");
+                int i;
+                for (i = 0; i < 12; i++) {
+                    itoa(ltc6804_state.rx_buf[i], str, 16);
+                    Board_Print(str);
+                    Board_Print(", ");
+                }
+                Board_Println(")");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            } else if (res == LTC6804_SPI_ERROR) {
+                Board_Println(".SPI_ERROR");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            } else if (res == LTC6804_PEC_ERROR) {
+                Board_Println(".PEC_ERROR");
+                bms_input->ltc_packconfig_check_done = false;
+                break;
+            }
+        } 
+        if (res == LTC6804_PASS) Board_Println(".PASS");
+    }
 
-        //         int i;
-        //         for (i = 0; i < 12; i++) {
-        //             itoa(ltc6804_state.rx_buf[i], str, 16);
-        //             Board_Print(str);
-        //             Board_Print(", ");
-        //         }
-        //         Board_Println(")");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     } else if (res == LTC6804_SPI_ERROR) {
-        //         Board_Println(".SPI_ERROR");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     } else if (res == LTC6804_PEC_ERROR) {
-        //         Board_Println(".PEC_ERROR");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     }
-        // } 
-        // if (res == LTC6804_PASS) Board_Println(".PASS");
+    // [TODO] Think about what happens on sleep and only updating on change
+    // [TODO] If statement sucks
+    if (bms_state.curr_mode == BMS_SSM_MODE_BALANCE || bms_state.curr_mode == BMS_SSM_MODE_ERROR) {
+        LTC6804_STATUS_T res;
+        res = LTC6804_SetBalanceStates(&ltc6804_config, &ltc6804_state, bms_output->balance_req, msTicks);
+        if (res == LTC6804_SPI_ERROR) {
+            Board_Println("SetBalanceStates SPI_ERROR");
+        }
     }
 
 }
@@ -301,11 +311,10 @@ int main(void) {
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
     uint32_t last_count = msTicks;
-    uint8_t toggle = 0;
 
 	while(1) {
         Process_Keyboard(); //do this if you want to add the command line
-        if ((msTicks - bms_input.msTicks) > 1000) {
+        if ((msTicks - bms_input.msTicks) > 100) {
             // Board_Println(BMS_SSM_MODE_NAMES[bms_state.curr_mode]);
             // Board_Println(BMS_INIT_MODE_NAMES[bms_state.init_state]);
             // Board_Println(BMS_CHARGE_MODE_NAMES[bms_state.charge_state]);

@@ -53,7 +53,6 @@ bool EEPROM_Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
 }
 
 
-
 // SHOULD ONLY BE CALLED IN STANDBY MODE
 uint8_t EEPROM_Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
     switch (rw_loc) {

@@ -1,8 +1,7 @@
 #include "discharge.h"
-#include "bms_utils.h"
+
 
 static uint16_t total_num_cells;
-
 static uint32_t min_cell_voltage_mV;
 static uint32_t max_pack_current_mA;
 static uint16_t max_cell_temp_thres_C;
@@ -13,11 +12,9 @@ void Discharge_Init(BMS_STATE_T *state) {
 }
 
 uint32_t Calculate_Max_Current(
-        uint32_t cell_capacity_cAh,
-        uint32_t discharge_rating_cC,
-        uint32_t pack_cells_p,
-        uint16_t cell_temp_C
-    ) {
+        uint32_t cell_capacity_cAh, uint32_t discharge_rating_cC,
+        uint32_t pack_cells_p, uint16_t cell_temp_C) {
+    (void)(cell_temp_C);
     return cell_capacity_cAh * discharge_rating_cC * pack_cells_p / 10;
 }
 

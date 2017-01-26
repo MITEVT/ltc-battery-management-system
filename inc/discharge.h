@@ -1,6 +1,9 @@
 #ifndef DISCHARGE_H
 #define DISCHARGE_H
+
 #include "state_types.h"
+#include "bms_utils.h"
+
 
 uint32_t Calculate_Max_Current(uint32_t cell_capacity_cAh, uint32_t discharge_rating_cC, uint32_t pack_cells_p, uint16_t cell_temp_C);
 

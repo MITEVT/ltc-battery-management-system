@@ -99,7 +99,6 @@ typedef struct console_t
     BMS_OUTPUT_T    * bms_output;
 } console_t;
 
-static microrl_t rl;
 static console_t console;
 
 void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output);

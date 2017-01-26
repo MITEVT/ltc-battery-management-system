@@ -21,12 +21,12 @@ static PACK_CONFIG_T pack_config_defaults = {
     .num_cells_in_modules = &num_cells_in_modules // [TODO] refactor to module_cell_count
 };
 
-void init_eeprom(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
+void EEPROM_init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
     LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
 }
 
 // entry from Process_Output(..) in main.c, executed during start
-bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
+bool EEPROM_Load_PackConfig(PACK_CONFIG_T *pack_config) {
 	load_table_eeprom(eeprom_table_buffer);
 	if (!validate_table_eeprom(eeprom_table_buffer)){
 		write_set_config_defaults_eeprom(eeprom_table_buffer, pack_config);
@@ -36,12 +36,12 @@ bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config) {
     return true;
 }
 
-bool Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
+bool EEPROM_Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config) {
 	return true;
 }
 
 // called exactly once in main.c
-void Default_Config(void) {
+void EEPROM_Default_Config(void) {
     pack_config_defaults.cell_min_mV = 2500;
     pack_config_defaults.cell_max_mV = 4200;
     pack_config_defaults.cell_capacity_cAh = 530;
@@ -59,7 +59,7 @@ void Default_Config(void) {
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE
-uint8_t Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
+uint8_t EEPROM_Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
     switch (rw_loc) {
         case RWL_cell_min_mV:
             pack_config_defaults.cell_min_mV = val;
@@ -137,7 +137,7 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
     pack_config->num_cells_in_modules[0] = 12;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
-    Change_Config(RWL_cell_min_mV, 0); //[TODO] WUT IS DIS MEAN
+    EEPROM_Change_Config(RWL_cell_min_mV, 0); //[TODO] WUT IS DIS MEAN
 	// pack_config->*num_cells_in_modules; // [TODO] refactor to module_cell_count
 }
 

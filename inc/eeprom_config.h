@@ -24,13 +24,10 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
 static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config);
 
 
-void init_eeprom(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);
-
-uint8_t Change_Config(rw_loc_lable_t rw_loc, uint32_t val);
-
-bool Load_EEPROM_PackConfig(PACK_CONFIG_T *pack_config);
-
-bool Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
-void Default_Config(void);
+void EEPROM_init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);
+uint8_t EEPROM_Change_Config(rw_loc_lable_t rw_loc, uint32_t val);
+bool EEPROM_Load_PackConfig(PACK_CONFIG_T *pack_config);
+bool EERPOM_Check_PackConfig_With_LTC(PACK_CONFIG_T *pack_config);
+void EEPROM_Default_Config(void);
 
 #endif

@@ -112,6 +112,7 @@ BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
 }
 
 // [TODO] All statemachines must clean up before entering error. also set outputs to none
+// [TODO] Change Error storage mechanism so we can have multiple errors and they have KILL times
 void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     (void)(output);
 
@@ -197,6 +198,8 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
             break;
     }
 
+
+    // [TODO] Rethink b/c what if transient causes UV
     if(err) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = err;

@@ -168,6 +168,7 @@ static void get(const char * const * argv) {
     }
 }
 
+// [TODO] Check max/min bounds and max > min
 static void set(const char * const * argv) {
     if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
     {
@@ -239,6 +240,8 @@ static void config(const char * const * argv) {
         console.bms_state->init_state = BMS_INIT_OFF;
     }
 }
+
+// [TODO] This should set a flag to be handled in Process_Input
 static void bal(const char * const * argv) {
     UNUSED(argv);
     if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||

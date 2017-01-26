@@ -10,8 +10,7 @@
 #ifndef _CONSOLE_H
 #define _CONSOLE_H
 
-
-// microrl object
+// [TODO] Add command to reset to factory default
 
 static const char * const commands[NUMCOMMANDS] = { "get",
                             "set",

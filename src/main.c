@@ -208,7 +208,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     // [TODO] add console stuff here with override
 
-    if (false) { //bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
         if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVol PEC_ERROR");
@@ -282,6 +282,8 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
 }
 
+// [TODO] Turn off and move command prompt when others are typing....bitch
+//      Board Print should tell microrl to gtfo
 void Process_Keyboard(void) {
     uint32_t readln = Board_Read(str,50);
     uint32_t i;

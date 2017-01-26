@@ -43,7 +43,7 @@ static const char * const locstring[] =  {
                             "cv_min_current_ms",
                             "cc_cell_voltage_mV",
                             "cell_discharge_c_rating_cC",
-                            "max_cell_temp_C",
+                            "max_cell_temp_param",
                             //can't write to the follwing
                             "state",
                             "cell_voltage_mV",

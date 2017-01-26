@@ -29,7 +29,7 @@ typedef struct BMS_PACK_STATUS {
 	uint32_t pack_current_mA;
 	uint32_t pack_voltage_mV;
 	uint32_t precharge_voltage;
-	uint16_t max_cell_temp_C;
+	uint32_t max_cell_temp_C;
 	bool error;
 } BMS_PACK_STATUS_T;
 
@@ -121,6 +121,7 @@ static const char * const BMS_ERROR_NAMES[] = {
     "BMS_INVALID_SSM_STATE_ERROR",
     "BMS_CONTACTORS_ERRONEOUS_STATE",
     "BMS_CELL_UNDER_VOLTAGE",
+    "BMS_CELL_OVER_VOLTAGE",
     "BMS_CELL_OVER_TEMP",
     "BMS_OVER_CURRENT"
 };

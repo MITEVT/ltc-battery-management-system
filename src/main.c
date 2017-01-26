@@ -208,7 +208,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     // [TODO] add console stuff here with override
 
-    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+    if (false) { //bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
         if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVol PEC_ERROR");
@@ -224,11 +224,11 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+    // Board_Println_BLOCKING("Process output");
     if (bms_output->read_eeprom_packconfig){
         bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
-        
     }
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
@@ -299,7 +299,6 @@ int main(void) {
 
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
-    EEPROM_Default_Config();
 
     Board_Println("Started Up");    
     
@@ -328,7 +327,7 @@ int main(void) {
             Process_Input(&bms_input);
             SSM_Step(&bms_input, &bms_state, &bms_output); 
             Process_Output(&bms_input, &bms_output);
-
+            // Board_Println_BLOCKING("finished a step");
         }
         
         // Testing Code

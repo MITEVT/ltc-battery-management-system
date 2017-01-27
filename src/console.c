@@ -232,6 +232,7 @@ static void help(const char * const * argv) {
 
 }
 
+// [TODO] This might not be safe
 static void config(const char * const * argv) {
     UNUSED(argv);
     if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
@@ -246,18 +247,28 @@ static void bal(const char * const * argv) {
     UNUSED(argv);
     if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
             console.bms_state->curr_mode == BMS_SSM_MODE_BALANCE) {    
-        Board_Println("going to bal");
-        console.bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-        console.bms_input->balance_mV = my_atou(argv[1]);
+        
+        if (strcmp(argv[1],"off") == 0) {
+            console.console_output->valid_mode_request = false;
+            console.console_output->balance_mV = UINT32_MAX;
+            Board_Println("bal off");
+        } else {
+            console.console_output->valid_mode_request = true;
+            console.console_output->mode_request = BMS_SSM_MODE_BALANCE;
+            console.console_output->balance_mV = my_atou(argv[1]);
+            Board_Println("bal on");
+        }
     } else {
         Board_Println("Must be in standby");
     }
 }                       
 
-void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output){
+void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, CONSOLE_OUTPUT_T *console_output){
     console.bms_input = bms_input;
     console.bms_state = bms_state;
-    console.bms_output = bms_output;
+    console.console_output = console_output;
+    console.console_output->valid_mode_request = false;
+    console.console_output->mode_request = BMS_SSM_MODE_STANDBY;
 }
 
 static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};

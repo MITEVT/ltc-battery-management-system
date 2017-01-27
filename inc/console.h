@@ -91,16 +91,21 @@ static void bal(const char * const *);
 
 typedef void (* const EXECUTE_HANDLER)(const char * const *);
 
-typedef struct console_t
-{
-    BMS_INPUT_T     * bms_input;
-    BMS_STATE_T     * bms_state;
-    BMS_OUTPUT_T    * bms_output;
+typedef struct {
+    bool valid_mode_request;
+    BMS_SSM_MODE_T mode_request;
+    uint32_t balance_mV;
+} CONSOLE_OUTPUT_T;
+
+typedef struct console_t {
+    BMS_INPUT_T     *bms_input;
+    BMS_STATE_T     *bms_state;
+    CONSOLE_OUTPUT_T *console_output;
 } console_t;
 
 static console_t console;
 
-void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output);
+void console_init(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, CONSOLE_OUTPUT_T *console_output);
 void executerl(uint32_t argc, const char * const * argv);  
 
 

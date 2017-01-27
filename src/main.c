@@ -18,6 +18,9 @@
 #define DISCHRG_SW 1, 2
 #define IOCON_DISCHRG_SW IOCON_PIO1_2
 
+#define EEPROM_BAUD 600000
+#define EEPROM_CS_PIN 1, 7
+
 volatile uint32_t msTicks;
 
 static char str[10];
@@ -74,9 +77,12 @@ static void Init_Core(void) {
 }
 
 static void Init_GPIO(void) {
+    // [TODO] verify that pins don't collide
+    //  move pin selections to preprocesser defines
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+
     Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
     Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
@@ -94,10 +100,6 @@ static void Init_GPIO(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MOSI0 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
-}
-
-void Init_EEPROM_config(void) {
-    EEPROM_init(LPC_SSP0, 600000, 1, 7);
 }
 
 void Init_BMS_Structs(void) {
@@ -297,7 +299,7 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    Init_EEPROM_config();
+    EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
 
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);

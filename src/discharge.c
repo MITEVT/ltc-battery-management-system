@@ -44,9 +44,7 @@ BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T 
 
         // we want to switch states (either to STANDBY/CHARGE/ERROR)
 		default: 
-            if(state->discharge_state == BMS_DISCHARGE_OFF) {
-                state->curr_mode = input->mode_request;  // [TODO] curr_mode should NOT be changed by discharge.c
-            } else {
+            if(state->discharge_state != BMS_DISCHARGE_OFF) {
                 state->discharge_state = BMS_DISCHARGE_DONE;
             }
 			break;

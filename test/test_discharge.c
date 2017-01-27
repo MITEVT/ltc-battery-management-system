@@ -66,9 +66,7 @@ TEST_SETUP(Discharge_Test) {
     bms_input.pack_status->pack_cell_min_mV = 60;
     // necessary because first goes to standby then discharge
     
-    printf("BMS ERROR CODE RN: %d", bms_state.error_code);
     SSM_Step(&bms_input, &bms_state, &bms_output);  
-    printf("BMS ERROR CODE RN: %d", bms_state.error_code);
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 
 
@@ -127,7 +125,6 @@ TEST(Discharge_Test, discharge_step_to_standby) {
     bms_input.contactors_closed = false;
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
-    TEST_ASSERT_EQUAL(BMS_SSM_MODE_STANDBY, bms_state.curr_mode);
     TEST_ASSERT_EQUAL(bms_state.discharge_state, BMS_DISCHARGE_OFF);
 }
 

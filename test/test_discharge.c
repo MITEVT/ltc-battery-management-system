@@ -29,6 +29,7 @@ void Set_PackConfig(
         uint8_t cell_capacity_cAh, uint8_t cell_discharge_c_rating_cC,
         uint8_t pack_cells_p, uint8_t max_cell_temp_C,
         uint8_t min_cell_voltage_mV,
+        uint8_t max_cell_voltage_mV,
         uint8_t num_modules, uint8_t num_cells_in_module1, uint8_t num_cells_in_module2
         );
 
@@ -50,20 +51,24 @@ TEST_SETUP(Discharge_Test) {
     // Go through SSM initialization until in DISCHARGE STATE
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
     SSM_Init(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_INIT, bms_state.curr_mode);
     SSM_Step(&bms_input, &bms_state, &bms_output); 
     bms_input.eeprom_packconfig_read_done = true;
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_INIT, bms_state.curr_mode);
     bms_input.ltc_packconfig_check_done = true;
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_STANDBY, bms_state.curr_mode);
     
     bms_input.contactors_closed = false;
-    Set_PackConfig(10, 10, 10, 10, 40, 2, 3, 3);
+    Set_PackConfig(10, 10, 10, 10, 40, 100, 2, 3, 3);
     Discharge_Config(bms_state.pack_config);
+    bms_input.pack_status->pack_cell_min_mV = 60;
     // necessary because first goes to standby then discharge
+    
+    printf("BMS ERROR CODE RN: %d", bms_state.error_code);
     SSM_Step(&bms_input, &bms_state, &bms_output);  
+    printf("BMS ERROR CODE RN: %d", bms_state.error_code);
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 
 
@@ -84,6 +89,7 @@ void Set_PackConfig(
         uint8_t cell_capacity_cAh, uint8_t cell_discharge_c_rating_cC,
         uint8_t pack_cells_p, uint8_t max_cell_temp_C,
         uint8_t min_cell_voltage_mV,
+        uint8_t max_cell_voltage_mV,
         uint8_t num_modules, uint8_t num_cells_in_module1, uint8_t num_cells_in_module2
         ) {
     bms_state.pack_config->cell_capacity_cAh = cell_capacity_cAh;
@@ -91,6 +97,7 @@ void Set_PackConfig(
     bms_state.pack_config->pack_cells_p = pack_cells_p;
     bms_state.pack_config->max_cell_temp_C = max_cell_temp_C;
     bms_state.pack_config->cell_min_mV = min_cell_voltage_mV;
+    bms_state.pack_config->cell_max_mV = max_cell_voltage_mV;
     bms_state.pack_config->num_modules = num_modules;
     bms_state.pack_config->num_cells_in_modules[0] = num_cells_in_module1;
     bms_state.pack_config->num_cells_in_modules[1] = num_cells_in_module2;
@@ -99,7 +106,7 @@ void Set_PackConfig(
 TEST(Discharge_Test, config) {
     printf("config");
 	Discharge_Config(bms_state.pack_config);
-    TEST_ASSERT_EQUAL(Read_Max_Current(), 100);
+    TEST_ASSERT_EQUAL(100, Read_Max_Current());
 }
 
 TEST(Discharge_Test, discharge_step_invalid_mode_req) {

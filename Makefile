@@ -110,7 +110,7 @@ INC_DIRS_TEST = $(INC_DIRS_CROSS) $(SRCS_DIRS) test $(UNITY_BASE)/src $(UNITY_BA
 TEST_SRCS_DIRS = test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
 
 # c files for testing
-C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c src/discharge.c src/bms_utils.c
+C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c src/discharge.c src/bms_utils.c src/board.c
 
 #=============================================================================#
 # Write Configuration
@@ -216,9 +216,9 @@ C_FLAGS_F = $(CORE_FLAGS) $(OPTIMIZATION) $(C_WARNINGS) $(C_FLAGS) $(C_DEFS) -MD
 AS_FLAGS_F = $(CORE_FLAGS) $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F)
 LD_FLAGS_F = $(CORE_FLAGS) $(LD_FLAGS) $(LIB_DIRS_F)
 
-C_FLAGS_F_TEST =  $(OPTIMIZATION) $(C_WARNINGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST)
+C_FLAGS_F_TEST =  $(OPTIMIZATION) $(C_WARNINGS) $(C_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST) -DTEST_HARDWARE
 AS_FLAGS_F_TEST = $(AS_FLAGS) $(AS_DEFS) -MD -MP -MF $(OUT_DIR_F)$(@F:.o=.d) $(INC_DIRS_F_TEST)
-LD_FLAGS_F_TEST = $(LIB_DIRS_F_TEST)
+# LD_FLAGS_F_TEST = $(LIB_DIRS_F_TEST)
 
 #contents of output directory
 GENERATED = $(wildcard $(patsubst %, $(OUT_DIR_F)*.%, bin d dmp elf hex lss lst map o)) $(wildcard $(OUT_DIR_TEST_F)*)
@@ -252,7 +252,7 @@ $(ELF) : $(LD_SCRIPT)
 # test_linking - objects -> elf
 #-----------------------------------------------------------------------------#
 $(TEST_TARGET) : $(TEST_OBJS)	
-	@$(CC) $(LD_FLAGS_F_TEST) $(TEST_OBJS) $(LIBS) -o $@
+	@$(CC) $(TEST_OBJS) $(LIBS) -o $@
 	@echo ' '
 
 #-----------------------------------------------------------------------------#

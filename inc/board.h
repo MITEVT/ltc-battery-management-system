@@ -4,13 +4,17 @@
  * @date 25 June 2015
  * @brief Board peripheral driver
  */
-
- #include <stdint.h>
- #include "chip.h"
-
+#include <stdint.h>
 
 #ifndef _BOARD_H_
 #define _BOARD_H_
+
+#ifdef TEST_HARDWARE
+	#include <stdbool.h>
+	#include <stdio.h>
+#else
+ #include "chip.h"
+#endif
 
 #define LED1_GPIO 2
 #define LED1_PIN 10
@@ -39,17 +43,6 @@
 #define CONTACTOR_N_PIN  	7
 #define CONTACTOR_PRE_GPIO 	2
 #define CONTACTOR_PRE_PIN 	1
-
-#ifdef DEBUG_ENABLE
-	#define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
-	#define DEBUG_Println(str) {DEBUG_Print(str); DEBUG_Print("\r\n");}
-	#define DEBUG_Write(str, count) Chip_UART_SendBlocking(LPC_USART, str, count)
-#else
-	#define DEBUG_Print(str)
-	#define DEBUG_Println(str)
-	#define DEBUG_Write(str, count) 
-#endif
-
 
 /**
  * @details Non-blocking printing for user interface
@@ -123,9 +116,5 @@ void Board_LED_Off(void);
  */
 void Board_Switch_Init(void);
 
-
-extern void CAN_rx(uint8_t msg_obj_num);
-extern void CAN_tx(uint8_t msg_obj_num);
-extern void CAN_error(uint32_t error_info);
 
 #endif

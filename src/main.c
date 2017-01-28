@@ -122,7 +122,6 @@ static void Init_GPIO(void) {
 }
 
 void Init_Timers(void) {
-
     // Timer 32_0 initialization
     Chip_TIMER_Init(LPC_TIMER32_0);
     Chip_TIMER_Reset(LPC_TIMER32_0);

@@ -117,6 +117,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
 				output->charge_req->charge_current_mA = cv_charge_current_mA;
 				output->charge_req->charger_on = true;
+				output->close_contactors = true;
 				// [TODO] change to cv_min_current times num p
 				if (input->pack_status->pack_current_mA < state->pack_config->cv_min_current_mA) {
 					if ((input->msTicks - last_time_above_cv_min_curr) >= state->pack_config->cv_min_current_ms) {

@@ -55,9 +55,9 @@ static void get(const char * const * argv) {
                 utoa(console.bms_state->pack_config->num_modules, tempstr,10);
                 Board_Println(tempstr);
                 break;
-            case RWL_num_cells_in_modules:
+            case RWL_module_cell_count:
                 for(i = 0; i < console.bms_state->pack_config->num_modules; i++) {
-                    utoa(console.bms_state->pack_config->num_cells_in_modules[i],
+                    utoa(console.bms_state->pack_config->module_cell_count[i],
                             tempstr, 10);
                     Board_Println(tempstr);
                 }
@@ -122,9 +122,9 @@ static void get(const char * const * argv) {
                     Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
                     Board_Println(BMS_ERROR_NAMES[console.bms_state->error_code]);
                     break;
-                case ROL_cell_voltage_mV:
+                case ROL_cell_voltages_mV:
                     for(i = 0; i < Get_Total_Cell_Count(console.bms_state->pack_config); i++) {
-                       utoa(console.bms_input->pack_status->cell_voltage_mV[i], tempstr, 10);
+                       utoa(console.bms_input->pack_status->cell_voltages_mV[i], tempstr, 10);
                        Board_Println(tempstr);
                     }
                     break;

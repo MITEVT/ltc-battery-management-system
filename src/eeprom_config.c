@@ -3,7 +3,7 @@
 
 uint8_t eeprom_table_buffer[TABLE_SIZE];
 
-uint8_t num_cells_in_modules[] = {12};
+uint8_t module_cell_count[] = {12};
 
 static void load_table_eeprom(uint8_t* eeprom_table_buffer);
 static bool validate_table_eeprom(uint8_t* eeprom_table_buffer);
@@ -29,7 +29,7 @@ static void EEPROM_Default_Config(void) {
     pack_config_defaults.cc_cell_voltage_mV = 4300;
     pack_config_defaults.cell_discharge_c_rating_cC = 200; // at 27 degrees C
     pack_config_defaults.max_cell_temp_C = 50;
-    pack_config_defaults.num_cells_in_modules = num_cells_in_modules; // [TODO] Fix
+    pack_config_defaults.module_cell_count = module_cell_count;
 }
 
 void EEPROM_init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
@@ -68,7 +68,7 @@ uint8_t EEPROM_Change_Config(rw_loc_lable_t rw_loc, uint32_t val) {
         case RWL_num_modules:
             pack_config_defaults.num_modules = val;
             break;
-        case RWL_num_cells_in_modules:
+        case RWL_module_cell_count:
             // UNIMPLEMENTED
             return 1;
         case RWL_cell_charge_c_rating_cC:
@@ -134,10 +134,9 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
     pack_config->max_cell_temp_C = pack_config_defaults.max_cell_temp_C;
 
     //[TODO] remove hack
-    pack_config->num_cells_in_modules[0] = 12;
+    pack_config->module_cell_count[0] = 12;
 	write_table_eeprom(pack_config);
 	write_checksum_eeprom(eeprom_table_buffer);
-	// pack_config->*num_cells_in_modules; // [TODO] refactor to module_cell_count
 }
 
 static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_config) {

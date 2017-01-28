@@ -77,7 +77,7 @@ handler:
 
             uint8_t i;
 			for (i = 0; i < total_num_cells; i++) {
-                if(input->pack_status->cell_voltage_mV[i] < min_cell_voltage_mV) { // [TODO] SSM is responsible for for temp and UV
+                if(input->pack_status->cell_voltages_mV[i] < min_cell_voltage_mV) { // [TODO] SSM is responsible for for temp and UV
                     return BMS_CELL_UNDER_VOLTAGE;
                 }
             }

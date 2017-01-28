@@ -16,14 +16,14 @@ typedef struct {
 	uint32_t cv_min_current_mA;
 	uint32_t cv_min_current_ms;
 	uint32_t cc_cell_voltage_mV;
-	uint8_t *num_cells_in_modules; // [TODO] refactor to module_cell_count
+	uint8_t *module_cell_count;
 
 	uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
     uint32_t max_cell_temp_C;
 } PACK_CONFIG_T;
 
 typedef struct BMS_PACK_STATUS {
-	uint32_t *cell_voltage_mV; // array size = #modules * cells/module
+	uint32_t *cell_voltages_mV; // array size = #modules * cells/module
 	uint32_t pack_cell_max_mV;
 	uint32_t pack_cell_min_mV;
 	uint32_t pack_current_mA;
@@ -139,11 +139,6 @@ typedef struct BMS_STATE {
 	BMS_ERROR_T error_code;
 } BMS_STATE_T;
 
-typedef enum LTC_ERROR {
-    LTC_THERMAL_ERROR,
-    LTC_NO_ERROR
-} LTC_ERROR_T;
-
 typedef struct BMS_INPUT {
     bool hard_reset_line; // example hw input
 	BMS_SSM_MODE_T mode_request;
@@ -157,7 +152,6 @@ typedef struct BMS_INPUT {
     bool ltc_packconfig_check_done;
 
     bool eeprom_read_error;
-    LTC_ERROR_T ltc_error;
 } BMS_INPUT_T;
 
 /*

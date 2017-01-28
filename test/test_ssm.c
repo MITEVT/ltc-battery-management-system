@@ -18,7 +18,7 @@ BMS_INPUT_T bms_input;
 //memory allocation for BMS_STATE_T
 BMS_CHARGER_STATUS_T charger_status;
 uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
-uint8_t num_cells_in_modules[MAX_NUM_MODULES];
+uint8_t module_cell_count[MAX_NUM_MODULES];
 PACK_CONFIG_T pack_config;
 BMS_STATE_T bms_state;
 
@@ -61,7 +61,7 @@ TEST_SETUP(SSM_Test) {
     pack_config.cc_cell_voltage_mV = 4300;
     pack_config.cell_discharge_c_rating_cC = 200; // at 27 degrees C
     pack_config.max_cell_temp_C = 50;
-    pack_config.num_cells_in_modules = num_cells_in_modules; // [TODO] Fix
+    pack_config.module_cell_count = module_cell_count;
 
     bms_input.hard_reset_line = false;
     bms_input.mode_request = BMS_SSM_MODE_STANDBY;
@@ -72,12 +72,11 @@ TEST_SETUP(SSM_Test) {
     bms_input.eeprom_packconfig_read_done = false;
     bms_input.ltc_packconfig_check_done = false;
     bms_input.eeprom_read_error = false;
-    bms_input.ltc_error = LTC_NO_ERROR; //[TODO] change to the type provided by the library
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
-    pack_status.cell_voltage_mV = cell_voltages;
+    pack_status.cell_voltages_mV = cell_voltages;
     pack_status.pack_cell_max_mV = 0;
-    pack_status.pack_cell_min_mV = 0xFFFFFFFF; // [TODO] this is a bodge fix
+    pack_status.pack_cell_min_mV = 0xFFFFFFFF;
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.precharge_voltage = 0;

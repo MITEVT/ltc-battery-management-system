@@ -29,11 +29,11 @@ typedef struct error_status {
 	uint32_t 	time_stamp;
 } ERROR_STATUS_T;
 
-typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(const char * const *);
+typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(ERROR_STATUS_T* , const uint32_t );
 
 void assert_error(ERROR_T er_t, uint32_t msTicks);
 void pass_error(ERROR_T er_t, uint32_t msTicks);
-ERROR_HANDLER_STATUS_T handle_errors(void);
+ERROR_HANDLER_STATUS_T handle_errors(uint32_t msTicks);
 
 
 #endif

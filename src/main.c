@@ -260,7 +260,10 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     if (ltc6804_get_cell_voltages) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
-        if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVol PEC_ERROR");
+        if (res == LTC6804_PEC_ERROR) {
+            Board_Println("LTC6804_GetCellVol PEC_ERROR");
+            Error_Assert(ERROR_LTC6804_PEC,bms_input->msTicks);
+        } 
         if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_GetCellVol SPI_ERROR");
         if (res == LTC6804_PASS) {
             pack_status.pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
@@ -374,6 +377,7 @@ int main(void) {
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_input, &bms_output);
+        Error_Handle(bms_input.msTicks);
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes

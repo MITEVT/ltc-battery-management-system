@@ -259,6 +259,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
             Board_Println("LTC6804_GetCellVol PEC_ERROR");
             Error_Assert(ERROR_LTC6804_PEC,bms_input->msTicks);
         } 
+        else {
+            Error_Pass(ERROR_LTC6804_PEC);
+        }
         if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_GetCellVol SPI_ERROR");
         if (res == LTC6804_PASS) {
             pack_status.pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;

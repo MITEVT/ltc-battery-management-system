@@ -21,7 +21,7 @@ TEST(ERROR_Test, INIT_PASS) {
 //[TODO] magic numbers
 TEST(ERROR_Test, UNDERVOLTAGE_PASS_NEVER_HALTS) {
     for (int i = 0; i < 1000; ++i){
-        Error_Pass(ERROR_CELL_UNDER_VOLTAGE, (i*1000)+1);
+        Error_Pass(ERROR_CELL_UNDER_VOLTAGE);
         TEST_ASSERT_EQUAL(Error_Handle((i+1)*1000), HANDLER_FINE);
     }
 }
@@ -42,7 +42,7 @@ TEST(ERROR_Test, UNDERVOLTAGE_HANDLED_FINE) {
         Error_Assert(ERROR_CELL_UNDER_VOLTAGE,i);
         TEST_ASSERT_EQUAL(HANDLER_FINE, Error_Handle(i));
     }
-    Error_Pass(ERROR_CELL_UNDER_VOLTAGE, 1000);
+    Error_Pass(ERROR_CELL_UNDER_VOLTAGE);
     TEST_ASSERT_EQUAL(HANDLER_FINE, Error_Handle(1000));
 }
 
@@ -54,7 +54,7 @@ TEST(ERROR_Test, UNDERVOLTAGE_HANDLED_FINE) {
 //[TODO] magic numbers
 TEST(ERROR_Test, OVERVOLTAGE_PASS_NEVER_HALTS) {
     for (int i = 0; i < 1000; ++i){
-        Error_Pass(ERROR_CELL_UNDER_VOLTAGE, (i*1000)+1);
+        Error_Pass(ERROR_CELL_UNDER_VOLTAGE);
         TEST_ASSERT_EQUAL(Error_Handle((i+1)*1000), HANDLER_FINE);
     }
 }
@@ -76,7 +76,7 @@ TEST(ERROR_Test, OVERVOLTAGE_HANDLED_FINE) {
         Error_Assert(ERROR_CELL_OVER_VOLTAGE,i);
         TEST_ASSERT_EQUAL(HANDLER_FINE, Error_Handle(i));
     }
-    Error_Pass(ERROR_CELL_OVER_VOLTAGE, 1000);
+    Error_Pass(ERROR_CELL_OVER_VOLTAGE);
     TEST_ASSERT_EQUAL(HANDLER_FINE, Error_Handle(1000));
 }
 

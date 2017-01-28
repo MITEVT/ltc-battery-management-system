@@ -67,7 +67,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			output->close_contactors = (input->mode_request == BMS_SSM_MODE_CHARGE);
 			output->charge_req->charger_on = false;
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
-
+			
 			if (input->contactors_closed == output->close_contactors) {
 				if(input->mode_request == BMS_SSM_MODE_CHARGE) {
 					state->charge_state = 
@@ -87,6 +87,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				output->charge_req->charge_voltage_mV = cc_charge_voltage_mV;
 				output->charge_req->charge_current_mA = cc_charge_current_mA;
 				output->charge_req->charger_on = true;
+				output->charge_req->close_contactors = true;
 			}
 			
 			int i;

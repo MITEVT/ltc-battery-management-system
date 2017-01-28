@@ -45,7 +45,7 @@ void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 	}
 
 }
-void Error_Pass(ERROR_T er_t, uint32_t msTicks) {
+void Error_Pass(ERROR_T er_t) {
 	error_vector[er_t].error = false;
 }
 
@@ -76,12 +76,18 @@ ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTi
 	}
 }
 ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(er_stat);
+	UNUSED(msTicks);
 	return HANDLER_HALT;
 }
 ERROR_HANDLER_STATUS_T handle_INVALID_SSM_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(er_stat);
+	UNUSED(msTicks);
 	return HANDLER_HALT;
 }
 ERROR_HANDLER_STATUS_T handle_CONTACTORS_ERRONEOUS_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(er_stat);
+	UNUSED(msTicks);
 	return HANDLER_HALT;
 }
 ERROR_HANDLER_STATUS_T handle_CELL_UNDER_VOLTAGE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {

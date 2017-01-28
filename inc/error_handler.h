@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "chip.h"
 
 
 typedef enum error {
@@ -34,7 +35,7 @@ typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(ERROR_STATUS_T* , const uint32_
 
 void Error_Init(void);
 void Error_Assert(ERROR_T er_t, uint32_t msTicks);
-void Error_Pass(ERROR_T er_t, uint32_t msTicks);
+void Error_Pass(ERROR_T er_t);
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 
 

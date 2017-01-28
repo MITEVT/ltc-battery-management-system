@@ -8,8 +8,8 @@
 #include "config.h"
 #include "ltc6804.h"
 
-#define LED0 2, 10
-#define LED1 2, 8
+#define LED0 2, 8
+#define LED1 2, 10
 
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
@@ -52,6 +52,7 @@ static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
 static uint8_t ltc6804_tx_buf[4+15*6];
 static uint8_t ltc6804_rx_buf[4+15*6];
 static uint8_t ltc6804_cfg[6];
+static uint16_t ltc6804_bal_list[15];
 static LTC6804_ADC_RES_T ltc6804_adc_res;
 
 // memory for console
@@ -143,6 +144,7 @@ void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
     bms_output.close_contactors = false;
     bms_output.balance_req = balance_reqs;
+    memset(balance_reqs, 0, sizeof(balance_reqs[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
 
@@ -221,6 +223,7 @@ void Init_LTC6804(void) {
     ltc6804_state.tx_buf = ltc6804_tx_buf;
     ltc6804_state.rx_buf = ltc6804_rx_buf;
     ltc6804_state.cfg = ltc6804_cfg;
+    ltc6804_state.bal_list = ltc6804_bal_list;
 
     ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltage_mV;
 
@@ -322,9 +325,9 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
     // [TODO] Think about what happens on sleep and only updating on change
     // [TODO] If statement sucks
-    if (bms_state.curr_mode == BMS_SSM_MODE_BALANCE || bms_state.curr_mode == BMS_SSM_MODE_ERROR) {
+    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         LTC6804_STATUS_T res;
-        res = LTC6804_SetBalanceStates(&ltc6804_config, &ltc6804_state, bms_output->balance_req, msTicks);
+        res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, bms_output->balance_req, msTicks);
         if (res == LTC6804_SPI_ERROR) {
             Board_Println("SetBalanceStates SPI_ERROR");
         }
@@ -368,11 +371,9 @@ int main(void) {
 
 	while(1) {
         Process_Keyboard(); //do this if you want to add the command line
-        if ((msTicks - bms_input.msTicks) > 100) {
-            Process_Input(&bms_input);
-            SSM_Step(&bms_input, &bms_state, &bms_output); 
-            Process_Output(&bms_input, &bms_output);
-        }
+        Process_Input(&bms_input);
+        SSM_Step(&bms_input, &bms_state, &bms_output); 
+        Process_Output(&bms_input, &bms_output);
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes

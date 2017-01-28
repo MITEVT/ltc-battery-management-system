@@ -31,9 +31,9 @@ typedef struct error_status {
 
 typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(ERROR_STATUS_T* , const uint32_t );
 
-void assert_error(ERROR_T er_t, uint32_t msTicks);
-void pass_error(ERROR_T er_t, uint32_t msTicks);
-ERROR_HANDLER_STATUS_T handle_errors(uint32_t msTicks);
+void Error_Assert(ERROR_T er_t, uint32_t msTicks);
+void Error_Pass(ERROR_T er_t, uint32_t msTicks);
+ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 
 
 #endif

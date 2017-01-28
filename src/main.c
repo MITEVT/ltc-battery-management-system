@@ -41,20 +41,22 @@ static BMS_INPUT_T bms_input;
 // memory allocation for BMS_STATE_T
 static BMS_CHARGER_STATUS_T charger_status;
 static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
-static uint8_t num_cells_in_modules[MAX_NUM_MODULES];
+static uint8_t module_cell_count[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
 
 // memory allocation for LTC6804
-// [TODO] remove magic numbers
 static LTC6804_CONFIG_T ltc6804_config;
 static LTC6804_STATE_T ltc6804_state;
 static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
-static uint8_t ltc6804_tx_buf[4+15*6];
-static uint8_t ltc6804_rx_buf[4+15*6];
-static uint8_t ltc6804_cfg[6];
-static uint16_t ltc6804_bal_list[15];
+static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)];
+static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)];
+static uint8_t ltc6804_cfg[LTC6804_DATA_LEN];
+static uint16_t ltc6804_bal_list[MAX_NUM_MODULES];
 static LTC6804_ADC_RES_T ltc6804_adc_res;
+
+// ltc6804 timing variables
+static bool ltc6804_get_cell_voltages;
 
 // memory for console
 static microrl_t rl;
@@ -67,8 +69,6 @@ static CONSOLE_OUTPUT_T console_output;
 void SysTick_Handler(void) {
 	msTicks++;
 }
-
-static bool ltc6804_get_cell_voltages; // [TODO] put in right place
 
 void TIMER32_0_IRQHandler(void) {
     if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
@@ -163,7 +163,7 @@ void Init_BMS_Structs(void) {
     charger_status.connected = false;
     charger_status.error = false;
 
-    pack_config.num_cells_in_modules = num_cells_in_modules;
+    pack_config.module_cell_count = module_cell_count;
     pack_config.cell_min_mV = 0;
     pack_config.cell_max_mV = 0;
     pack_config.cell_capacity_cAh = 0;
@@ -189,10 +189,9 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_packconfig_read_done = false;
     bms_input.ltc_packconfig_check_done = false;
     bms_input.eeprom_read_error = false;
-    bms_input.ltc_error = LTC_NO_ERROR; //[TODO] change to the type provided by the library
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
-    pack_status.cell_voltage_mV = cell_voltages;
+    pack_status.cell_voltages_mV = cell_voltages;
     pack_status.pack_cell_max_mV = 0;
     pack_status.pack_cell_min_mV = 0xFFFFFFFF; // [TODO] this is a bodge fix
     pack_status.pack_current_mA = 0;
@@ -204,15 +203,13 @@ void Init_BMS_Structs(void) {
 }
 
 void Init_LTC6804(void) {
-    // [TODO] For now do all LTC6804 Init here, 100k Baud, Port 0_7 for CS
-    
     ltc6804_config.pSSP = LPC_SSP0;
-    ltc6804_config.baud = 500000;
+    ltc6804_config.baud = LTC6804_BAUD;
     ltc6804_config.cs_gpio = 0;
     ltc6804_config.cs_pin = 2;
 
     ltc6804_config.num_modules = pack_config.num_modules;
-    ltc6804_config.module_cell_count = num_cells_in_modules;
+    ltc6804_config.module_cell_count = module_cell_count;
 
     ltc6804_config.min_cell_mV = pack_config.cell_min_mV;
     ltc6804_config.max_cell_mV = pack_config.cell_max_mV;
@@ -225,7 +222,7 @@ void Init_LTC6804(void) {
     ltc6804_state.cfg = ltc6804_cfg;
     ltc6804_state.bal_list = ltc6804_bal_list;
 
-    ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltage_mV;
+    ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltages_mV;
 
     LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 }
@@ -255,8 +252,6 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
     // }
 
-
-    // [TODO] Check if-statement logic
     if (ltc6804_get_cell_voltages) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
@@ -329,7 +324,6 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         Enable_Timers(); // [TODO] Put in right place
     }
 
-    // [TODO] Think about what happens on sleep and only updating on change
     // [TODO] If statement sucks
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         LTC6804_STATUS_T res;
@@ -380,7 +374,7 @@ int main(void) {
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_input, &bms_output);
-        Error_Handle(bms_input.msTicks);
+        // Error_Handle(bms_input.msTicks);
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes

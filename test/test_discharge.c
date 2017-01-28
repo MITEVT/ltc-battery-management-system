@@ -42,8 +42,8 @@ TEST_SETUP(Discharge_Test) {
     bms_output.check_packconfig_with_ltc = false;
 
     bms_state.charger_status = &charger_status;
-    pack_status.cell_voltage_mV = cell_voltages;
-    pack_config.num_cells_in_modules = num_cells_in_modules;
+    pack_status.cell_voltages_mV = cell_voltages;
+    pack_config.module_cell_count = num_cells_in_modules;
     bms_state.pack_config = &pack_config;
 
     bms_input.pack_status = &pack_status;
@@ -97,8 +97,8 @@ void Set_PackConfig(
     bms_state.pack_config->cell_min_mV = min_cell_voltage_mV;
     bms_state.pack_config->cell_max_mV = max_cell_voltage_mV;
     bms_state.pack_config->num_modules = num_modules;
-    bms_state.pack_config->num_cells_in_modules[0] = num_cells_in_module1;
-    bms_state.pack_config->num_cells_in_modules[1] = num_cells_in_module2;
+    bms_state.pack_config->module_cell_count[0] = num_cells_in_module1;
+    bms_state.pack_config->module_cell_count[1] = num_cells_in_module2;
 }
 
 TEST(Discharge_Test, config) {
@@ -137,7 +137,7 @@ TEST(Discharge_Test, discharge_step_to_run) {
     bms_input.pack_status->pack_current_mA = 10;
     uint8_t i = 0;
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
-        bms_input.pack_status->cell_voltage_mV[i] = 70;
+        bms_input.pack_status->cell_voltages_mV[i] = 70;
     }
     bms_input.pack_status->max_cell_temp_C = 1;
     
@@ -155,7 +155,7 @@ TEST(Discharge_Test, discharge_step_undervoltage_error) {
     bms_input.pack_status->pack_current_mA = 10;
     uint8_t i = 0;
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
-        bms_input.pack_status->cell_voltage_mV[i] = 0;
+        bms_input.pack_status->cell_voltages_mV[i] = 0;
     }
     bms_input.pack_status->max_cell_temp_C = 1;
     
@@ -171,7 +171,7 @@ TEST(Discharge_Test, discharge_step_overcurrent_error) {
     bms_input.pack_status->pack_current_mA = 10000;
     uint8_t i = 0;
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
-        bms_input.pack_status->cell_voltage_mV[i] = 70;
+        bms_input.pack_status->cell_voltages_mV[i] = 70;
     }
     bms_input.pack_status->max_cell_temp_C = 1;
     

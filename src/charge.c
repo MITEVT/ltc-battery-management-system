@@ -96,9 +96,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
             //  we were just balancing or not (account for hysteresis)
 			for (i = 0; i < total_num_cells; i++) {
 				if (output->balance_req[i]) {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
 				} else {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
 				}
 			}
 
@@ -133,9 +133,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			for (i = 0; i < total_num_cells; i++) {
 				if (output->balance_req[i]) {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
 				} else {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
 				}
 			}
 
@@ -153,9 +153,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			bool balancing = false;
 			for (i = 0; i < total_num_cells; i++) {
 				if (output->balance_req[i]) {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
 				} else {
-					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
+					output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
 				}
 				if (output->balance_req[i]) balancing = true;
 			}
@@ -186,7 +186,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 					}
 				} else if (input->mode_request == BMS_SSM_MODE_BALANCE) {
 					for (i = 0; i < total_num_cells; i++) {
-						if (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV) {
+						if (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV) {
 							state->charge_state = BMS_CHARGE_INIT;
 						}
 					}

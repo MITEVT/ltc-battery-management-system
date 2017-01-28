@@ -17,7 +17,6 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     input->pack_status->max_cell_temp_C = 0;
 
     input->eeprom_read_error = false;
-    input->ltc_error = LTC_NO_ERROR;
 
 	Charge_Init(state);
 	Discharge_Init(state);
@@ -125,11 +124,6 @@ void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     if (input->eeprom_read_error) {
         state->curr_mode = BMS_SSM_MODE_ERROR;
         state->error_code = BMS_EEPROM_ERROR;
-        return;
-    }
-    if (input->ltc_error != LTC_NO_ERROR) {
-        state->curr_mode = BMS_SSM_MODE_ERROR;
-        state->error_code = BMS_LTC_ERROR;
         return;
     }
 

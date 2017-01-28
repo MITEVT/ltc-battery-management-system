@@ -41,7 +41,7 @@ TEST_SETUP(Charge_Test) {
 	config.cell_capacity_cAh = CELL_CAPACITY_CAh;
 	config.num_modules = NUM_MODULES;
 
-	config.num_cells_in_modules = mod_cell_count;
+	config.module_cell_count = mod_cell_count;
 	config.cell_charge_c_rating_cC = CHARGE_C_RATING*100;
 	config.bal_on_thresh_mV = 4;
 	config.bal_off_thresh_mV = 1;
@@ -51,7 +51,7 @@ TEST_SETUP(Charge_Test) {
 	input.balance_mV = 0;
 	input.contactors_closed = false;
 	input.pack_status = &_pack_status;
-	input.pack_status->cell_voltage_mV = cell_voltages_mV;
+	input.pack_status->cell_voltages_mV = cell_voltages_mV;
     
 	output.charge_req = &_charge_req;
 	output.balance_req = balance_requests;

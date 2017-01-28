@@ -15,7 +15,7 @@ typedef enum rw_loc_label{
     RWL_cell_max_mV,
     RWL_cell_capacity_cAh,
     RWL_num_modules,
-    RWL_num_cells_in_modules, //need to think through how this will work
+    RWL_module_cell_count, //need to think through how this will work
     RWL_cell_charge_c_rating_cC,
     RWL_bal_on_thresh_mV,
     RWL_bal_off_thresh_mV,
@@ -32,7 +32,7 @@ typedef enum rw_loc_label{
 
 typedef enum ro_loc_label{
     ROL_state = (int)ROL_FIRST,
-    ROL_cell_voltage_mV,
+    ROL_cell_voltages_mV,
     ROL_pack_cell_max_mV,
     ROL_pack_cell_min_mV,
     ROL_pack_current_mA,

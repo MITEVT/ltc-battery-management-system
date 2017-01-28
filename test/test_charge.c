@@ -101,15 +101,21 @@ TEST(Charge_Test, to_cc) {
 	input.pack_status->pack_cell_min_mV = 3400;
 	input.pack_status->pack_cell_max_mV = 3403;
 	cell_voltages_mV[0] = 3400; cell_voltages_mV[1] = 3401; cell_voltages_mV[2] = 3402; cell_voltages_mV[3] = 3403;
+	
 	Charge_Step(&input, &state, &output);
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_CC);
 	TEST_ASSERT_TRUE(output.close_contactors);
+	TEST_ASSERT_FALSE(output.charge_req->charger_on);
 	int i;
 	for (i = 0; i < TOTAL_CELLS; i++)
 		TEST_ASSERT_FALSE(output.balance_req[i]);
-	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+
+	Charge_Step(&input, &state, &output);
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
 	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CC_CHARGE_VOLTAGE);
 	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
+	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	TEST_ASSERT_TRUE(output.close_contactors);
 
 	Test_Charge_SM_Shutdown();
 }
@@ -123,16 +129,26 @@ TEST(Charge_Test, to_cc_w_bal) {
 	input.pack_status->pack_cell_min_mV = 3400;
 	input.pack_status->pack_cell_max_mV = 3405;
 	cell_voltages_mV[0] = 3400; cell_voltages_mV[1] = 3401; cell_voltages_mV[2] = 3402; cell_voltages_mV[3] = 3405;
+	
 	Charge_Step(&input, &state, &output);
-	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_CC);
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
 	TEST_ASSERT_TRUE(output.close_contactors);
+	TEST_ASSERT_FALSE(output.charge_req->charger_on);
 	int i;
-	for (i = 0; i < TOTAL_CELLS - 1; i++)
+	for (i = 0; i < TOTAL_CELLS; i++) {
 		TEST_ASSERT_FALSE(output.balance_req[i]);
-	TEST_ASSERT_TRUE(output.balance_req[TOTAL_CELLS - 1]);
-	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	}
+
+	Charge_Step(&input, &state, &output);
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
 	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CC_CHARGE_VOLTAGE);
 	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
+	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	TEST_ASSERT_TRUE(output.close_contactors);
+	for (i=0; i<TOTAL_CELLS-1; i++) {
+		TEST_ASSERT_FALSE(output.balance_req[i]);
+	}
+	TEST_ASSERT_TRUE(output.balance_req[TOTAL_CELLS - 1]);
 
 	Test_Charge_SM_Shutdown();
 }
@@ -147,28 +163,38 @@ TEST(Charge_Test, to_cc_w_bal_2) {
 	input.pack_status->pack_cell_min_mV = 3400;
 	input.pack_status->pack_cell_max_mV = 3405;
 	cell_voltages_mV[0] = 3400; cell_voltages_mV[1] = 3401; cell_voltages_mV[2] = 3402; cell_voltages_mV[3] = 3405;
+
 	Charge_Step(&input, &state, &output);
-	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_CC);
-	TEST_ASSERT_TRUE(output.close_contactors);
-	int i;
-	for (i = 0; i < TOTAL_CELLS - 1; i++)
-		TEST_ASSERT_FALSE(output.balance_req[i]);
-	TEST_ASSERT_TRUE(output.balance_req[TOTAL_CELLS - 1]);
-	TEST_ASSERT_TRUE(output.charge_req->charger_on);
-	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CC_CHARGE_VOLTAGE);
-	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
+        TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
+        TEST_ASSERT_TRUE(output.close_contactors);
+        TEST_ASSERT_FALSE(output.charge_req->charger_on);
+        int i;
+        for (i = 0; i < TOTAL_CELLS; i++) {
+                TEST_ASSERT_FALSE(output.balance_req[i]);
+        }
+
+	Charge_Step(&input, &state, &output);
+        TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
+        TEST_ASSERT_EQUAL(CC_CHARGE_VOLTAGE, output.charge_req->charge_voltage_mV);
+        TEST_ASSERT_EQUAL(CC_CHARGE_CURRENT, output.charge_req->charge_current_mA);
+        TEST_ASSERT_TRUE(output.charge_req->charger_on);
+        TEST_ASSERT_TRUE(output.close_contactors);
+        for (i=0; i<TOTAL_CELLS-1; i++) {
+                TEST_ASSERT_FALSE(output.balance_req[i]);
+        }
+        TEST_ASSERT_TRUE(output.balance_req[TOTAL_CELLS - 1]);	
 
 	input.pack_status->pack_cell_max_mV = 3401;
 	cell_voltages_mV[TOTAL_CELLS - 1] = 3401;
 	Charge_Step(&input, &state, &output);
-	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_CC);
-	TEST_ASSERT_TRUE(output.close_contactors);
-
-	for (i = 0; i < TOTAL_CELLS; i++)
-		TEST_ASSERT_FALSE(output.balance_req[i]);
-	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CC, state.charge_state);
 	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CC_CHARGE_VOLTAGE);
-	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
+        TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CC_CHARGE_CURRENT);
+	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	TEST_ASSERT_TRUE(output.close_contactors);
+	for (i = 0; i < TOTAL_CELLS; i++) {
+		TEST_ASSERT_FALSE(output.balance_req[i]);
+	}
 
 	Test_Charge_SM_Shutdown();
 }
@@ -281,6 +307,82 @@ TEST(Charge_Test, to_bal) {
 	Test_Charge_SM_Shutdown();
 }
 
+TEST(Charge_Test, standby_mode_request) {
+        printf("standby_mode_request");
+        TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
+
+        input.mode_request = BMS_SSM_MODE_STANDBY;
+        Charge_Step(&input, &state, &output);
+        TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
+        TEST_ASSERT_FALSE(output.close_contactors);
+
+}
+
+/*
+ * Testing strategy:
+ *   - Test standby mode requests
+ *       - starting state:
+ *           - BMS_CHARGE_OFF (expected transition: OFF->OFF)
+ *           - BMS_CHARGE_INIT (expected transition: CHARGE->DONE->OFF)
+ *           - BMS_CHARGE_CC (expected transition: CHARGE->DONE->OFF)
+ *           - BMS_CHARGE_CV (expected transition: CHARGE->DONE->OFF)
+ *           - BMS_CHARGE_BAL (expected transition: CHARGE->DONE->OFF)
+ *           - BMS_CHARGE_DONE (expected transition: DONE->OFF)
+ */
+
+/*
+ * Covers:
+ *   - Test standby mode requests
+ *       - starting state:
+ *           - BMS_CHARGE_INIT (expected transition: CHARGE->DONE->OFF)
+ */
+TEST(Charge_Test, test_standby_mode_request_from_charge_init) {
+        printf("test_standby_mode_request_from_charge_init");
+        TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
+
+        //Move to BMS_CHARGE_INIT
+        input.mode_request = BMS_SSM_MODE_CHARGE;
+        Charge_Step(&input, &state, &output);
+        TEST_ASSERT_EQUAL(BMS_CHARGE_INIT, state.charge_state);
+        TEST_ASSERT_TRUE(output.close_contactors);
+        TEST_ASSERT_FALSE(output.charge_req->charger_on);
+        uint32_t i;
+        for (i=0; i<(sizeof(output.balance_req[0])*TOTAL_CELLS); i++) {
+                TEST_ASSERT_EQUAL(0, output.balance_req[i]);
+        }
+
+//      input.mode_request = BMS_SSM_MODE_STANDBY;
+//      Charge_Step(&input, &state, &output);
+//      TEST_ASSERT_EQUAL(BMS_CHARGE_DONE, state.charge_state);
+//      TEST_ASSERT_FALSE(output.close_contactors);
+//      TEST_ASSERT_FALSE(output.charge_req->charger_on);
+//      for (i=0; i<(sizeof(output.balance_req[0])*TOTAL_CELLS); i++) {
+//                TEST_ASSERT_EQUAL(0, output.balance_req[i]);
+//        }
+
+        //Don't go to BMS_CHARGE_OFF yet because the contactors are closed
+        input.mode_request = BMS_SSM_MODE_STANDBY;
+        input.contactors_closed = true;
+        Charge_Step(&input, &state, &output);
+        TEST_ASSERT_EQUAL(BMS_CHARGE_DONE, state.charge_state);
+        TEST_ASSERT_FALSE(output.close_contactors);
+        TEST_ASSERT_FALSE(output.charge_req->charger_on);
+        for (i=0; i<(sizeof(output.balance_req[0])*TOTAL_CELLS); i++) {
+                TEST_ASSERT_EQUAL(0, output.balance_req[i]);
+        }
+
+        //Open contactors. Expect transition to BMS_CHARGE_OFF
+        input.mode_request = BMS_SSM_MODE_STANDBY;
+        input.contactors_closed = false;
+        Charge_Step(&input, &state, &output);
+        TEST_ASSERT_EQUAL(BMS_CHARGE_OFF, state.charge_state);
+        TEST_ASSERT_FALSE(output.close_contactors);
+        TEST_ASSERT_FALSE(output.charge_req->charger_on);
+        for (i=0; i<(sizeof(output.balance_req[0])*TOTAL_CELLS); i++) {
+                TEST_ASSERT_EQUAL(0, output.balance_req[i]);
+        }
+}
+
 TEST(Charge_Test, to_bal_finish) {
 
 }
@@ -300,6 +402,8 @@ TEST_GROUP_RUNNER(Charge_Test) {
 	RUN_TEST_CASE(Charge_Test, to_cv_w_bal);
 	RUN_TEST_CASE(Charge_Test, to_cc_to_cv);
 	RUN_TEST_CASE(Charge_Test, to_bal);
+	RUN_TEST_CASE(Charge_Test, standby_mode_request);
+	RUN_TEST_CASE(Charge_Test, test_standby_mode_request_from_charge_init);
 }
 
 void Test_Charge_SM_Shutdown(void) {

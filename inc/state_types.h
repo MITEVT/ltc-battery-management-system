@@ -170,9 +170,9 @@ typedef struct BMS_CHARGE_REQ {
 } BMS_CHARGE_REQ_T;
 
 typedef struct BMS_OUTPUT {
-    BMS_CHARGE_REQ_T *charge_req;
-    bool close_contactors;
-    bool *balance_req;
+	BMS_CHARGE_REQ_T *charge_req;
+	bool close_contactors;
+	bool *balance_req;
 
     // for bms initialization
     bool read_eeprom_packconfig;

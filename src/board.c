@@ -46,17 +46,6 @@ void canBaudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
 #endif
 }
 
-/**
- * @brief	CCAN Interrupt Handler
- * @return	Nothing
- * @note	The CCAN interrupt handler must be provided by the user application.
- *	It's function is to call the isr() API located in the ROM
- */
-void CAN_IRQHandler(void) {
-#ifndef TEST_HARDWARE
-	LPC_CCAN_API->isr();
-#endif
-}
 
 /**
  * @brief	UART Interrupt Handler

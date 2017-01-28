@@ -7,6 +7,7 @@
 #include "eeprom_config.h"
 #include "config.h"
 #include "ltc6804.h"
+#include "error_handler.h"
 
 #define LED0 2, 8
 #define LED1 2, 10

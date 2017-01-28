@@ -8,6 +8,7 @@
 
 
 
+// [TODO] Fix to not parse strings falsely
 uint32_t my_atou(const char *str)
 {
     uint32_t res = 0; // Initialize result

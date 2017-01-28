@@ -8,6 +8,10 @@
 #include "config.h"
 #include "bms_utils.h"
 
+#ifdef DEBUG_ENABLE
+#include "board.h"
+#endif
+
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
 BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output);
 bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2);

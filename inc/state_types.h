@@ -28,7 +28,7 @@ typedef struct BMS_PACK_STATUS {
 	uint32_t pack_cell_min_mV;
 	uint32_t pack_current_mA;
 	uint32_t pack_voltage_mV;
-	uint32_t precharge_voltage;
+	uint32_t precharge_voltage; // [TODO] make contactor driver
 	uint32_t max_cell_temp_C;
 	bool error;
 } BMS_PACK_STATUS_T;
@@ -170,9 +170,9 @@ typedef struct BMS_CHARGE_REQ {
 } BMS_CHARGE_REQ_T;
 
 typedef struct BMS_OUTPUT {
-	BMS_CHARGE_REQ_T *charge_req;
-	bool close_contactors;
-	bool *balance_req;
+    BMS_CHARGE_REQ_T *charge_req;
+    bool close_contactors;
+    bool *balance_req;
 
     // for bms initialization
     bool read_eeprom_packconfig;

@@ -88,16 +88,18 @@ bool Is_Charge_Balance_Switch(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {
 bool Is_State_Done(BMS_STATE_T *state) {
     switch(state->curr_mode) {
         case BMS_SSM_MODE_CHARGE:
-            return state->charge_state == BMS_CHARGE_DONE;
+        case BMS_SSM_MODE_BALANCE:
+            return state->charge_state == BMS_CHARGE_OFF;
         case BMS_SSM_MODE_DISCHARGE:
             return state->discharge_state == BMS_DISCHARGE_DONE;
         case BMS_SSM_MODE_INIT:
             return state->init_state == BMS_INIT_DONE;
         case BMS_SSM_MODE_ERROR:
             return false;
-        default:
+        case BMS_SSM_MODE_STANDBY:
             return true;
     }
+    return false;
 }
 
 BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
@@ -131,23 +133,25 @@ void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         return;
     }
 
-    uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
-    if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
-        state->curr_mode = BMS_SSM_MODE_ERROR;
-        state->error_code = BMS_CELL_OVER_TEMP;
-        return;
-    }
+    if (state->curr_mode != BMS_SSM_MODE_INIT) {
+        uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
+        if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
+            state->curr_mode = BMS_SSM_MODE_ERROR;
+            state->error_code = BMS_CELL_OVER_TEMP;
+            return;
+        }
 
-    if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
-        state->curr_mode = BMS_SSM_MODE_ERROR;
-        state->error_code = BMS_CELL_UNDER_VOLTAGE;
-        return;
-    }
+        if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
+            state->curr_mode = BMS_SSM_MODE_ERROR;
+            state->error_code = BMS_CELL_UNDER_VOLTAGE;
+            return;
+        }
 
-    if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
-        state->curr_mode = BMS_SSM_MODE_ERROR;
-        state->error_code = BMS_CELL_OVER_VOLTAGE;
-        return;
+        if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
+            state->curr_mode = BMS_SSM_MODE_ERROR;
+            state->error_code = BMS_CELL_OVER_VOLTAGE;
+            return;
+        }
     }
 }
 
@@ -160,10 +164,8 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
 
-    if (state->curr_mode != BMS_SSM_MODE_INIT) {
-        Check_Error(input, state, output);
-    }
-    
+    Check_Error(input, state, output);
+
     if((Is_Valid_Jump(state->curr_mode, input->mode_request)
             && Is_State_Done(state))
             || Is_Charge_Balance_Switch(state->curr_mode, input->mode_request)) {

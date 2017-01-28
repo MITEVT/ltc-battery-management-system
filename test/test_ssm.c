@@ -3,7 +3,7 @@
 #include "unity_fixture.h"
 #include <stdio.h>
 
-#define MAX_NUM_MODULES 20
+// #define MAX_NUM_MODULES 20
 #define MAX_CELLS_PER_MODULE 12
 
 // memory allocation for BMS_OUTPUT_T
@@ -28,21 +28,63 @@ TEST_SETUP(SSM_Test) {
 	printf("(SSM/Init/Error) [setup] ");
     
     bms_output.charge_req = &charge_req;
+    bms_output.close_contactors = false;
     bms_output.balance_req = balance_reqs;
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
 
+    charge_req.charger_on = 0;
+    charge_req.charge_current_mA = 0;
+    charge_req.charge_voltage_mV = 0;
+
     bms_state.charger_status = &charger_status;
-    pack_status.cell_voltage_mV = cell_voltages;
-    pack_config.num_cells_in_modules = num_cells_in_modules;
     bms_state.pack_config = &pack_config;
+    bms_state.curr_mode = BMS_SSM_MODE_INIT;
+    bms_state.init_state = BMS_INIT_OFF;
+    bms_state.charge_state = BMS_CHARGE_OFF;
+    bms_state.discharge_state = BMS_DISCHARGE_OFF;
+    bms_state.error_code = BMS_NO_ERROR;
 
+    charger_status.connected = false;
+    charger_status.error = false;
+
+    pack_config.cell_min_mV = 2500;
+    pack_config.cell_max_mV = 4200;
+    pack_config.cell_capacity_cAh = 530;
+    pack_config.num_modules = 1;
+    pack_config.cell_charge_c_rating_cC = 70;
+    pack_config.bal_on_thresh_mV = 4;
+    pack_config.bal_off_thresh_mV = 1;
+    pack_config.pack_cells_p = 6;
+    pack_config.cv_min_current_mA = 50;
+    pack_config.cv_min_current_ms = 60000;
+    pack_config.cc_cell_voltage_mV = 4300;
+    pack_config.cell_discharge_c_rating_cC = 200; // at 27 degrees C
+    pack_config.max_cell_temp_C = 50;
+    pack_config.num_cells_in_modules = num_cells_in_modules; // [TODO] Fix
+
+    bms_input.hard_reset_line = false;
+    bms_input.mode_request = BMS_SSM_MODE_STANDBY;
+    bms_input.balance_mV = 0; // console request balance to mV
+    bms_input.contactors_closed = false;
+    bms_input.msTicks = 0;
     bms_input.pack_status = &pack_status;
+    bms_input.eeprom_packconfig_read_done = false;
+    bms_input.ltc_packconfig_check_done = false;
+    bms_input.eeprom_read_error = false;
+    bms_input.ltc_error = LTC_NO_ERROR; //[TODO] change to the type provided by the library
 
-    bms_state.pack_config->max_cell_temp_C = 5;
-    bms_input.pack_status->max_cell_temp_C = 1;
+    memset(cell_voltages, 0, sizeof(cell_voltages));
+    pack_status.cell_voltage_mV = cell_voltages;
+    pack_status.pack_cell_max_mV = 0;
+    pack_status.pack_cell_min_mV = 0xFFFFFFFF; // [TODO] this is a bodge fix
+    pack_status.pack_current_mA = 0;
+    pack_status.pack_voltage_mV = 0;
+    pack_status.precharge_voltage = 0;
+    pack_status.max_cell_temp_C = 0;
+    pack_status.error = 0;
 
-    SSM_Init(&bms_input, &bms_state, &bms_output);
+    SSM_Init(&bms_input, &bms_state, &bms_output);   
 }
 
 TEST_TEAR_DOWN(SSM_Test) {
@@ -151,7 +193,7 @@ TEST(SSM_Test, is_state_done) {
 	TEST_ASSERT_FALSE(Is_State_Done(&bms_state));
 
     bms_state.curr_mode = BMS_SSM_MODE_CHARGE;
-    bms_state.charge_state = BMS_CHARGE_DONE;
+    bms_state.charge_state = BMS_CHARGE_OFF;
 	TEST_ASSERT(Is_State_Done(&bms_state));
     
     bms_state.curr_mode = BMS_SSM_MODE_DISCHARGE;
@@ -173,19 +215,19 @@ TEST(SSM_Test, ssm_step_start) {
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
 	SSM_Step(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_DISCHARGE, bms_state.curr_mode);
 
     bms_state.curr_mode = BMS_SSM_MODE_BALANCE;
     bms_state.charge_state = BMS_CHARGE_BAL;
     bms_input.mode_request = BMS_SSM_MODE_CHARGE;
 	SSM_Step(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_CHARGE);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_CHARGE, bms_state.curr_mode);
 
     bms_state.curr_mode = BMS_SSM_MODE_CHARGE;
     bms_state.charge_state = BMS_CHARGE_CC;
     bms_input.mode_request = BMS_SSM_MODE_BALANCE;
 	SSM_Step(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_BALANCE);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_BALANCE, bms_state.curr_mode);
 }
 
 TEST(SSM_Test, ssm_step) {
@@ -242,8 +284,9 @@ TEST(SSM_Test, jumping_to_error) {
     bms_input.eeprom_read_error = true;
     
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_ERROR);
-    TEST_ASSERT_EQUAL(bms_state.error_code, BMS_EEPROM_ERROR);
+    SSM_Step(&bms_input, &bms_state, &bms_output); 
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_ERROR, bms_state.curr_mode);
+    TEST_ASSERT_EQUAL(BMS_EEPROM_ERROR, bms_state.error_code);
 }
 
 TEST_GROUP_RUNNER(SSM_Test) {

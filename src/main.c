@@ -21,6 +21,9 @@
 #define EEPROM_BAUD 600000
 #define EEPROM_CS_PIN 1, 7
 
+#define Hertz2Ticks(freq) SystemCoreClock / freq
+#define LTC_CELL_VOLTAGE_FREQ 10
+
 volatile uint32_t msTicks;
 
 static char str[10];
@@ -53,9 +56,25 @@ static LTC6804_ADC_RES_T ltc6804_adc_res;
 
 // memory for console
 static microrl_t rl;
+static CONSOLE_OUTPUT_T console_output;
+
+/****************************
+ *          IRQ Vectors
+ ****************************/
 
 void SysTick_Handler(void) {
 	msTicks++;
+}
+
+static bool ltc6804_get_cell_voltages; // [TODO] put in right place
+
+void TIMER32_0_IRQHandler(void) {
+    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
+        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
+        // Do something
+
+        ltc6804_get_cell_voltages = true;
+    }
 }
 
 /****************************
@@ -102,6 +121,24 @@ static void Init_GPIO(void) {
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 }
 
+void Init_Timers(void) {
+
+    // Timer 32_0 initialization
+    Chip_TIMER_Init(LPC_TIMER32_0);
+    Chip_TIMER_Reset(LPC_TIMER32_0);
+    Chip_TIMER_MatchEnableInt(LPC_TIMER32_0, 0);
+    Chip_TIMER_SetMatch(LPC_TIMER32_0, 0, Hertz2Ticks(LTC_CELL_VOLTAGE_FREQ));
+    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_0, 0);
+
+}
+
+void Enable_Timers(void) {
+    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
+    NVIC_EnableIRQ(TIMER_32_0_IRQn);
+    Chip_TIMER_Enable(LPC_TIMER32_0);
+}
+
+
 void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
     bms_output.close_contactors = false;
@@ -121,7 +158,7 @@ void Init_BMS_Structs(void) {
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
     bms_state.error_code = BMS_NO_ERROR;
 
-    charger_status.connected = true;
+    charger_status.connected = false;
     charger_status.error = false;
 
     pack_config.num_cells_in_modules = num_cells_in_modules;
@@ -192,10 +229,17 @@ void Init_LTC6804(void) {
 
 void Process_Input(BMS_INPUT_T* bms_input) {
     // Read current mode request
+    // Override Console Mode Request
     // Read pack status
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
-    bms_input->msTicks = msTicks;
+
+    if (console_output.valid_mode_request) {
+        bms_input->mode_request = console_output.mode_request;
+        bms_input->balance_mV = console_output.balance_mV;
+    } else {
+        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+    }
 
     // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
     //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
@@ -208,9 +252,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
     // }
 
-    // [TODO] add console stuff here with override
 
-    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+    // [TODO] Check if-statement logic
+    if (ltc6804_get_cell_voltages) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
         if (res == LTC6804_PEC_ERROR) Board_Println("LTC6804_GetCellVol PEC_ERROR");
@@ -219,8 +263,11 @@ void Process_Input(BMS_INPUT_T* bms_input) {
             pack_status.pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
             pack_status.pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
             LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+            ltc6804_get_cell_voltages = false;
         }
     }
+
+    bms_input->msTicks = msTicks;
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
@@ -270,6 +317,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
             }
         } 
         if (res == LTC6804_PASS) Board_Println(".PASS");
+        Enable_Timers(); // [TODO] Put in right place
     }
 
     // [TODO] Think about what happens on sleep and only updating on change
@@ -299,6 +347,8 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
+    Init_Timers(); // [TODO] Think about proper place to put this
+    ltc6804_get_cell_voltages = false; // [TODO] Same as above
     EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
 
     Init_BMS_Structs();
@@ -310,7 +360,7 @@ int main(void) {
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
-    console_init(&bms_input, &bms_state, &bms_output);
+    console_init(&bms_input, &bms_state, &console_output);
 
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
@@ -319,24 +369,13 @@ int main(void) {
 	while(1) {
         Process_Keyboard(); //do this if you want to add the command line
         if ((msTicks - bms_input.msTicks) > 100) {
-            // Board_Println(BMS_SSM_MODE_NAMES[bms_state.curr_mode]);
-            // Board_Println(BMS_INIT_MODE_NAMES[bms_state.init_state]);
-            // Board_Println(BMS_CHARGE_MODE_NAMES[bms_state.charge_state]);
-            // Board_Println(BMS_DISCHARGE_MODE_NAMES[bms_state.discharge_state]);
-            // Board_Println(BMS_ERROR_NAMES[bms_state.error_code]);
-            // delay(1000);
-
-            // Board_Println("\n\nagain");
-
             Process_Input(&bms_input);
             SSM_Step(&bms_input, &bms_state, &bms_output); 
             Process_Output(&bms_input, &bms_output);
-            // Board_Println_BLOCKING("finished a step");
         }
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
-        // Act as LTC6804 pack handler. ie balance and update pack_status
 
         // LED Heartbeat
         if (msTicks - last_count > 1000) {

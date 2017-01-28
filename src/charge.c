@@ -55,8 +55,6 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			break;
 	}
 
-handler:
-
 	switch (state->charge_state) {
 
 		case BMS_CHARGE_OFF:
@@ -77,7 +75,6 @@ handler:
 				} else if (input->mode_request == BMS_SSM_MODE_BALANCE) {
 					state->charge_state = BMS_CHARGE_BAL;
 				}
-				goto handler;
 			}
 			break;
 		case BMS_CHARGE_CC:
@@ -85,7 +82,6 @@ handler:
 			if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
 				// Need to go to CV Mode
 				state->charge_state = BMS_CHARGE_CV;
-				goto handler;
 			} else {
 				// Charge in CC Mode
 				output->charge_req->charge_voltage_mV = cc_charge_voltage_mV;
@@ -106,6 +102,7 @@ handler:
 			}
 
             if(!input->contactors_closed) {
+            	// [TODO] Consider setting outputs to zero
                 return BMS_CONTACTORS_ERRONEOUS_STATE;
             }
 
@@ -115,7 +112,6 @@ handler:
 			if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
 				// Need to go back to CC Mode
 				state->charge_state = BMS_CHARGE_CC;
-				goto handler;
 			} else {
 				output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
 				output->charge_req->charge_current_mA = cv_charge_current_mA;
@@ -142,6 +138,7 @@ handler:
 			}
 
             if(!input->contactors_closed) {
+            	// [TODO] Consider setting outputs to zero
                 return BMS_CONTACTORS_ERRONEOUS_STATE;
             }
 
@@ -153,7 +150,6 @@ handler:
 
 			bool balancing = false;
 			for (i = 0; i < total_num_cells; i++) {
-                // (need to ask erpo) but OFF_THRES is smaller than ON_THRES
 				if (output->balance_req[i]) {
 					output->balance_req[i] = (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
 				} else {
@@ -165,7 +161,6 @@ handler:
 			// Done balancing
 			if (!balancing) {
 				state->charge_state = BMS_CHARGE_DONE;
-				goto handler;
 			}
 
 			// [TODO] add errors such as contactors opening
@@ -186,14 +181,11 @@ handler:
 				if(input->mode_request == BMS_SSM_MODE_CHARGE) {
 					if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
 						state->charge_state = BMS_CHARGE_INIT;
-						goto handler; // [TODO] Really think hard about this
 					}
 				} else if (input->mode_request == BMS_SSM_MODE_BALANCE) {
 					for (i = 0; i < total_num_cells; i++) {
 						if (input->pack_status->cell_voltage_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV) {
 							state->charge_state = BMS_CHARGE_INIT;
-							break;
-							goto handler;
 						}
 					}
 				}

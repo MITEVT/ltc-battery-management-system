@@ -287,7 +287,7 @@ void Board_Enable_Timers(void) { //[TODO] removeme
     Chip_TIMER_Enable(LPC_TIMER32_0);
 }
 
-void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
+void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -321,7 +321,7 @@ void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 #endif
 }
 
-void Board_DeInit_LTC6804(void) {
+void Board_LTC6804_DeInit(void) {
 	ltc6804_initialized = false;
 }
 
@@ -330,7 +330,7 @@ void Board_Init_Drivers(void) {
 }
 
 //[TODO] refactor to switch
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
+void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -388,39 +388,10 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     }
 
     return false;
-
-    // LTC6804_STATUS_T res;
-    // Board_Print("CVST..");
-    // while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
-    //     if (res == LTC6804_FAIL) {
-    //         Board_Print(".FAIL (");
-
-    //         int i;
-    //         for (i = 0; i < 12; i++) {
-    //             itoa(ltc6804_state.rx_buf[i], str, 16);
-    //             Board_Print(str);
-    //             Board_Print(", ");
-    //         }
-    //         Board_Println(")");
-    //         return false;
-    //         break;
-    //     } else if (res == LTC6804_SPI_ERROR) {
-    //         Board_Println(".SPI_ERROR");
-    //         return false;
-    //         break;
-    //     } else if (res == LTC6804_PEC_ERROR) {
-    //         Board_Println(".PEC_ERROR");
-    //         return false;
-    //         break;
-    //     }
-    // } 
-    // if (res == LTC6804_PASS) Board_Println(".PASS");
-    // Board_Enable_Timers(); // [TODO] Put in right place
-    // return true;
 }
 
 //[TODO] add saftey
-void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
+void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
 	LTC6804_STATUS_T res;
     res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
     if (res == LTC6804_SPI_ERROR) {

@@ -145,12 +145,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
 
-    if (console_output.valid_mode_request) {
-        bms_input->mode_request = console_output.mode_request;
-        bms_input->balance_mV = console_output.balance_mV;
-    } else {
-        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-    }
+    Board_Get_Mode_Request(&console_output, bms_input);
 
     // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
     //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;

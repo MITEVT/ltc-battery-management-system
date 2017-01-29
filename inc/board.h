@@ -122,11 +122,9 @@ void Board_LED_Off(void);
 /**
  * @details Initialize board input switch
  */
-void Board_Switch_Init(void);
+void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
 
-void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
-
-void Board_DeInit_LTC6804(void);
+void Board_LTC6804_DeInit(void);
 
 /**
  * @details get cell voltages
@@ -134,11 +132,11 @@ void Board_DeInit_LTC6804(void);
  * @param mutable array of cell voltages
  * @return state of LTC6804 BMS slaves
  */
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
+void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
 bool Board_LTC6804_CVST(uint32_t msTicks);
 
-void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
+void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks);
 
 void Board_Init_Timers(void);
 

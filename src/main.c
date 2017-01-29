@@ -254,13 +254,10 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     if (ltc6804_get_cell_voltages) {
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
-        if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
         if (res == LTC6804_PEC_ERROR) {
-            Board_Println("LTC6804_GetCellVol PEC_ERROR");
+            Board_Println_BLOCKING("LTC6804_GetCellVol PEC_ERROR");
             Error_Assert(ERROR_LTC6804_PEC,bms_input->msTicks);
-        } 
-        else {
-            Error_Pass(ERROR_LTC6804_PEC);
+            Board_Println_BLOCKING("got through assert");
         }
         if (res == LTC6804_SPI_ERROR) Board_Println("LTC6804_GetCellVol SPI_ERROR");
         if (res == LTC6804_PASS) {
@@ -268,6 +265,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
             pack_status.pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
             LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
             ltc6804_get_cell_voltages = false;
+            Error_Pass(ERROR_LTC6804_PEC);
         }
     }
 
@@ -278,6 +276,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
     // Board_Println_BLOCKING("Process output");
+    
     if (bms_output->read_eeprom_packconfig){
         bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
         Charge_Config(&pack_config);
@@ -345,7 +344,6 @@ void Process_Keyboard(void) {
     }
 }
 
-
 int main(void) {
 
     Init_Core();
@@ -364,7 +362,7 @@ int main(void) {
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
     console_init(&bms_input, &bms_state, &console_output);
-
+    Error_Init();
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
     uint32_t last_count = msTicks;
@@ -374,7 +372,9 @@ int main(void) {
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_input, &bms_output);
-        // Error_Handle(bms_input.msTicks);
+        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
+            break;
+        }
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
@@ -385,7 +385,12 @@ int main(void) {
             Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
     }
-
+    Board_Println_BLOCKING("GOT REKT");
+    while(1) {
+        //set bms_outputs
+        //process_output(bms_outputs);
+        //process_keyboard()
+    }
 	return 0;
 }
 

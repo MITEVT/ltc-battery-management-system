@@ -44,7 +44,6 @@ typedef enum BMS_SSM_MODE {
 	BMS_SSM_MODE_CHARGE,
 	BMS_SSM_MODE_BALANCE,
 	BMS_SSM_MODE_DISCHARGE,
-	BMS_SSM_MODE_ERROR
 } BMS_SSM_MODE_T;
 
 static const char * const BMS_SSM_MODE_NAMES[] = {
@@ -53,7 +52,6 @@ static const char * const BMS_SSM_MODE_NAMES[] = {
 	"BMS_SSM_MODE_CHARGE",
 	"BMS_SSM_MODE_BALANCE",
 	"BMS_SSM_MODE_DISCHARGE",
-	"BMS_SSM_MODE_ERROR"
 };
 
 typedef enum {

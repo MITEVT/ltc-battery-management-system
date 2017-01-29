@@ -5,7 +5,6 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
     state->init_state = BMS_INIT_OFF;
-    state->error_code = BMS_NO_ERROR;
 
     output->read_eeprom_packconfig = false;
     output->check_packconfig_with_ltc = false;

@@ -94,7 +94,6 @@ void Init_BMS_Structs(void) {
     bms_state.init_state = BMS_INIT_OFF;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
-    bms_state.error_code = BMS_NO_ERROR;
 
     charger_status.connected = false;
     charger_status.error = false;

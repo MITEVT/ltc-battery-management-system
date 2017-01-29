@@ -226,5 +226,21 @@ bool Board_Switch_Read(void) {
 	return Chip_GPIO_GetPinState(LPC_GPIO, SWITCH_GPIO, SWITCH_PIN);
 #endif
 
+void Board_Close_Contactors(bool close_contactors) {
+	//TODO: implement function
+}
+
+void Board_Are_Contactors_Closed() {
+	//TODO: implement function
+}
+
+BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output) {
+	//TODO: implement function
+}
+
+LTC6804_STATE_T Board_Get_Voltages(uint32_t * cell_voltages) {
+	//TODO: implement function
+}
+
 }
 

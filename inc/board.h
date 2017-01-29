@@ -116,5 +116,34 @@ void Board_LED_Off(void);
  */
 void Board_Switch_Init(void);
 
+/**
+ * @details closes or opens contactors
+ *
+ * @param close_contactors true if contactors should be closed, false otherwise
+ */
+void Board_Close_Contactors(bool close_contactors);
+
+/**
+ * @details get the status of the contactors
+ *
+ * @return true if contactors are closed, false otherwise
+ */
+bool Board_Are_Contactors_Closed();
+
+/**
+ * @details get mode request
+ *
+ * @param console_output output from console
+ * @return latest mode request
+ */
+BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
+
+/**
+ * @details get cell voltages
+ *
+ * @param mutable array of cell voltages
+ * @return state of LTC6804 BMS slaves
+ */
+LTC6804_STATE_T Board_Get_Voltages(uint32_t * cell_voltages);
 
 #endif

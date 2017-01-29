@@ -218,22 +218,41 @@ void Board_CCAN_Init(uint32_t baudRateHz,
 #endif
 }
 
-void Board_LED_Init(void) {
+// void Board_LED_Init(void) {
+// #ifndef TEST_HARDWARE
+// 	Chip_GPIO_Init(LPC_GPIO);
+// 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0_GPIO, LED0_PIN);
+// #endif
+// }
+
+// void Board_LED_On(void) {
+// #ifndef TEST_HARDWARE
+// 	Chip_GPIO_SetPinOutHigh(LPC_GPIO, LED0_GPIO, LED0_PIN);
+// #endif
+// }
+
+// void Board_LED_Off(void) {
+// #ifndef TEST_HARDWARE
+// 	Chip_GPIO_SetPinOutLow(LPC_GPIO, LED0_GPIO, LED0_PIN);
+// #endif
+// }
+
+// void Board_LED_Toggle(void) {
+// #ifndef TEST_HARDWARE
+// 	Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));
+// #endif
+// }
+
+
+void Board_Headroom_Init(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_Init(LPC_GPIO);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1_GPIO, LED1_PIN);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, HEADROOM);
 #endif
 }
 
-void Board_LED_On(void) {
+void Board_Headroom_Toggle(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinOutHigh(LPC_GPIO, LED1_GPIO, LED1_PIN);
-#endif
-}
-
-void Board_LED_Off(void) {
-#ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinOutLow(LPC_GPIO, LED1_GPIO, LED1_PIN);
+	Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
 #endif
 }
 
@@ -297,6 +316,34 @@ void Board_Init_Chip(void) {
 }
 
 void Board_Init_EEPROM(void) {
+
+}
+
+void Board_GPIO_Init(void) {
+    // [TODO] verify that pins don't collide
+    //  move pin selections to preprocesser defines
+	Chip_GPIO_Init(LPC_GPIO);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+    Board_Headroom_Init();
+
+    Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
+    Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
+    
+    //SSP for EEPROM
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MOSI1 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK1 */
+
+    //SSP for LTC6804
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MISO0 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MOSI0 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
+    Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 
 }
 

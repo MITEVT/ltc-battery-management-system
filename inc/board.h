@@ -22,20 +22,16 @@
 #include "config.h"
 #include "state_types.h"
 
-#define LED1_GPIO 2
-#define LED1_PIN 10
 
-#define LED2_GPIO 3
-#define LED2_PIN 0
+#define LED0 2, 8
+#define LED1 2, 10
 
-#define LED3_GPIO 3
-#define LED3_PIN 1
-
-#define LED4_GPIO 3
-#define LED4_PIN 2
-
-#define LED5_GPIO 3
-#define LED5_PIN 3
+#define BAL_SW 1, 2
+#define IOCON_BAL_SW IOCON_PIO1_2
+#define CHRG_SW 1, 2
+#define IOCON_CHRG_SW IOCON_PIO1_2
+#define DISCHRG_SW 1, 2
+#define IOCON_DISCHRG_SW IOCON_PIO1_2
 
 #define SWITCH_GPIO 0
 #define SWITCH_PIN  1
@@ -50,6 +46,7 @@
 #define CONTACTOR_PRE_GPIO 	2
 #define CONTACTOR_PRE_PIN 	1
 
+#define HEADROOM 1, 3
  #define Hertz2Ticks(freq) SystemCoreClock / freq
 
 /**
@@ -104,6 +101,8 @@ void Board_SPI_Init(uint32_t baudRateHz);
  */
 void Board_CCAN_Init(uint32_t baudRateHz, void (*CAN_rx)(uint8_t), void (*CAN_tx)(uint8_t), void (*CAN_error)(uint32_t));
 
+void Board_GPIO_Init(void);
+
 /**
  * @details Initialize Board Status LED
  */
@@ -118,6 +117,10 @@ void Board_LED_On(void);
  * @details Turn status LED off
  */
 void Board_LED_Off(void);
+
+void Board_Headroom_Init(void);
+
+void Board_Headroom_Toggle(void);
 
 /**
  * @details Initialize board input switch

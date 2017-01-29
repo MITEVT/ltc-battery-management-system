@@ -254,6 +254,32 @@ BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output) {
 	//TODO: implement function
 }
 
+//[TODO] refactor to switch
+void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	return;
+#else
+	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
+    if (res == LTC6804_FAIL) {
+    	Board_Println("LTC6804_GetCellVol FAIL");
+    } else if (res == LTC6804_PEC_ERROR) {
+        Board_Println("LTC6804_GetCellVol PEC_ERROR");
+        Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    } else if (res == LTC6804_SPI_ERROR) {
+    	Board_Println("LTC6804_GetCellVol SPI_ERROR");
+    } else if (res == LTC6804_PASS) {
+        pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+        pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+        LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        ltc6804_get_cell_voltages = false;
+    }
+#endif
+}
+
+void Board_Balance_Cells(bool * balance_requests) {
+	//TODO: implement function
+}
+
 void Board_Init_Chip(void) {
 
 }

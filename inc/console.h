@@ -83,12 +83,6 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { //[TODO] don't hard
                             {0,0,0}//"error"
 };
 
-static void get(const char * const *);
-static void set(const char * const *);
-static void help(const char * const *);
-static void config(const char * const *);
-static void bal(const char * const *);
-
 typedef void (* const EXECUTE_HANDLER)(const char * const *);
 
 typedef struct {
@@ -103,7 +97,7 @@ typedef struct console_t {
     CONSOLE_OUTPUT_T *console_output;
 } console_t;
 
-static console_t console;
+// static console_t console;
 
 void console_init(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, CONSOLE_OUTPUT_T *console_output);
 void executerl(uint32_t argc, const char * const * argv);  

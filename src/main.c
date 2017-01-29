@@ -23,7 +23,6 @@
 #define EEPROM_CS_PIN 1, 7
 
 #define Hertz2Ticks(freq) SystemCoreClock / freq
-#define LTC_CELL_VOLTAGE_FREQ 10 //[TODO] removeme
 
 volatile uint32_t msTicks;
 
@@ -44,19 +43,6 @@ static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static uint8_t module_cell_count[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
-
-// // memory allocation for LTC6804
-// static LTC6804_CONFIG_T ltc6804_config; //[TODO] removeme
-// static LTC6804_STATE_T ltc6804_state;
-// static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup; //[TODO] removeme
-// static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; //[TODO] removeme
-// static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; //[TODO] removeme
-// static uint8_t ltc6804_cfg[LTC6804_DATA_LEN]; //[TODO] removeme
-// static uint16_t ltc6804_bal_list[MAX_NUM_MODULES]; //[TODO] removeme
-// static LTC6804_ADC_RES_T ltc6804_adc_res; //[TODO] removeme
-
-// // ltc6804 timing variables
-// static bool ltc6804_get_cell_voltages; //[TODO] removeme
 
 // memory for console
 static microrl_t rl;
@@ -205,7 +191,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
     // }
 
-    Board_Get_Cell_Voltages(&pack_status, msTicks);
+    Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         
 
     bms_input->msTicks = msTicks;
@@ -220,19 +206,19 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
-        Board_DeInit_LTC6804(); // [TODO] Think about this
+        Board_LTC6804_DeInit(); // [TODO] Think about this
     }
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
             EEPROM_Check_PackConfig_With_LTC(&pack_config);
 
-        Board_Init_LTC6804(&pack_config, cell_voltages, msTicks);
+        Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
         bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
     }
 
-    // [TODO] If statement sucks
-    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-        Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
+
+    if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
+        Board_LTC6804_Update_Balance_States(bms_output->balance_req, msTicks);
     }
 
 }

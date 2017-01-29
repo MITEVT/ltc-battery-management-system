@@ -15,12 +15,12 @@
 #else
  #include "chip.h"
  #include "ltc6804.h"
+ #include "console.h"
 #endif
  
 #include "error_handler.h"
 #include "config.h"
 #include "state_types.h"
-#include "console.h"
 
 #define LED1_GPIO 2
 #define LED1_PIN 10
@@ -122,23 +122,27 @@ void Board_LED_Off(void);
 /**
  * @details Initialize board input switch
  */
-void Board_Switch_Init(void);
+void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
 
-void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
-
-void Board_DeInit_LTC6804(void);
+void Board_LTC6804_DeInit(void);
 
 /**
  * @details get cell voltages
  *
  * @param mutable array of cell voltages
- * @return state of LTC6804 BMS slaves
+ * @param msTicks current milisecond count
  */
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
+void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
 bool Board_LTC6804_CVST(uint32_t msTicks);
 
-void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
+/**
+ * @details balance selected cell
+ * 
+ * @param balance_requests balance_requests[i] is true if ith cell should be 
+ *                         balanced, false otherwise
+ */
+void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks);
 
 void Board_Init_Timers(void);
 
@@ -158,6 +162,7 @@ void Board_Close_Contactors(bool close_contactors);
  */
 bool Board_Are_Contactors_Closed(void);
 
+#ifndef TEST_HARDWARE
 /**
  * @details get mode request
  *
@@ -165,23 +170,7 @@ bool Board_Are_Contactors_Closed(void);
  * @return latest mode request
  */
 BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
-
-/**
- * @details get cell voltages
- *
- * @param mutable array of cell voltages
- * @param msTicks current milisecond count
- */
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
-
-
-/**
- * @details balance selected cell
- * 
- * @param balance_requests balance_requests[i] is true if ith cell should be 
- *                         balanced, false otherwise
- */
-void Board_Balance_Cells(bool * balance_requests);
+#endif
 
 /**
  * @details checks that pack configuration is consistent with number of connected LTC6804 slaves

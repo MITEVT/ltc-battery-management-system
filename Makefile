@@ -242,6 +242,9 @@ test : LD_FLAGS_F 	= $(LD_FLAGS_F_TEST)
 test : make_test_output_dir $(TEST_TARGET)
 	./$(TEST_TARGET)
 
+test_writeflash:  AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=hardware_test
+test_writeflash: all
+
 # make object files dependent on Makefile
 $(OBJS) : Makefile
 $(TEST_OBJS) : Makefile

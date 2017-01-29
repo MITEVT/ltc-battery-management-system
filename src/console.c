@@ -6,11 +6,20 @@
 #include "microrl.h"
 #include "console_types.h"
 
+/***************************************
+        Private Variables
+****************************************/
 
+static BMS_INPUT_T *bms_input;
+static BMS_STATE_T *bms_state;
+static CONSOLE_OUTPUT_T *console_output;
+
+/***************************************
+        Private Functions
+****************************************/
 
 // [TODO] Fix to not parse strings falsely
-uint32_t my_atou(const char *str)
-{
+uint32_t my_atou(const char *str) {
     uint32_t res = 0; // Initialize result
   
     // Iterate through all characters of input string and
@@ -40,62 +49,62 @@ static void get(const char * const * argv) {
         char tempstr[20];
         switch (rwloc) {
             case RWL_cell_min_mV:
-                utoa(console.bms_state->pack_config->cell_min_mV, tempstr,10);
+                utoa(bms_state->pack_config->cell_min_mV, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cell_max_mV:
-                utoa(console.bms_state->pack_config->cell_max_mV, tempstr,10);
+                utoa(bms_state->pack_config->cell_max_mV, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cell_capacity_cAh:
-                utoa(console.bms_state->pack_config->cell_capacity_cAh, tempstr,10);
+                utoa(bms_state->pack_config->cell_capacity_cAh, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_num_modules:
-                utoa(console.bms_state->pack_config->num_modules, tempstr,10);
+                utoa(bms_state->pack_config->num_modules, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_module_cell_count:
-                for(i = 0; i < console.bms_state->pack_config->num_modules; i++) {
-                    utoa(console.bms_state->pack_config->module_cell_count[i],
+                for(i = 0; i < bms_state->pack_config->num_modules; i++) {
+                    utoa(bms_state->pack_config->module_cell_count[i],
                             tempstr, 10);
                     Board_Println(tempstr);
                 }
                 break;
             case RWL_cell_charge_c_rating_cC:
-                utoa(console.bms_state->pack_config->cell_charge_c_rating_cC, tempstr,10);
+                utoa(bms_state->pack_config->cell_charge_c_rating_cC, tempstr,10);
                 Board_Println(tempstr);
                 break;  
             case RWL_bal_on_thresh_mV:
-                utoa(console.bms_state->pack_config->bal_on_thresh_mV, tempstr,10);
+                utoa(bms_state->pack_config->bal_on_thresh_mV, tempstr,10);
                 Board_Println(tempstr);
                 break;  
             case RWL_bal_off_thresh_mV:
-                utoa(console.bms_state->pack_config->bal_off_thresh_mV, tempstr,10);
+                utoa(bms_state->pack_config->bal_off_thresh_mV, tempstr,10);
                 Board_Println(tempstr);
                 break; 
             case RWL_pack_cells_p:
-                utoa(console.bms_state->pack_config->pack_cells_p, tempstr,10);
+                utoa(bms_state->pack_config->pack_cells_p, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cv_min_current_mA:
-                utoa(console.bms_state->pack_config->cv_min_current_mA, tempstr,10);
+                utoa(bms_state->pack_config->cv_min_current_mA, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cv_min_current_ms:
-                utoa(console.bms_state->pack_config->cv_min_current_ms, tempstr,10);
+                utoa(bms_state->pack_config->cv_min_current_ms, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cc_cell_voltage_mV:
-                utoa(console.bms_state->pack_config->cc_cell_voltage_mV, tempstr,10);
+                utoa(bms_state->pack_config->cc_cell_voltage_mV, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_cell_discharge_c_rating_cC:
-                utoa(console.bms_state->pack_config->cell_discharge_c_rating_cC, tempstr,10);
+                utoa(bms_state->pack_config->cell_discharge_c_rating_cC, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_max_cell_temp_C:
-                utoa(console.bms_state->pack_config->max_cell_temp_C, tempstr,10);
+                utoa(bms_state->pack_config->max_cell_temp_C, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_LENGTH:
@@ -116,44 +125,44 @@ static void get(const char * const * argv) {
             char tempstr[20];
             switch (roloc) {
                 case ROL_state:
-                    Board_Println(BMS_SSM_MODE_NAMES[console.bms_state->curr_mode]);
-                    Board_Println(BMS_INIT_MODE_NAMES[console.bms_state->init_state]);
-                    Board_Println(BMS_CHARGE_MODE_NAMES[console.bms_state->charge_state]);
-                    Board_Println(BMS_DISCHARGE_MODE_NAMES[console.bms_state->discharge_state]);
-                    Board_Println(BMS_ERROR_NAMES[console.bms_state->error_code]);
+                    Board_Println(BMS_SSM_MODE_NAMES[bms_state->curr_mode]);
+                    Board_Println(BMS_INIT_MODE_NAMES[bms_state->init_state]);
+                    Board_Println(BMS_CHARGE_MODE_NAMES[bms_state->charge_state]);
+                    Board_Println(BMS_DISCHARGE_MODE_NAMES[bms_state->discharge_state]);
+                    Board_Println(BMS_ERROR_NAMES[bms_state->error_code]);
                     break;
                 case ROL_cell_voltages_mV:
-                    for(i = 0; i < Get_Total_Cell_Count(console.bms_state->pack_config); i++) {
-                       utoa(console.bms_input->pack_status->cell_voltages_mV[i], tempstr, 10);
+                    for(i = 0; i < Get_Total_Cell_Count(bms_state->pack_config); i++) {
+                       utoa(bms_input->pack_status->cell_voltages_mV[i], tempstr, 10);
                        Board_Println(tempstr);
                     }
                     break;
                 case ROL_pack_cell_max_mV:
-                    utoa(console.bms_input->pack_status->pack_cell_max_mV, tempstr,10);
+                    utoa(bms_input->pack_status->pack_cell_max_mV, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_pack_cell_min_mV:
-                    utoa(console.bms_input->pack_status->pack_cell_min_mV, tempstr,10);
+                    utoa(bms_input->pack_status->pack_cell_min_mV, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_pack_current_mA:
-                    utoa(console.bms_input->pack_status->pack_current_mA, tempstr,10);
+                    utoa(bms_input->pack_status->pack_current_mA, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_pack_voltage_mV:
-                    utoa(console.bms_input->pack_status->pack_voltage_mV, tempstr,10);
+                    utoa(bms_input->pack_status->pack_voltage_mV, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_precharge_voltage:
-                    utoa(console.bms_input->pack_status->precharge_voltage, tempstr,10);
+                    utoa(bms_input->pack_status->precharge_voltage, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_max_cell_temp_C:
-                    utoa(console.bms_input->pack_status->max_cell_temp_C, tempstr,10);
+                    utoa(bms_input->pack_status->max_cell_temp_C, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:
-                    if(console.bms_input->pack_status->error) {
+                    if(bms_input->pack_status->error) {
                         Board_Println("Pack has error!");
                     } else {
                         Board_Println("Pack has no error!");
@@ -171,7 +180,7 @@ static void get(const char * const * argv) {
 
 // [TODO] Check max/min bounds and max > min
 static void set(const char * const * argv) {
-    if (console.bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
+    if (bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
     {
         Board_Println("Set failed (not in standby mode)!");
         return;
@@ -230,33 +239,31 @@ static void help(const char * const * argv) {
             Board_Println_BLOCKING(locstring[i]); //blocking print.
         }
     }
-
 }
 
 // [TODO] This might not be safe
 static void config(const char * const * argv) {
     UNUSED(argv);
-    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
+    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
     {
-        console.bms_state->curr_mode = BMS_SSM_MODE_INIT;
-        console.bms_state->init_state = BMS_INIT_OFF;
+        bms_state->curr_mode = BMS_SSM_MODE_INIT;
+        bms_state->init_state = BMS_INIT_OFF;
     }
 }
 
-// [TODO] This should set a flag to be handled in Process_Input
 static void bal(const char * const * argv) {
     UNUSED(argv);
-    if (console.bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
-            console.bms_state->curr_mode == BMS_SSM_MODE_BALANCE) {    
+    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
+            bms_state->curr_mode == BMS_SSM_MODE_BALANCE) {    
         
         if (strcmp(argv[1],"off") == 0) {
-            console.console_output->valid_mode_request = false;
-            console.console_output->balance_mV = UINT32_MAX;
+            console_output->valid_mode_request = false;
+            console_output->balance_mV = UINT32_MAX;
             Board_Println("bal off");
         } else {
-            console.console_output->valid_mode_request = true;
-            console.console_output->mode_request = BMS_SSM_MODE_BALANCE;
-            console.console_output->balance_mV = my_atou(argv[1]);
+            console_output->valid_mode_request = true;
+            console_output->mode_request = BMS_SSM_MODE_BALANCE;
+            console_output->balance_mV = my_atou(argv[1]);
             Board_Println("bal on");
         }
     } else {
@@ -264,15 +271,19 @@ static void bal(const char * const * argv) {
     }
 }                       
 
-void console_init(BMS_INPUT_T * bms_input, BMS_STATE_T * bms_state, CONSOLE_OUTPUT_T *console_output){
-    console.bms_input = bms_input;
-    console.bms_state = bms_state;
-    console.console_output = console_output;
-    console.console_output->valid_mode_request = false;
-    console.console_output->mode_request = BMS_SSM_MODE_STANDBY;
-}
-
 static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
+
+/***************************************
+        Public Functions
+****************************************/
+
+void console_init(BMS_INPUT_T * input, BMS_STATE_T * state, CONSOLE_OUTPUT_T *con_output){
+    bms_input = input;
+    bms_state = state;
+    console_output = con_output;
+    console_output->valid_mode_request = false;
+    console_output->mode_request = BMS_SSM_MODE_STANDBY;
+}
 
 void executerl(uint32_t argc, const char * const * argv){
     uint32_t command_i = 0;

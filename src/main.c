@@ -230,8 +230,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
     }
 
-    // [TODO] If statement sucks
-    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+    if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
         Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
     }
 

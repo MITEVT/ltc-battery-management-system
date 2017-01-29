@@ -50,7 +50,7 @@ OUT_DIR = bin
 C_DEFS = -DCORE_M0 -DDEBUG_ENABLE
 
 # ASM definitions
-AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main -DRAM_MODE=1
+AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main
 
 # include directories (absolute or relative paths to additional folders with
 # headers, current folder is always included)
@@ -118,7 +118,7 @@ C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/c
 
 COMPORT = $(word 1, $(wildcard /dev/tty.usbserial-*) $(wildcard /dev/ttyUSB*))
 BAUDRATE = 115200
-CLOCK_OSC = 12000
+CLOCK_OSC = 0
 
 #=============================================================================#
 # Lint Configuration

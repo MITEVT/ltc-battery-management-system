@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "chip.h"
+#include "board.h"
 
 
 typedef enum error {

@@ -180,32 +180,6 @@ void Init_BMS_Structs(void) {
 
 }
 
-//[TODO] removeme
-// void Init_LTC6804(void) {
-//     ltc6804_config.pSSP = LPC_SSP0;
-//     ltc6804_config.baud = LTC6804_BAUD;
-//     ltc6804_config.cs_gpio = 0;
-//     ltc6804_config.cs_pin = 2;
-
-//     ltc6804_config.num_modules = pack_config.num_modules;
-//     ltc6804_config.module_cell_count = module_cell_count;
-
-//     ltc6804_config.min_cell_mV = pack_config.cell_min_mV;
-//     ltc6804_config.max_cell_mV = pack_config.cell_max_mV;
-
-//     ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
-    
-//     ltc6804_state.xf = &ltc6804_xf_setup;
-//     ltc6804_state.tx_buf = ltc6804_tx_buf;
-//     ltc6804_state.rx_buf = ltc6804_rx_buf;
-//     ltc6804_state.cfg = ltc6804_cfg;
-//     ltc6804_state.bal_list = ltc6804_bal_list;
-
-//     ltc6804_adc_res.cell_voltages_mV = pack_status.cell_voltages_mV;
-
-//     LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
-// }
-
 void Process_Input(BMS_INPUT_T* bms_input) {
     // Read current mode request
     // Override Console Mode Request
@@ -246,6 +220,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
+        Board_DeInit_LTC6804(); // [TODO] Think about this
     }
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
@@ -253,54 +228,11 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
         Board_Init_LTC6804(&pack_config, cell_voltages, msTicks);
         bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
-
-        // Board_Print("Initializing LTC6804. Verifying..");
-        // if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-        //     Board_Print(".FAIL. ");
-        //     bms_input->ltc_packconfig_check_done = false;
-        // } else {
-        //     Board_Print(".PASS. ");
-        // }
-
-        // LTC6804_STATUS_T res;
-        // Board_Print("CVST..");
-        // while((res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks)) != LTC6804_PASS) {
-        //     if (res == LTC6804_FAIL) {
-        //         Board_Print(".FAIL (");
-
-        //         int i;
-        //         for (i = 0; i < 12; i++) {
-        //             itoa(ltc6804_state.rx_buf[i], str, 16);
-        //             Board_Print(str);
-        //             Board_Print(", ");
-        //         }
-        //         Board_Println(")");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     } else if (res == LTC6804_SPI_ERROR) {
-        //         Board_Println(".SPI_ERROR");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     } else if (res == LTC6804_PEC_ERROR) {
-        //         Board_Println(".PEC_ERROR");
-        //         bms_input->ltc_packconfig_check_done = false;
-        //         break;
-        //     }
-        // } 
-        // if (res == LTC6804_PASS) Board_Println(".PASS");
-        // Board_Enable_Timers(); // [TODO] Put in right place
     }
 
     // [TODO] If statement sucks
-
-
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
-        // LTC6804_STATUS_T res;
-        // res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, bms_output->balance_req, msTicks);
-        // if (res == LTC6804_SPI_ERROR) {
-        //     Board_Println("SetBalanceStates SPI_ERROR");
-        // }
     }
 
 }

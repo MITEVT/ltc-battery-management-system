@@ -61,6 +61,7 @@ void canBaudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
 #endif
 }
 
+#ifndef TEST_HARDWARE
 
 /**
  * @brief	UART Interrupt Handler
@@ -69,10 +70,19 @@ void canBaudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
  */
 
 void UART_IRQHandler(void) {
-#ifndef TEST_HARDWARE
 	Chip_UART_IRQRBHandler(LPC_USART, &uart_rx_ring, &uart_tx_ring);
-#endif
 }
+
+void TIMER32_0_IRQHandler(void) {
+    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
+        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
+        // Do something
+
+        ltc6804_get_cell_voltages = true;
+    }
+}
+
+#endif
 
 /**
  * @brief SysTick Interrupt Handler
@@ -250,9 +260,11 @@ bool Board_Are_Contactors_Closed(void) {
 	//TODO: implement function
 }
 
+#ifndef TEST_HARDWARE
 BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output) {
 	//TODO: implement function
 }
+#endif
 
 //[TODO] refactor to switch
 void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
@@ -288,29 +300,25 @@ void Board_Init_EEPROM(void) {
 
 }
 
-void TIMER32_0_IRQHandler(void) {
-    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
-        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
-        // Do something
 
-        ltc6804_get_cell_voltages = true;
-    }
-}
 
 void Board_Init_Timers(void) {
+#ifndef TEST_HARDWARE
     // Timer 32_0 initialization
     Chip_TIMER_Init(LPC_TIMER32_0);
     Chip_TIMER_Reset(LPC_TIMER32_0);
     Chip_TIMER_MatchEnableInt(LPC_TIMER32_0, 0);
     Chip_TIMER_SetMatch(LPC_TIMER32_0, 0, Hertz2Ticks(LTC_CELL_VOLTAGE_FREQ));
     Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_0, 0);
-
+#endif
 }
 
 void Board_Enable_Timers(void) { //[TODO] removeme
+#ifndef TEST_HARDWARE
     NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
     NVIC_EnableIRQ(TIMER_32_0_IRQn);
     Chip_TIMER_Enable(LPC_TIMER32_0);
+#endif
 }
 
 void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
@@ -348,7 +356,9 @@ void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 }
 
 void Board_LTC6804_DeInit(void) {
+#ifndef TEST_HARDWARE
 	ltc6804_initialized = false;
+#endif
 }
 
 void Board_Init_Drivers(void) {
@@ -379,16 +389,10 @@ void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t ms
 
 //[TODO] add saftey 
 bool Board_LTC6804_CVST(uint32_t msTicks) {
-    // Board_Print("Initializing LTC6804. Verifying..");
-    // if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-    //     Board_Print(".FAIL. ");
-    //     return false;
-    // } else {
-    //     Board_Print(".PASS. ");
-    // }
-
+#ifdef TEST_HARDWARE
+	return false;
+#else
 	LTC6804_STATUS_T res;
-    // Board_Print("CVST..");
     res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
 
     switch (res) {
@@ -414,14 +418,19 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     }
 
     return false;
+#endif
 }
 
 //[TODO] add saftey
 void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	return;
+#else
 	LTC6804_STATUS_T res;
     res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
     if (res == LTC6804_SPI_ERROR) {
         Board_Println("SetBalanceStates SPI_ERROR");
     }
+#endif
 }
 

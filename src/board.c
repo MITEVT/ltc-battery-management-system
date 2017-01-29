@@ -10,6 +10,18 @@ static RINGBUFF_T uart_rx_ring;
 static uint8_t _uart_rx_ring[UART_BUFFER_SIZE];
 static RINGBUFF_T uart_tx_ring;
 static uint8_t _uart_tx_ring[UART_BUFFER_SIZE];
+
+static LTC6804_CONFIG_T ltc6804_config;
+static LTC6804_STATE_T ltc6804_state;
+static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
+static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; 
+static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; 
+static uint8_t ltc6804_cfg[LTC6804_DATA_LEN]; 
+static uint16_t ltc6804_bal_list[MAX_NUM_MODULES]; 
+static LTC6804_ADC_RES_T ltc6804_adc_res; 
+// ltc6804 timing variables
+static bool ltc6804_get_cell_voltages;
+#define LTC_CELL_VOLTAGE_FREQ 10
 #endif
 
 
@@ -226,5 +238,94 @@ bool Board_Switch_Read(void) {
 	return Chip_GPIO_GetPinState(LPC_GPIO, SWITCH_GPIO, SWITCH_PIN);
 #endif
 
+}
+
+Board_Init_Chip(void) {
+
+}
+
+Board_Init_EEPROM(void) {
+
+}
+
+void TIMER32_0_IRQHandler(void) {
+    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
+        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
+        // Do something
+
+        ltc6804_get_cell_voltages = true;
+    }
+}
+
+void Board_Init_Timers(void) {
+    // Timer 32_0 initialization
+    Chip_TIMER_Init(LPC_TIMER32_0);
+    Chip_TIMER_Reset(LPC_TIMER32_0);
+    Chip_TIMER_MatchEnableInt(LPC_TIMER32_0, 0);
+    Chip_TIMER_SetMatch(LPC_TIMER32_0, 0, Hertz2Ticks(LTC_CELL_VOLTAGE_FREQ));
+    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_0, 0);
+
+}
+
+void Board_Enable_Timers(void) { //[TODO] removeme
+    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
+    NVIC_EnableIRQ(TIMER_32_0_IRQn);
+    Chip_TIMER_Enable(LPC_TIMER32_0);
+}
+
+void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	return
+#else
+    ltc6804_config.pSSP = LPC_SSP0;
+    ltc6804_config.baud = LTC6804_BAUD;
+    ltc6804_config.cs_gpio = 0;
+    ltc6804_config.cs_pin = 2;
+
+    ltc6804_config.num_modules = pack_config->num_modules;
+    ltc6804_config.module_cell_count = pack_config->module_cell_count;
+
+    ltc6804_config.min_cell_mV = pack_config->cell_min_mV;
+    ltc6804_config.max_cell_mV = pack_config->cell_max_mV;
+
+    ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
+    
+    ltc6804_state.xf = &ltc6804_xf_setup;
+    ltc6804_state.tx_buf = ltc6804_tx_buf;
+    ltc6804_state.rx_buf = ltc6804_rx_buf;
+    ltc6804_state.cfg = ltc6804_cfg;
+    ltc6804_state.bal_list = ltc6804_bal_list;
+
+    ltc6804_adc_res.cell_voltages_mV = cell_voltages_mV;
+
+    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
+    ltc6804_get_cell_voltages = false; // [TODO] Same as above
+#endif
+}
+
+Board_Init_Drivers(void) {
+
+}
+
+//[TODO] refactor to switch
+void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	return;
+#else
+	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
+    if (res == LTC6804_FAIL) {
+    	Board_Println("LTC6804_GetCellVol FAIL");
+    } else if (res == LTC6804_PEC_ERROR) {
+        Board_Println("LTC6804_GetCellVol PEC_ERROR");
+        Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    } else if (res == LTC6804_SPI_ERROR) {
+    	Board_Println("LTC6804_GetCellVol SPI_ERROR");
+    } else if (res == LTC6804_PASS) {
+        pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+        pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+        LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        ltc6804_get_cell_voltages = false;
+    }
+#endif
 }
 

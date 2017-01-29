@@ -23,7 +23,7 @@
 #define EEPROM_CS_PIN 1, 7
 
 #define Hertz2Ticks(freq) SystemCoreClock / freq
-#define LTC_CELL_VOLTAGE_FREQ 10
+#define LTC_CELL_VOLTAGE_FREQ 10 //[TODO] removeme
 
 volatile uint32_t msTicks;
 
@@ -46,17 +46,17 @@ static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
 
 // memory allocation for LTC6804
-static LTC6804_CONFIG_T ltc6804_config;
+static LTC6804_CONFIG_T ltc6804_config; //[TODO] removeme
 static LTC6804_STATE_T ltc6804_state;
-static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup;
-static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)];
-static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)];
-static uint8_t ltc6804_cfg[LTC6804_DATA_LEN];
-static uint16_t ltc6804_bal_list[MAX_NUM_MODULES];
-static LTC6804_ADC_RES_T ltc6804_adc_res;
+static Chip_SSP_DATA_SETUP_T ltc6804_xf_setup; //[TODO] removeme
+static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; //[TODO] removeme
+static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; //[TODO] removeme
+static uint8_t ltc6804_cfg[LTC6804_DATA_LEN]; //[TODO] removeme
+static uint16_t ltc6804_bal_list[MAX_NUM_MODULES]; //[TODO] removeme
+static LTC6804_ADC_RES_T ltc6804_adc_res; //[TODO] removeme
 
 // ltc6804 timing variables
-static bool ltc6804_get_cell_voltages;
+static bool ltc6804_get_cell_voltages; //[TODO] removeme
 
 // memory for console
 static microrl_t rl;
@@ -70,14 +70,6 @@ void SysTick_Handler(void) {
 	msTicks++;
 }
 
-void TIMER32_0_IRQHandler(void) {
-    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
-        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
-        // Do something
-
-        ltc6804_get_cell_voltages = true;
-    }
-}
 
 /****************************
  *          HELPERS
@@ -123,21 +115,7 @@ static void Init_GPIO(void) {
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 }
 
-void Init_Timers(void) {
-    // Timer 32_0 initialization
-    Chip_TIMER_Init(LPC_TIMER32_0);
-    Chip_TIMER_Reset(LPC_TIMER32_0);
-    Chip_TIMER_MatchEnableInt(LPC_TIMER32_0, 0);
-    Chip_TIMER_SetMatch(LPC_TIMER32_0, 0, Hertz2Ticks(LTC_CELL_VOLTAGE_FREQ));
-    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_0, 0);
 
-}
-
-void Enable_Timers(void) {
-    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
-    NVIC_EnableIRQ(TIMER_32_0_IRQn);
-    Chip_TIMER_Enable(LPC_TIMER32_0);
-}
 
 
 void Init_BMS_Structs(void) {
@@ -202,6 +180,7 @@ void Init_BMS_Structs(void) {
 
 }
 
+//[TODO] removeme
 void Init_LTC6804(void) {
     ltc6804_config.pSSP = LPC_SSP0;
     ltc6804_config.baud = LTC6804_BAUD;
@@ -253,6 +232,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // }
 
     if (ltc6804_get_cell_voltages) {
+        Board_Get_Cell_Voltages(&pack_status, msTicks);
+        
         LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
         if (res == LTC6804_FAIL) Board_Println("LTC6804_GetCellVol FAIL");
         if (res == LTC6804_PEC_ERROR) {
@@ -286,7 +267,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
             EEPROM_Check_PackConfig_With_LTC(&pack_config);
-        Init_LTC6804();
+        Board_Init_LTC6804(pack_config, cell_voltages, msTicks);
         Board_Print("Initializing LTC6804. Verifying..");
         if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
             Board_Print(".FAIL. ");
@@ -321,7 +302,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
             }
         } 
         if (res == LTC6804_PASS) Board_Println(".PASS");
-        Enable_Timers(); // [TODO] Put in right place
+        Board_Enable_Timers(); // [TODO] Put in right place
     }
 
     // [TODO] If statement sucks
@@ -350,7 +331,7 @@ int main(void) {
 
     Init_Core();
     Init_GPIO();
-    Init_Timers(); // [TODO] Think about proper place to put this
+    Board_Init_Timers(); // [TODO] Think about proper place to put this
     ltc6804_get_cell_voltages = false; // [TODO] Same as above
     EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
 

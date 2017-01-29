@@ -14,7 +14,13 @@
 	#include <stdio.h>
 #else
  #include "chip.h"
+ #include "ltc6804.h"
+ #include "console.h"
 #endif
+ 
+#include "error_handler.h"
+#include "config.h"
+#include "state_types.h"
 
 #define LED1_GPIO 2
 #define LED1_PIN 10
@@ -43,6 +49,8 @@
 #define CONTACTOR_N_PIN  	7
 #define CONTACTOR_PRE_GPIO 	2
 #define CONTACTOR_PRE_PIN 	1
+
+ #define Hertz2Ticks(freq) SystemCoreClock / freq
 
 /**
  * @details Non-blocking printing for user interface
@@ -115,6 +123,12 @@ void Board_LED_Off(void);
  * @details Initialize board input switch
  */
 void Board_Switch_Init(void);
+
+void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
+
+void Board_Init_Timers(void);
+
+void Board_Enable_Timers(void);
 
 
 #endif

@@ -181,6 +181,6 @@ BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
  * @param pack_config configuration of the battery pack:
  * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
  */
-bool Board_LTC6804_Validate_Configuration(PACK_CONFIG_T * pack_config);
+bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
 
 #endif

@@ -285,34 +285,20 @@ BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output) {
 }
 #endif
 
-//[TODO] refactor to switch
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
-#ifdef TEST_HARDWARE
-	return;
-#else
-	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
-    if (res == LTC6804_FAIL) {
-    	Board_Println("LTC6804_GetCellVol FAIL");
-    } else if (res == LTC6804_PEC_ERROR) {
-        Board_Println("LTC6804_GetCellVol PEC_ERROR");
-        Error_Assert(ERROR_LTC6804_PEC,msTicks);
-    } else if (res == LTC6804_SPI_ERROR) {
-    	Board_Println("LTC6804_GetCellVol SPI_ERROR");
-    } else if (res == LTC6804_PASS) {
-        pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
-        pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
-        LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
-        ltc6804_get_cell_voltages = false;
-    }
-#endif
-}
 
 void Board_Balance_Cells(bool * balance_requests) {
 	//TODO: implement function
 }
 
-bool Board_LTC6804_Validate_Configuration(PACK_CONFIG_T * pack_config) {
-	//TODO: implement function
+bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
+	Board_Print("Initializing LTC6804. Verifying..");
+    if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+        Board_Print(".FAIL. ");
+        return false;
+    } else {
+        Board_Print(".PASS. ");
+        return true;
+     }
 }
 
 void Board_Init_Chip(void) {
@@ -416,29 +402,51 @@ void Board_Init_Drivers(void) {
 
 }
 
-//[TODO] refactor to switch
+//[TODO] check saftey
 void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
 	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
-    if (res == LTC6804_FAIL) {
-    	Board_Println("LTC6804_GetCellVol FAIL");
-    } else if (res == LTC6804_PEC_ERROR) {
-        Board_Println("LTC6804_GetCellVol PEC_ERROR");
-        Error_Assert(ERROR_LTC6804_PEC,msTicks);
-    } else if (res == LTC6804_SPI_ERROR) {
-    	Board_Println("LTC6804_GetCellVol SPI_ERROR");
-    } else if (res == LTC6804_PASS) {
-        pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
-        pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
-        LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
-        ltc6804_get_cell_voltages = false;
+	switch (res) {
+    	case LTC6804_FAIL:
+    		Board_Println("Get Vol FAIL");
+    	case LTC6804_SPI_ERROR:
+	    	Board_Println("Get Vol SPI_ERROR");
+    	case LTC6804_PEC_ERROR:
+    		Board_Println("Get Vol PEC_ERROR");
+    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    	case LTC6804_PASS:
+    		pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+        	pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+        	LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        	ltc6804_get_cell_voltages = false;
+        	Error_Pass(ERROR_LTC6804_PEC);
+    	case LTC6804_WAITING:
+    	case LTC6804_WAITING_REFUP:
+    		break;
+    	default:
+    		Board_Println("WTF");
+    		return false;
     }
+
+    // if (res == LTC6804_FAIL) {
+    // 	Board_Println("LTC6804_GetCellVol FAIL");
+    // } else if (res == LTC6804_PEC_ERROR) {
+    //     Board_Println("LTC6804_GetCellVol PEC_ERROR");
+    //     Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    // } else if (res == LTC6804_SPI_ERROR) {
+    // 	Board_Println("LTC6804_GetCellVol SPI_ERROR");
+    // } else if (res == LTC6804_PASS) {
+    //     pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+    //     pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+    //     LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+    //     ltc6804_get_cell_voltages = false;
+    // }
 #endif
 }
 
-//[TODO] add saftey 
+//[TODO] check saftey 
 bool Board_LTC6804_CVST(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return false;
@@ -455,10 +463,12 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
 	        return false;
     	case LTC6804_PEC_ERROR:
     		Board_Println("CVST PEC_ERROR");
+    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
         	return false;
     	case LTC6804_PASS:
     		Board_Println("CVST PASS");
     		Board_Enable_Timers();
+    		Error_Pass(ERROR_LTC6804_PEC);
     		return true;
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:

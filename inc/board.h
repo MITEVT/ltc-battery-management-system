@@ -125,7 +125,12 @@ void Board_LED_Off(void);
 void Board_Switch_Init(void);
 
 
+void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
 
+
+bool Board_LTC6804_CVST(uint32_t msTicks);
+
+void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
 
 void Board_Init_Timers(void);
 

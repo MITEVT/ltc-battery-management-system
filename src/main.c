@@ -144,10 +144,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
 
-    Board_Get_Mode_Request(&console_output, bms_input);
-
-
-
+    Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
     Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         
 
@@ -233,10 +230,17 @@ int main(void) {
     }
     Board_LTC6804_OpenWireTest(msTicks);
     Board_Println_BLOCKING("GOT REKT");
+
+    bms_output.close_contactors = false;
+    bms_output.charge_req->charger_on = false;
+    memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
+    bms_output.read_eeprom_packconfig = false;
+    bms_output.check_packconfig_with_ltc = false;
+
     while(1) {
-        //set bms_outputs
-        //process_output(bms_outputs);
-        //process_keyboard()
+        //set bms_output
+        Process_Output(&bms_input, &bms_output);
+        Process_Keyboard();
     }
 	return 0;
 }

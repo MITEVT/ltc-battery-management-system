@@ -15,12 +15,12 @@
 #else
  #include "chip.h"
  #include "ltc6804.h"
- #include "console.h"
 #endif
  
 #include "error_handler.h"
 #include "config.h"
 #include "state_types.h"
+#include "console.h"
 
 #define LED1_GPIO 2
 #define LED1_PIN 10
@@ -126,13 +126,6 @@ void Board_Switch_Init(void);
 
 
 
-/**
- * @details get cell voltages
- *
- * @param mutable array of cell voltages
- * @return state of LTC6804 BMS slaves
- */
-void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
 void Board_Init_Timers(void);
 
@@ -160,6 +153,28 @@ bool Board_Are_Contactors_Closed(void);
  */
 BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
 
+/**
+ * @details get cell voltages
+ *
+ * @param mutable array of cell voltages
+ * @param msTicks current milisecond count
+ */
+void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
+
+/**
+ * @details
+ * 
+ * @param balance_requests balance_requests[i] is true if ith cell should be 
+ *                         balanced, false otherwise
+ */
+void Board_Balance_Cells(bool * balance requests);
+
+/**
+ * @details configures LTC6804 slaves
+ *
+ * @param 
+ */
+void Board_Configure_LTC6804(
 
 #endif

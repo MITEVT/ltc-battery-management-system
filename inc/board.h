@@ -151,6 +151,8 @@ void Board_Init_Timers(void);
 
 void Board_Enable_Timers(void);
 
+void Board_LTC6804_OpenWireTest(uint32_t msTicks);
+
 /**
  * @details closes or opens contactors
  *
@@ -170,9 +172,10 @@ bool Board_Are_Contactors_Closed(void);
  * @details get mode request
  *
  * @param console_output output from console
- * @return latest mode request
+ * @param bms_input pointer to input to SSMs to modify bal and req
+ * @return none
  */
-BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
+void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
 #endif
 
 /**
@@ -181,6 +184,6 @@ BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
  * @param pack_config configuration of the battery pack:
  * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
  */
-bool Board_LTC6804_Validate_Configuration(PACK_CONFIG_T * pack_config);
+bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
 
 #endif

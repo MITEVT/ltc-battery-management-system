@@ -94,7 +94,6 @@ void Init_BMS_Structs(void) {
     bms_state.init_state = BMS_INIT_OFF;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
-    bms_state.error_code = BMS_NO_ERROR;
 
     charger_status.connected = false;
     charger_status.error = false;
@@ -145,24 +144,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
 
-    if (console_output.valid_mode_request) {
-        bms_input->mode_request = console_output.mode_request;
-        bms_input->balance_mV = console_output.balance_mV;
-    } else {
-        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-    }
-
-    // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-    //     bms_input->balance_mV = 3300;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-    // } else {
-    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
-    // }
-
+    Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
     Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         
 
@@ -246,11 +228,19 @@ int main(void) {
             Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
     }
+    Board_LTC6804_OpenWireTest(msTicks);
     Board_Println_BLOCKING("GOT REKT");
+
+    bms_output.close_contactors = false;
+    bms_output.charge_req->charger_on = false;
+    memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
+    bms_output.read_eeprom_packconfig = false;
+    bms_output.check_packconfig_with_ltc = false;
+
     while(1) {
-        //set bms_outputs
-        //process_output(bms_outputs);
-        //process_keyboard()
+        //set bms_output
+        Process_Output(&bms_input, &bms_output);
+        Process_Keyboard();
     }
 	return 0;
 }

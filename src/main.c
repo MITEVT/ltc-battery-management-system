@@ -246,6 +246,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
+        Board_DeInit_LTC6804(); // [TODO] Think about this
     }
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 

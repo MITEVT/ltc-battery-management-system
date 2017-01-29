@@ -43,7 +43,6 @@ TEST_SETUP(SSM_Test) {
     bms_state.init_state = BMS_INIT_OFF;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
-    bms_state.error_code = BMS_NO_ERROR;
 
     charger_status.connected = false;
     charger_status.error = false;
@@ -96,7 +95,6 @@ TEST(SSM_Test, ssm_init) {
     SSM_Init(&bms_input, &bms_state, &bms_output);
 	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
 	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_OFF);
-	TEST_ASSERT_EQUAL(bms_state.error_code, BMS_NO_ERROR);
 
     TEST_ASSERT_FALSE(bms_output.read_eeprom_packconfig);
     TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
@@ -152,37 +150,26 @@ TEST(SSM_Test, is_valid_jump) {
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_CHARGE));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_BALANCE));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_ERROR));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_STANDBY));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_INIT));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_CHARGE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_BALANCE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_INIT, BMS_SSM_MODE_ERROR));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_STANDBY));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_INIT));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_CHARGE));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_BALANCE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_CHARGE, BMS_SSM_MODE_ERROR));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_STANDBY));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_INIT));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_CHARGE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_BALANCE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_BALANCE, BMS_SSM_MODE_ERROR));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_STANDBY));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_INIT));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_CHARGE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_BALANCE));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_DISCHARGE, BMS_SSM_MODE_ERROR));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_STANDBY));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_INIT));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_CHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_BALANCE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_DISCHARGE));
-    TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_ERROR, BMS_SSM_MODE_ERROR));
 }
 
 TEST(SSM_Test, is_state_done) {
@@ -198,9 +185,6 @@ TEST(SSM_Test, is_state_done) {
     bms_state.curr_mode = BMS_SSM_MODE_DISCHARGE;
     bms_state.discharge_state = BMS_DISCHARGE_DONE;
 	TEST_ASSERT(Is_State_Done(&bms_state));
-
-    bms_state.curr_mode = BMS_SSM_MODE_ERROR;
-	TEST_ASSERT_FALSE(Is_State_Done(&bms_state));
 
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
 	TEST_ASSERT(Is_State_Done(&bms_state));
@@ -255,38 +239,6 @@ TEST(SSM_Test, ssm_step) {
 	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 }
 
-TEST(SSM_Test, error_step) {
-    printf("error_step");
-    
-    bms_state.curr_mode = BMS_SSM_MODE_ERROR;
-    bms_input.mode_request = BMS_SSM_MODE_BALANCE;
-    bms_output.close_contactors = true;
-    Error_Step(&bms_input, &bms_state, &bms_output);
-    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_ERROR);
-    TEST_ASSERT_FALSE(bms_output.close_contactors);
-    TEST_ASSERT_FALSE(bms_output.read_eeprom_packconfig);
-    TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
-    TEST_ASSERT_FALSE(bms_output.charge_req->charger_on);
-}
-
-TEST(SSM_Test, jumping_to_error) {
-    printf("jumping_to_error");
-
-    // same as above
-    bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
-    SSM_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT(bms_output.read_eeprom_packconfig);
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
-
-    // now make eeprom error out
-    bms_input.eeprom_packconfig_read_done = false;
-    bms_input.eeprom_read_error = true;
-    
-    SSM_Step(&bms_input, &bms_state, &bms_output); 
-    SSM_Step(&bms_input, &bms_state, &bms_output); 
-    TEST_ASSERT_EQUAL(BMS_SSM_MODE_ERROR, bms_state.curr_mode);
-    TEST_ASSERT_EQUAL(BMS_EEPROM_ERROR, bms_state.error_code);
-}
 
 TEST_GROUP_RUNNER(SSM_Test) {
 	RUN_TEST_CASE(SSM_Test, ssm_init);
@@ -296,7 +248,5 @@ TEST_GROUP_RUNNER(SSM_Test) {
 	RUN_TEST_CASE(SSM_Test, is_state_done);
 	RUN_TEST_CASE(SSM_Test, ssm_step_start);
 	RUN_TEST_CASE(SSM_Test, ssm_step);
-	RUN_TEST_CASE(SSM_Test, error_step);
-	RUN_TEST_CASE(SSM_Test, jumping_to_error);
 }
 

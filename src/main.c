@@ -146,16 +146,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     Board_Get_Mode_Request(&console_output, bms_input);
 
-    // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-    //     bms_input->balance_mV = 3300;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-    // } else {
-    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
-    // }
+
 
     Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         

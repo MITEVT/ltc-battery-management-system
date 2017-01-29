@@ -413,3 +413,8 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
 #endif
 }
 
+// [TODO] Make work pls
+void Board_LTC6804_OpenWireTest(uint32_t msTicks) {
+	LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, msTicks);
+}
+

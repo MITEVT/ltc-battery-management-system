@@ -287,6 +287,7 @@ int main(void) {
             Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
     }
+    Board_LTC6804_OpenWireTest(msTicks);
     Board_Println_BLOCKING("GOT REKT");
     while(1) {
         //set bms_outputs

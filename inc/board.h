@@ -144,6 +144,8 @@ void Board_Init_Timers(void);
 
 void Board_Enable_Timers(void);
 
+void Board_LTC6804_OpenWireTest(uint32_t msTicks);
+
 /**
  * @details closes or opens contactors
  *

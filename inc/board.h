@@ -176,7 +176,7 @@ void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
 
 /**
- * @details
+ * @details balance selected cell
  * 
  * @param balance_requests balance_requests[i] is true if ith cell should be 
  *                         balanced, false otherwise
@@ -184,10 +184,11 @@ void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 void Board_Balance_Cells(bool * balance_requests);
 
 /**
- * @details configures LTC6804 slaves
+ * @details checks that pack configuration is consistent with number of connected LTC6804 slaves
  *
- * @param 
+ * @param pack_config configuration of the battery pack:
+ * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
  */
-//void Board_Configure_LTC6804(
+bool Board_LTC6804_Validate_Configuration(PACK_CONFIG_T * pack_config);
 
 #endif

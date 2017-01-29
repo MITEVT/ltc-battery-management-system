@@ -280,6 +280,10 @@ void Board_Balance_Cells(bool * balance_requests) {
 	//TODO: implement function
 }
 
+bool Board_LTC6804_Validate_Configuration(PACK_CONFIG_T * pack_config) {
+	//TODO: implement function
+}
+
 void Board_Init_Chip(void) {
 
 }

@@ -181,13 +181,13 @@ void Board_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
  * @param balance_requests balance_requests[i] is true if ith cell should be 
  *                         balanced, false otherwise
  */
-void Board_Balance_Cells(bool * balance requests);
+void Board_Balance_Cells(bool * balance_requests);
 
 /**
  * @details configures LTC6804 slaves
  *
  * @param 
  */
-void Board_Configure_LTC6804(
+//void Board_Configure_LTC6804(
 
 #endif

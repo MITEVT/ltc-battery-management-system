@@ -150,7 +150,7 @@ void Board_Close_Contactors(bool close_contactors);
  *
  * @return true if contactors are closed, false otherwise
  */
-bool Board_Are_Contactors_Closed();
+bool Board_Are_Contactors_Closed(void);
 
 /**
  * @details get mode request

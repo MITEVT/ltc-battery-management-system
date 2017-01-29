@@ -256,11 +256,11 @@ LTC6804_STATE_T Board_Get_Voltages(uint32_t * cell_voltages) {
 
 }
 
-Board_Init_Chip(void) {
+void Board_Init_Chip(void) {
 
 }
 
-Board_Init_EEPROM(void) {
+void Board_Init_EEPROM(void) {
 
 }
 
@@ -319,7 +319,7 @@ void Board_Init_LTC6804(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 #endif
 }
 
-Board_Init_Drivers(void) {
+void Board_Init_Drivers(void) {
 
 }
 

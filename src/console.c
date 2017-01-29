@@ -129,7 +129,6 @@ static void get(const char * const * argv) {
                     Board_Println(BMS_INIT_MODE_NAMES[bms_state->init_state]);
                     Board_Println(BMS_CHARGE_MODE_NAMES[bms_state->charge_state]);
                     Board_Println(BMS_DISCHARGE_MODE_NAMES[bms_state->discharge_state]);
-                    Board_Println(BMS_ERROR_NAMES[bms_state->error_code]);
                     break;
                 case ROL_cell_voltages_mV:
                     for(i = 0; i < Get_Total_Cell_Count(bms_state->pack_config); i++) {

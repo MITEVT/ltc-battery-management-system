@@ -5,7 +5,6 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables
     state->curr_mode = BMS_SSM_MODE_INIT;
     state->init_state = BMS_INIT_OFF;
-    state->error_code = BMS_NO_ERROR;
 
     output->read_eeprom_packconfig = false;
     output->check_packconfig_with_ltc = false;
@@ -111,45 +110,6 @@ BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *out
 }
 
 
-// [TODO] I don't thing we should call this
-// [TODO] All statemachines must clean up before entering error. also set outputs to none
-// [TODO] Change Error storage mechanism so we can have multiple errors and they have KILL times
-// void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-//     (void)(output);
-
-//     // checks if there is a reported error
-//     //    communicating with the eeprom or ltc
-//     if (state->curr_mode == BMS_SSM_MODE_ERROR) return;
-    
-//     if (input->eeprom_read_error) {
-//         state->curr_mode = BMS_SSM_MODE_ERROR;
-//         state->error_code = BMS_EEPROM_ERROR;
-//         return;
-//     }
-
-//     if (state->curr_mode != BMS_SSM_MODE_INIT) {
-//         uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
-//         if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
-//             state->curr_mode = BMS_SSM_MODE_ERROR;
-//             state->error_code = BMS_CELL_OVER_TEMP;
-//             return;
-//         }
-
-//         if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
-//             state->curr_mode = BMS_SSM_MODE_ERROR;
-//             state->error_code = BMS_CELL_UNDER_VOLTAGE;
-//             return;
-//         }
-
-//         if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
-//             state->curr_mode = BMS_SSM_MODE_ERROR;
-//             state->error_code = BMS_CELL_OVER_VOLTAGE;
-//             return;
-//         }
-//     }
-// }
-
-
 void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // OUTLINE:
     // If change state request made and possible, change state
@@ -158,7 +118,6 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
 
-    //Check_Error(input, state, output);
 
     if((Is_Valid_Jump(state->curr_mode, input->mode_request)
             && Is_State_Done(state))
@@ -179,25 +138,8 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         case BMS_SSM_MODE_DISCHARGE:
             err = Discharge_Step(input, state, output);
             break;
-        // case BMS_SSM_MODE_ERROR:
-        //     err = Error_Step(input, state, output);
-
-        //     output->charge_req->charger_on = false;
-        //     output->close_contactors = false;
-        //     memset(output->balance_req, 0, sizeof(output->balance_req)*Get_Total_Cell_Count(state->pack_config)); // [TODO] Don't recalc
-
-        //     output->read_eeprom_packconfig = false;
-        //     output->check_packconfig_with_ltc = false;
-        //     break;
         case BMS_SSM_MODE_BALANCE:
             err = Charge_Step(input, state, output);
             break;
     }
-
-
-    // [TODO] Rethink b/c what if transient causes UV
-    // if(err) {
-    //     state->curr_mode = BMS_SSM_MODE_ERROR;
-    //     state->error_code = err;
-    // }
 }

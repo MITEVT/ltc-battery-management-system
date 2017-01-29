@@ -94,7 +94,6 @@ void Init_BMS_Structs(void) {
     bms_state.init_state = BMS_INIT_OFF;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
-    bms_state.error_code = BMS_NO_ERROR;
 
     charger_status.connected = false;
     charger_status.error = false;
@@ -145,24 +144,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
 
-    if (console_output.valid_mode_request) {
-        bms_input->mode_request = console_output.mode_request;
-        bms_input->balance_mV = console_output.balance_mV;
-    } else {
-        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-    }
-
-    // if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-    //     bms_input->balance_mV = 3300;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-    // } else {
-    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
-    // }
-
+    Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
     Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         
 
@@ -250,11 +232,67 @@ int main(void) {
     }
     Board_LTC6804_OpenWireTest(msTicks);
     Board_Println_BLOCKING("GOT REKT");
+
+    bms_output.close_contactors = false;
+    bms_output.charge_req->charger_on = false;
+    memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
+    bms_output.read_eeprom_packconfig = false;
+    bms_output.check_packconfig_with_ltc = false;
+
     while(1) {
+        //set bms_output
+        Process_Output(&bms_input, &bms_output);
+        Process_Keyboard();
+    }
+	return 0;
+}
+
+int hardware_test(void) {
+
+    Init_Core();
+    Board_GPIO_Init();
+    Board_Init_Timers();
+    EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
+
+    Init_BMS_Structs();
+    Board_UART_Init(UART_BAUD);
+
+    Board_Println("Started Up");    
+    
+
+    //setup readline
+//    microrl_init(&rl, Board_Print);
+//    microrl_set_execute_callback(&rl, executerl);
+//    console_init(&bms_input, &bms_state, &console_output);
+//    Error_Init();
+//    SSM_Init(&bms_input, &bms_state, &bms_output);
+
+//    uint32_t last_count = msTicks;
+
+//	while(1) {
+//        Process_Keyboard(); //do this if you want to add the command line
+//        Process_Input(&bms_input);
+//        SSM_Step(&bms_input, &bms_state, &bms_output); 
+//        Process_Output(&bms_input, &bms_output);
+//        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
+//            break;
+//        }
+        
+        // Testing Code
+//        bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
+
+        // LED Heartbeat
+//        if (msTicks - last_count > 1000) {
+//            last_count = msTicks;
+//            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
+//        }
+//    }
+//    Board_Println_BLOCKING("GOT REKT");
+//    while(1) {
         //set bms_outputs
         //process_output(bms_outputs);
         //process_keyboard()
-    }
-	return 0;
+//    }
+//	return 0;
 }
 

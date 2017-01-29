@@ -134,7 +134,6 @@ typedef struct BMS_STATE {
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;
 
-	BMS_ERROR_T error_code;
 } BMS_STATE_T;
 
 typedef struct BMS_INPUT {

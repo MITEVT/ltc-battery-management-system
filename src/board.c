@@ -26,8 +26,6 @@ static bool ltc6804_initialized;
 
 #define LTC_CELL_VOLTAGE_FREQ 10
 #endif
-
-static char str[10];
 // ------------------------------------------------
 // Private Functions
 
@@ -273,24 +271,42 @@ bool Board_Switch_Read(void) {
 
 void Board_Close_Contactors(bool close_contactors) {
 	//TODO: implement function
+	UNUSED(close_contactors);
 }
 
 bool Board_Are_Contactors_Closed(void) {
 	//TODO: implement function
+	return false;
 }
 
 #ifndef TEST_HARDWARE
-BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output) {
+void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
 	//TODO: implement function
+	// if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
+    //     bms_input->balance_mV = 3300;
+    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
+    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
+    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+    // } else {
+    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
+    // }
+	if (console_output -> valid_mode_request) {
+        bms_input->mode_request = console_output->mode_request;
+        bms_input->balance_mV = console_output->balance_mV;
+    } else {
+        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+    }
 }
 #endif
 
 
-void Board_Balance_Cells(bool * balance_requests) {
-	//TODO: implement function
-}
 
 bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	return false;
+#else
 	Board_Print("Initializing LTC6804. Verifying..");
     if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
         Board_Print(".FAIL. ");
@@ -298,7 +314,8 @@ bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
     } else {
         Board_Print(".PASS. ");
         return true;
-     }
+    }
+#endif
 }
 
 void Board_Init_Chip(void) {
@@ -310,6 +327,7 @@ void Board_Init_EEPROM(void) {
 }
 
 void Board_GPIO_Init(void) {
+#ifndef TEST_HARDWARE
     // [TODO] verify that pins don't collide
     //  move pin selections to preprocesser defines
 	Chip_GPIO_Init(LPC_GPIO);
@@ -334,6 +352,7 @@ void Board_GPIO_Init(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MOSI0 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
+#endif
 
 }
 
@@ -427,22 +446,7 @@ void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t ms
     		break;
     	default:
     		Board_Println("WTF");
-    		return false;
     }
-
-    // if (res == LTC6804_FAIL) {
-    // 	Board_Println("LTC6804_GetCellVol FAIL");
-    // } else if (res == LTC6804_PEC_ERROR) {
-    //     Board_Println("LTC6804_GetCellVol PEC_ERROR");
-    //     Error_Assert(ERROR_LTC6804_PEC,msTicks);
-    // } else if (res == LTC6804_SPI_ERROR) {
-    // 	Board_Println("LTC6804_GetCellVol SPI_ERROR");
-    // } else if (res == LTC6804_PASS) {
-    //     pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
-    //     pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
-    //     LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
-    //     ltc6804_get_cell_voltages = false;
-    // }
 #endif
 }
 
@@ -497,6 +501,8 @@ void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
 
 // [TODO] Make work pls
 bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+#else
 	LTC6804_STATUS_T res;
     res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, msTicks);
 
@@ -523,5 +529,6 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
     		Board_Println("WTF");
     		return false;
     }
+#endif
 }
 

@@ -172,9 +172,10 @@ bool Board_Are_Contactors_Closed(void);
  * @details get mode request
  *
  * @param console_output output from console
- * @return latest mode request
+ * @param bms_input pointer to input to SSMs to modify bal and req
+ * @return none
  */
-BMS_SSM_MODE_T Board_Get_Mode_Request(CONSOLE_OUTPUT_T * console_output);
+void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
 #endif
 
 /**

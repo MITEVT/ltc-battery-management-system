@@ -70,15 +70,15 @@ TEST_SETUP(Discharge_Test) {
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 
 
-	printf("\r(Discharge_Test) [Setup] ");
+	printf("\r(Discharge_Test)Setup...");
 }
 
 TEST_TEAR_DOWN(Discharge_Test) {
-	printf(" [done] \r\n");
+	printf("Teardown\r\n");
 }
 
 TEST(Discharge_Test, calculate_max_current) {
-    printf("calculate_max_current");
+    printf("calculate_max_current...");
     uint32_t result = Calculate_Max_Current(10, 12, 3, 100);
     TEST_ASSERT_EQUAL(result, 36);
 }
@@ -102,13 +102,13 @@ void Set_PackConfig(
 }
 
 TEST(Discharge_Test, config) {
-    printf("config");
+    printf("config...");
 	Discharge_Config(bms_state.pack_config);
     TEST_ASSERT_EQUAL(100, Read_Max_Current());
 }
 
 TEST(Discharge_Test, discharge_step_invalid_mode_req) {
-    printf("discharge_step_invalid_mode_req");
+    printf("discharge_step_invalid_mode_req...");
     bms_input.mode_request = BMS_SSM_MODE_INIT;
     TEST_ASSERT_EQUAL(Discharge_Step(&bms_input, &bms_state, &bms_output),
                         BMS_INVALID_SSM_STATE_ERROR);
@@ -116,7 +116,7 @@ TEST(Discharge_Test, discharge_step_invalid_mode_req) {
 }
 
 TEST(Discharge_Test, discharge_step_to_standby) {
-    printf("discharge_step_to_standby");
+    printf("discharge_step_to_standby...");
     bms_input.mode_request = BMS_SSM_MODE_STANDBY;
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
@@ -129,7 +129,7 @@ TEST(Discharge_Test, discharge_step_to_standby) {
 }
 
 TEST(Discharge_Test, discharge_step_to_run) {
-	printf("discharge_step_to_run");
+	printf("discharge_step_to_run...");
     // from test init, input request is already in discharge
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
 
@@ -147,7 +147,7 @@ TEST(Discharge_Test, discharge_step_to_run) {
 }
 
 TEST(Discharge_Test, discharge_step_undervoltage_error) {
-	printf("discharge_step_undervoltage_error");
+	printf("discharge_step_undervoltage_error...");
     // from test init, input request is already in discharge
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
     
@@ -163,7 +163,7 @@ TEST(Discharge_Test, discharge_step_undervoltage_error) {
 }
 
 TEST(Discharge_Test, discharge_step_overcurrent_error) {
-	printf("discharge_step_overcurrent_error");
+	printf("discharge_step_overcurrent_error...");
     // from test init, input request is already in discharge
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
 

@@ -25,7 +25,7 @@ BMS_STATE_T bms_state;
 TEST_GROUP(SSM_Test);
 
 TEST_SETUP(SSM_Test) {
-	printf("(SSM/Init/Error) [setup] ");
+	printf("\r(SSM/Init/Error)Setup...");
     
     bms_output.charge_req = &charge_req;
     bms_output.close_contactors = false;
@@ -86,11 +86,11 @@ TEST_SETUP(SSM_Test) {
 }
 
 TEST_TEAR_DOWN(SSM_Test) {
-	printf(" [done] \r\n");
+	printf("Teardown\r\n");
 }
 
 TEST(SSM_Test, ssm_init) {
-    printf("ssm_init");
+    printf("ssm_init...");
     
     SSM_Init(&bms_input, &bms_state, &bms_output);
 	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
@@ -102,7 +102,7 @@ TEST(SSM_Test, ssm_init) {
 }
 
 TEST(SSM_Test, init_step_complete) {
-    printf("init_step_complete");
+    printf("init_step_complete...");
 
     
     Init_Step(&bms_input, &bms_state, &bms_output); 
@@ -129,7 +129,7 @@ TEST(SSM_Test, init_step_complete) {
 }
 
 TEST(SSM_Test, init_step_blocked) {
-    printf("init_step_blocked");
+    printf("init_step_blocked...");
     Init_Step(&bms_input, &bms_state, &bms_output); 
     Init_Step(&bms_input, &bms_state, &bms_output); 
 	TEST_ASSERT(bms_output.read_eeprom_packconfig);
@@ -144,7 +144,7 @@ TEST(SSM_Test, is_valid_jump) {
     //      for state2 in states:
     //          print("TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_" + state1 + ", BMS_SSM_MODE_" + state2 + "));")
     
-    printf("is_valid_jump");
+    printf("is_valid_jump...");
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_STANDBY));
     TEST_ASSERT_FALSE(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_INIT));
     TEST_ASSERT(Is_Valid_Jump(BMS_SSM_MODE_STANDBY, BMS_SSM_MODE_CHARGE));
@@ -173,7 +173,7 @@ TEST(SSM_Test, is_valid_jump) {
 }
 
 TEST(SSM_Test, is_state_done) {
-    printf("is_state_done");
+    printf("is_state_done...");
     
     // test init not done state
 	TEST_ASSERT_FALSE(Is_State_Done(&bms_state));
@@ -192,7 +192,7 @@ TEST(SSM_Test, is_state_done) {
 }
 
 TEST(SSM_Test, ssm_step_start) {
-    printf("ssm_step_start");
+    printf("ssm_step_start...");
 
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
     bms_state.charge_state = BMS_CHARGE_OFF;
@@ -214,7 +214,7 @@ TEST(SSM_Test, ssm_step_start) {
 }
 
 TEST(SSM_Test, ssm_step) {
-    printf("ssm_step");
+    printf("ssm_step...");
 
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
     SSM_Step(&bms_input, &bms_state, &bms_output); 

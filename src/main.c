@@ -257,7 +257,11 @@ int hardware_test(void) {
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
 
-    Board_Println("Started Up");    
+    Board_Println("Started Up");  
+
+    Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+
+
     
 
     //setup readline

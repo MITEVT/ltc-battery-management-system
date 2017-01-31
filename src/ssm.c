@@ -98,15 +98,33 @@ bool Is_State_Done(BMS_STATE_T *state) {
     return false;
 }
 
-BMS_ERROR_T Error_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-    (void)(input);
+static void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+    (void)(output);
 
-    output->close_contactors = false;
-    output->charge_req->charger_on = false;
-	memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
-    output->read_eeprom_packconfig = false;
-    output->check_packconfig_with_ltc = false;
-    return 0;
+    // checks if there is a reported error
+    //    communicating with the eeprom or ltc    
+    // if (input->eeprom_read_error) {
+    //     state->error_code = BMS_EEPROM_ERROR;
+    //     return;
+    // }
+    //[TODO] change to case statement
+    if (state->curr_mode != BMS_SSM_MODE_INIT) {
+        uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
+        if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
+            Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
+            return;
+        }
+
+        if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
+            Error_Assert(ERROR_CELL_UNDER_VOLTAGE, input->msTicks);
+            return;
+        }
+
+        if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
+            Error_Assert(ERROR_CELL_OVER_VOLTAGE, input->msTicks);
+            return;
+        }
+    }
 }
 
 
@@ -117,7 +135,7 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     //     if in standby:
     //          if mode request change valid, switch over
     //     else dispatch step to appropriate SM step
-
+    Check_Error(input, state, output);
 
     if((Is_Valid_Jump(state->curr_mode, input->mode_request)
             && Is_State_Done(state))

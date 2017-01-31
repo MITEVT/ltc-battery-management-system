@@ -2,6 +2,7 @@
 
 static const uint32_t CELL_OVER_VOLTAGE_timeout_ms = 1000;
 static const uint32_t CELL_UNDER_VOLTAGE_timeout_ms = 1000;
+static const uint32_t PEC_COUNT_TIMEOUT = 50;
 
 static ERROR_STATUS_T error_vector[ERROR_NUM_ERRORS];
 
@@ -69,7 +70,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 		return HANDLER_FINE;
 	} else {
 		//[TODO] magic numbers changeme 
-		if (er_stat->count < 100) {
+		if (er_stat->count < PEC_COUNT_TIMEOUT) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {

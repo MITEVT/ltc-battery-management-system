@@ -69,7 +69,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 		return HANDLER_FINE;
 	} else {
 		//[TODO] magic numbers changeme 
-		if (er_stat->count < 1000) {
+		if (er_stat->count < 100) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {

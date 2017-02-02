@@ -308,6 +308,7 @@ void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T
 
 bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
+	(void)(msTicks);
 	return false;
 #else
 	Board_Print("Initializing LTC6804. Verifying..");
@@ -388,7 +389,7 @@ static LTC6804_INIT_STATE_T ltc6804_init_state;
 
 bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
-	return;
+	return true;
 #else
 	if (ltc6804_initialized) return true;
 
@@ -547,10 +548,10 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
     switch (res) {
     	case LTC6804_FAIL:
     		Board_Print("OWT FAIL, mod=");
-    		utoa(ltc6804_owt_res.failed_module, str, 10);
+    		itoa(ltc6804_owt_res.failed_module, str, 10);
     		Board_Print(str);
     		Board_Print(" wire=");
-    		utoa(ltc6804_owt_res.failed_wire, str, 10);
+    		itoa(ltc6804_owt_res.failed_wire, str, 10);
     		Board_Println(str);
     		Error_Assert(ERROR_LTC6804_OWT, msTicks);
     		return false;

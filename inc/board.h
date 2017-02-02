@@ -4,7 +4,6 @@
  * @date 25 June 2015
  * @brief Board peripheral driver
  */
-#include <stdint.h>
 
 #ifndef _BOARD_H_
 #define _BOARD_H_
@@ -13,14 +12,16 @@
 	#include <stdbool.h>
 	#include <stdio.h>
 #else
- #include "chip.h"
- #include "ltc6804.h"
- #include "console.h"
+	#include "chip.h"
+	#include "ltc6804.h"
+	#include "console.h"
 #endif
  
 #include "error_handler.h"
 #include "config.h"
 #include "state_types.h"
+#include <string.h>
+#include <stdint.h>
 
 
 #define LED0 2, 8

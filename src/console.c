@@ -115,7 +115,7 @@ static void get(const char * const * argv) {
     else {
         //loop over r/o entries
         ro_loc_lable_t roloc;
-        for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+        for (roloc = (ro_loc_lable_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
                 break; 
@@ -202,7 +202,7 @@ static void set(const char * const * argv) {
     } else {
         //loop over r/o entries
         ro_loc_lable_t roloc;
-        for (roloc = ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+        for (roloc = (ro_loc_lable_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
                 Board_Println("this location is read only");
@@ -234,7 +234,7 @@ static void help(const char * const * argv) {
         }
 
         Board_Println_BLOCKING("------r/o entries------");
-        for (i = ROL_FIRST; i < ROL_LENGTH; ++i){
+        for (i = ROL_FIRST; i < (rw_loc_lable_t)(ROL_LENGTH); ++i){
             Board_Println_BLOCKING(locstring[i]); //blocking print.
         }
     }

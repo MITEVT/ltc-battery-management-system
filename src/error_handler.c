@@ -5,7 +5,7 @@ static const uint32_t CELL_UNDER_VOLTAGE_timeout_ms = 1000;
 static const uint32_t OVER_CURRENT_timeout_ms = 500;
 static const uint32_t LTC6802_PEC_timeout_count = 50;
 static const uint32_t LTC6802_CVST_timeout_count = 2;
-static const uint32_t LTC6802_OWT_timeout_count = 2;
+static const uint32_t LTC6802_OWT_timeout_count = 10;
 
 
 
@@ -85,7 +85,9 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
 	return HANDLER_FINE;
 }
 
+// [TODO] Refactor similiar functions
 static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(msTicks);
 	Board_Println_BLOCKING("handling pec");
 	if (!er_stat->error) {
 		er_stat->handling = false;
@@ -101,6 +103,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 	}
 }
 static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(msTicks);
 	Board_Println_BLOCKING("handling CVST");
 	if (!er_stat->error) {
 		er_stat->handling = false;
@@ -116,6 +119,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint3
 	}
 }
 static ERROR_HANDLER_STATUS_T handle_LTC6804_OWT(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	UNUSED(msTicks);
 	// Board_Println_BLOCKING("handling OWT");
 	if (!er_stat->error) {
 		er_stat->handling = false;
@@ -194,7 +198,7 @@ static ERROR_HANDLER_STATUS_T handle_OVER_CURRENT(ERROR_STATUS_T* er_stat, uint3
 		return HANDLER_FINE;
 	} else {
 		//[TODO] magic numbers changem
-		if (msTicks - er_stat->time_stamp < 1000) {
+		if (msTicks - er_stat->time_stamp < OVER_CURRENT_timeout_ms) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {

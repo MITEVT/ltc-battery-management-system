@@ -1,7 +1,7 @@
 #ifndef _CONSOLE_TYPES_H
 #define _CONSOLE_TYPES_H
 
-typedef enum command_label{
+typedef enum {
     C_GET,
     C_SET,
     C_HELP,
@@ -10,7 +10,7 @@ typedef enum command_label{
     NUMCOMMANDS
 } command_label_t;
 
-typedef enum rw_loc_label{
+typedef enum {
     RWL_cell_min_mV,
     RWL_cell_max_mV,
     RWL_cell_capacity_cAh,
@@ -26,11 +26,11 @@ typedef enum rw_loc_label{
     RWL_cell_discharge_c_rating_cC,
     RWL_max_cell_temp_C,
     RWL_LENGTH
-} rw_loc_lable_t;
+} rw_loc_lable_t; // [TODO] Spell "label" correctly
 
 #define ROL_FIRST RWL_LENGTH
 
-typedef enum ro_loc_label{
+typedef enum {
     ROL_state = (int)ROL_FIRST,
     ROL_cell_voltages_mV,
     ROL_pack_cell_max_mV,

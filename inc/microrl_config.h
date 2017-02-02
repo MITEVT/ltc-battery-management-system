@@ -13,7 +13,7 @@ Command line length, define cmdline buffer size. Set max number of chars + 1,
 because last byte of buffer need to contain '\0' - NULL terminator, and 
 not use for storing inputed char.
 If user input chars more then it parametrs-1, chars not added to command line.*/
-#define _COMMAND_LINE_LEN (1+500)									// for 32 chars
+#define _COMMAND_LINE_LEN (1+50)									// for 32 chars
 
 /*
 Command token number, define max token it command line, if number of token 
@@ -44,7 +44,7 @@ if you are not going to use it - disable this define.*/
 /*Define it, if you wanna use history. It s work's like bash history, and
 set stored value to cmdline, if UP and DOWN key pressed. Using history add
 memory consuming, depends from _RING_HISTORY_LEN parametr */
-// #define _USE_HISTORY
+#define _USE_HISTORY
 
 /*
 History ring buffer length, define static buffer size.
@@ -52,7 +52,7 @@ For saving memory, each entered cmdline store to history in ring buffer,
 so we can not say, how many line we can store, it depends from cmdline len,
 but memory using more effective. We not prefer dinamic memory allocation for
 small and embedded devices. Overhead is 2 char on each saved line*/
-// #define _RING_HISTORY_LEN 64
+#define _RING_HISTORY_LEN 64
 
 /*
 Enable Handling terminal ESC sequence. If disabling, then cursor arrow, HOME, END will not work,

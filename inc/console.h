@@ -12,13 +12,15 @@
 
 // [TODO] Add command to reset to factory default
 
-static const char * const commands[NUMCOMMANDS] = { "get",
+static const char * const commands[] = { "get",
                             "set",
                             "help",
                             "config",
-                            "bal"};
+                            "bal",
+                            "dis",
+                            "charge"};
 
-static const char nargs[NUMCOMMANDS] = {  1 ,
+static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         2 ,
                         1 ,
                         0 ,

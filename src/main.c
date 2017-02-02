@@ -170,9 +170,9 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
         bms_input->ltc_packconfig_check_done = 
             EEPROM_Check_PackConfig_With_LTC(&pack_config);
 
-        Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+        bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
         // bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
-        bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(msTicks);
+        // bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(msTicks);
 
     }
 

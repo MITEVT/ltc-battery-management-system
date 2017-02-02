@@ -122,6 +122,8 @@ void Board_Headroom_Init(void);
 
 void Board_Headroom_Toggle(void);
 
+/******** LTC6804 Board Functions ***********/
+
 /**
  * @details Initialize board input switch
  */
@@ -137,6 +139,13 @@ void Board_LTC6804_DeInit(void);
  */
 void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
+
+/**
+ * @details does a CVST
+ *
+ * @param msTicks current milisecond count
+ * @return true if CVST shows working config, false if waiting. 
+ */
 bool Board_LTC6804_CVST(uint32_t msTicks);
 
 /**
@@ -147,11 +156,21 @@ bool Board_LTC6804_CVST(uint32_t msTicks);
  */
 void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks);
 
+/**
+ * @details checks that pack configuration is consistent with number of connected LTC6804 slaves
+ *
+ * @param pack_config configuration of the battery pack:
+ * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
+ */
+bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
+
+
+
+bool Board_LTC6804_OpenWireTest(uint32_t msTicks);
+
 void Board_Init_Timers(void);
 
 void Board_Enable_Timers(void);
-
-bool Board_LTC6804_OpenWireTest(uint32_t msTicks);
 
 /**
  * @details closes or opens contactors
@@ -178,12 +197,5 @@ bool Board_Are_Contactors_Closed(void);
 void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
 #endif
 
-/**
- * @details checks that pack configuration is consistent with number of connected LTC6804 slaves
- *
- * @param pack_config configuration of the battery pack:
- * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
- */
-bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
 
 #endif

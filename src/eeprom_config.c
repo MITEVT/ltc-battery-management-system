@@ -16,8 +16,8 @@ static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_
 PACK_CONFIG_T pack_config_defaults;
 
 static void EEPROM_Default_Config(void) {
-    pack_config_defaults.cell_min_mV = 2500;
-    pack_config_defaults.cell_max_mV = 4200;
+    pack_config_defaults.cell_min_mV = 1000;
+    pack_config_defaults.cell_max_mV = 5000; // [TODO] Fix
     pack_config_defaults.cell_capacity_cAh = 530;
     pack_config_defaults.num_modules = 1;
     pack_config_defaults.cell_charge_c_rating_cC = 70;

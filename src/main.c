@@ -147,7 +147,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
 
     // [TODO] THis should do nothing if in OWT
-    // Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
+    if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+        Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
+    }
         
 
     bms_input->msTicks = msTicks;
@@ -170,7 +172,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
         Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
         // bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
-        bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(&msTicks);
+        bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(msTicks);
 
     }
 
@@ -192,6 +194,8 @@ void Process_Keyboard(void) {
 }
 
 int main(void) {
+
+    UNUSED(delay);
 
     Init_Core();
     Board_GPIO_Init();
@@ -223,9 +227,9 @@ int main(void) {
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_input, &bms_output);
-        // if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
-        //     // break;
-        // }
+        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
+            break;
+        }
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
@@ -266,7 +270,7 @@ int hardware_test(void) {
 
     Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
 
-
+    return 0;
     
 
     //setup readline

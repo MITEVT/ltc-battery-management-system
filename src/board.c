@@ -18,11 +18,14 @@ static uint8_t ltc6804_tx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)];
 static uint8_t ltc6804_rx_buf[LTC6804_CALC_BUFFER_LEN(MAX_NUM_MODULES)]; 
 static uint8_t ltc6804_cfg[LTC6804_DATA_LEN]; 
 static uint16_t ltc6804_bal_list[MAX_NUM_MODULES]; 
-static LTC6804_ADC_RES_T ltc6804_adc_res; 
+static LTC6804_ADC_RES_T ltc6804_adc_res;
+static LTC6804_OWT_RES_T ltc6804_owt_res; 
 // ltc6804 timing variables
 static bool ltc6804_get_cell_voltages;
 
 static bool ltc6804_initialized;
+
+static uint8_t str[10];
 
 #define LTC_CELL_VOLTAGE_FREQ 10
 #endif
@@ -403,6 +406,9 @@ void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 	    ltc6804_adc_res.cell_voltages_mV = cell_voltages_mV;
 
+	    ltc6804_owt_res.failed_wire = 0;
+	    ltc6804_owt_res.failed_module = 0;
+
 	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 	    ltc6804_get_cell_voltages = false; // [TODO] Same as above
 
@@ -503,22 +509,28 @@ void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
 }
 
 // [TODO] Make work pls
-bool Board_LTC6804_OpenWireTest(volatile uint32_t * msTicks) {
+bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 #else
 	LTC6804_STATUS_T res;
-    res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, msTicks);
+    res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, &ltc6804_owt_res, msTicks);
 
     switch (res) {
     	case LTC6804_FAIL:
-    		Board_Println("OWT FAIL");
+    		Board_Print("OWT FAIL, mod=");
+    		utoa(ltc6804_owt_res.failed_module, str, 10);
+    		Board_Print(str);
+    		Board_Print(" wire=");
+    		utoa(ltc6804_owt_res.failed_wire, str, 10);
+    		Board_Println(str);
+
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("OWT SPI_ERROR");
 	        return false;
     	case LTC6804_PEC_ERROR:
     		Board_Println("OWT PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC,*msTicks);
+    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
         	return false;
     	case LTC6804_PASS:
     		Board_Println("OWT PASS");

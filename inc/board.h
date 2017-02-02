@@ -166,7 +166,7 @@ bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
 
 
 
-bool Board_LTC6804_OpenWireTest(volatile uint32_t * msTicks);
+bool Board_LTC6804_OpenWireTest(uint32_t msTicks);
 
 void Board_Init_Timers(void);
 

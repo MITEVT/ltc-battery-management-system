@@ -25,7 +25,7 @@ static bool ltc6804_get_cell_voltages;
 
 static bool ltc6804_initialized;
 
-static uint8_t str[10];
+static char str[10];
 
 #define LTC_CELL_VOLTAGE_FREQ 10
 #endif
@@ -380,12 +380,20 @@ void Board_Enable_Timers(void) { //[TODO] removeme
 #endif
 }
 
-void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
+typedef enum {
+	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
+} LTC6804_INIT_STATE_T;
+
+static LTC6804_INIT_STATE_T ltc6804_init_state;
+
+bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
-	if (!ltc6804_initialized) {
-	    ltc6804_config.pSSP = LPC_SSP0;
+	if (ltc6804_initialized) return true;
+
+	if (ltc6804_init_state == LTC6804_INIT_NONE) {
+		ltc6804_config.pSSP = LPC_SSP0;
 	    ltc6804_config.baud = LTC6804_BAUD;
 	    ltc6804_config.cs_gpio = 0;
 	    ltc6804_config.cs_pin = 2;
@@ -409,17 +417,36 @@ void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 	    ltc6804_owt_res.failed_wire = 0;
 	    ltc6804_owt_res.failed_module = 0;
 
-	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
-	    ltc6804_get_cell_voltages = false; // [TODO] Same as above
+	    ltc6804_get_cell_voltages = false;
 
+	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
+
+	    ltc6804_init_state = LTC6804_INIT_CFG;
+	} else if (ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
+		bool res = Board_LTC6804_CVST(msTicks);
+		if (res) {
+			ltc6804_init_state = LTC6804_INIT_CVST;
+		}
+	} else if (ltc6804_init_state == LTC6804_INIT_CVST) {
+		bool res = Board_LTC6804_OpenWireTest(msTicks);
+		if (res) {
+			ltc6804_init_state = LTC6804_INIT_DONE;
+		}
+	} else if (ltc6804_init_state == LTC6804_INIT_DONE) {
+		Board_Enable_Timers();
 	    ltc6804_initialized = true;
+		ltc6804_init_state = 0;
+		return true;
 	}
+
+	return false;
 #endif
 }
 
 void Board_LTC6804_DeInit(void) {
 #ifndef TEST_HARDWARE
 	ltc6804_initialized = false;
+	ltc6804_init_state = LTC6804_INIT_NONE;
 #endif
 }
 
@@ -432,6 +459,11 @@ void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t ms
 #ifdef TEST_HARDWARE
 	return;
 #else
+	// [TODO] Think about this
+	if (!ltc6804_get_cell_voltages) {
+		return;
+	}
+
 	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
 	switch (res) {
     	case LTC6804_FAIL:
@@ -467,18 +499,20 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     switch (res) {
     	case LTC6804_FAIL:
     		Board_Println("CVST FAIL");
+    		Error_Assert(ERROR_LTC6804_CVST, msTicks);
+    		Error_Pass(ERROR_LTC6804_PEC);
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("CVST SPI_ERROR");
 	        return false;
     	case LTC6804_PEC_ERROR:
     		Board_Println("CVST PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    		Error_Assert(ERROR_LTC6804_PEC, msTicks);
         	return false;
     	case LTC6804_PASS:
     		Board_Println("CVST PASS");
-    		Board_Enable_Timers();
     		Error_Pass(ERROR_LTC6804_PEC);
+    		Error_Pass(ERROR_LTC6804_CVST);
     		return true;
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:
@@ -520,7 +554,8 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
     		Board_Print(" wire=");
     		utoa(ltc6804_owt_res.failed_wire, str, 10);
     		Board_Println(str);
-
+    		Error_Assert(ERROR_LTC6804_OWT, msTicks);
+    		Error_Pass(ERROR_LTC6804_PEC); // [TODO] Error Assert could call pass
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("OWT SPI_ERROR");
@@ -531,8 +566,8 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
         	return false;
     	case LTC6804_PASS:
     		Board_Println("OWT PASS");
-    		Board_Enable_Timers();
     		Error_Pass(ERROR_LTC6804_PEC);
+    		Error_Pass(ERROR_LTC6804_OWT);
     		return true;
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:

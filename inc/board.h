@@ -125,7 +125,7 @@ void Board_Headroom_Toggle(void);
 /**
  * @details Initialize board input switch
  */
-void Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
+bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
 
 void Board_LTC6804_DeInit(void);
 

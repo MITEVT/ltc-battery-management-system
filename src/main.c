@@ -6,7 +6,6 @@
 #include "console.h"
 #include "eeprom_config.h"
 #include "config.h"
-#include "ltc6804.h"
 #include "error_handler.h"
 
 #define LED0 2, 8
@@ -200,7 +199,6 @@ int main(void) {
     Init_Core();
     Board_GPIO_Init();
     Board_Init_Timers(); // [TODO] Think about proper place to put this
-    //ltc6804_get_cell_voltages = false; // [TODO] Same as above
     EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
 
     Init_BMS_Structs();
@@ -208,7 +206,6 @@ int main(void) {
 
     Board_Println("Started Up");    
     
-
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
@@ -240,7 +237,8 @@ int main(void) {
             Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
     }
-    Board_Println_BLOCKING("GOT REKT");
+
+    Board_Println("GOT REKT");
 
     bms_output.close_contactors = false;
     bms_output.charge_req->charger_on = false;

@@ -143,21 +143,20 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
         state->curr_mode = input->mode_request;
     }
 
-    BMS_ERROR_T err = 0;
     switch(state->curr_mode) {
         case BMS_SSM_MODE_STANDBY:
             break;
         case BMS_SSM_MODE_INIT:
-            err = Init_Step(input, state, output);
+            Init_Step(input, state, output);
             break;
         case BMS_SSM_MODE_CHARGE:
-            err = Charge_Step(input, state, output);
+            Charge_Step(input, state, output);
             break;
         case BMS_SSM_MODE_DISCHARGE:
-            err = Discharge_Step(input, state, output);
+            Discharge_Step(input, state, output);
             break;
         case BMS_SSM_MODE_BALANCE:
-            err = Charge_Step(input, state, output);
+            Charge_Step(input, state, output);
             break;
     }
 }

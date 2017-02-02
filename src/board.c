@@ -461,6 +461,8 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     switch (res) {
     	case LTC6804_FAIL:
     		Board_Println("CVST FAIL");
+    		Error_Assert(ERROR_LTC6804_CVST,msTicks);
+    		Error_Pass(ERROR_LTC6804_PEC);
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("CVST SPI_ERROR");
@@ -473,6 +475,7 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     		Board_Println("CVST PASS");
     		Board_Enable_Timers();
     		Error_Pass(ERROR_LTC6804_PEC);
+    		Error_Pass(ERROR_LTC6804_CVST);
     		return true;
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:

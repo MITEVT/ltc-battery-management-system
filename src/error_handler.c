@@ -2,11 +2,18 @@
 
 static const uint32_t CELL_OVER_VOLTAGE_timeout_ms = 1000;
 static const uint32_t CELL_UNDER_VOLTAGE_timeout_ms = 1000;
-static const uint32_t PEC_COUNT_TIMEOUT = 50;
+static const uint32_t OVER_CURRENT_timeout_ms = 500;
+static const uint32_t LTC6802_PEC_timeout_count = 50;
+static const uint32_t LTC6802_CVST_timeout_count = 2;
+static const uint32_t LTC6802_OPEN_WIRE_timeout_count = 2;
+
+
 
 static ERROR_STATUS_T error_vector[ERROR_NUM_ERRORS];
 
 static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTicks);
+static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks);
+static ERROR_HANDLER_STATUS_T handle_LTC6804_OPEN_WIRE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_INVALID_SSM_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_CONTACTORS_ERRONEOUS_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
@@ -15,7 +22,10 @@ static ERROR_HANDLER_STATUS_T handle_CELL_OVER_VOLTAGE(ERROR_STATUS_T* er_stat, 
 static ERROR_HANDLER_STATUS_T handle_CELL_OVER_TEMP(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_OVER_CURRENT(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 
-static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {handle_LTC6804_PEC,
+static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
+														handle_LTC6804_PEC,
+														handle_LTC6804_CVST,
+														handle_LTC6804_OPEN_WIRE,
 														handle_ERROR,
 														handle_INVALID_SSM_STATE,
 														handle_CONTACTORS_ERRONEOUS_STATE,
@@ -70,7 +80,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 		return HANDLER_FINE;
 	} else {
 		//[TODO] magic numbers changeme 
-		if (er_stat->count < PEC_COUNT_TIMEOUT) {
+		if (er_stat->count < LTC6802_PEC_timeout_count) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {
@@ -78,6 +88,37 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 		}
 	}
 }
+static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	Board_Println_BLOCKING("handling CVST");
+	if (!er_stat->error) {
+		er_stat->handling = false;
+		return HANDLER_FINE;
+	} else {
+		//[TODO] magic numbers changeme 
+		if (er_stat->count < LTC6802_CVST_timeout_count) {
+			er_stat->handling = true;
+			return HANDLER_FINE;
+		} else {
+			return HANDLER_HALT;
+		}
+	}
+}
+static ERROR_HANDLER_STATUS_T handle_LTC6804_OPEN_WIRE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	Board_Println_BLOCKING("handling CVST");
+	if (!er_stat->error) {
+		er_stat->handling = false;
+		return HANDLER_FINE;
+	} else {
+		//[TODO] magic numbers changeme 
+		if (er_stat->count < LTC6802_OPEN_WIRE_timeout_count) {
+			er_stat->handling = true;
+			return HANDLER_FINE;
+		} else {
+			return HANDLER_HALT;
+		}
+	}
+}
+
 static ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
 	UNUSED(er_stat);
 	UNUSED(msTicks);

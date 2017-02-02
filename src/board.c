@@ -503,7 +503,7 @@ void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
 }
 
 // [TODO] Make work pls
-bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
+bool Board_LTC6804_OpenWireTest(volatile uint32_t * msTicks) {
 #ifdef TEST_HARDWARE
 #else
 	LTC6804_STATUS_T res;
@@ -518,7 +518,7 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
 	        return false;
     	case LTC6804_PEC_ERROR:
     		Board_Println("OWT PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    		Error_Assert(ERROR_LTC6804_PEC,*msTicks);
         	return false;
     	case LTC6804_PASS:
     		Board_Println("OWT PASS");
@@ -527,6 +527,7 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
     		return true;
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:
+    		// Board_Println("*");
     		return false;
     	default:
     		Board_Println("WTF");

@@ -145,7 +145,9 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // update and other fields in msTicks in &input
 
     Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
-    Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
+
+    // [TODO] THis should do nothing if in OWT
+    // Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
         
 
     bms_input->msTicks = msTicks;
@@ -167,8 +169,8 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
             EEPROM_Check_PackConfig_With_LTC(&pack_config);
 
         Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
-        bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
-        //bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(msTicks);
+        // bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
+        bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(&msTicks);
 
     }
 
@@ -212,14 +214,18 @@ int main(void) {
 
     uint32_t last_count = msTicks;
 
+    // [TODO]
+    // Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, (IOCON_FUNC1));
+    // Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 3, true);
+
 	while(1) {
         Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 
         Process_Output(&bms_input, &bms_output);
-        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
-            break;
-        }
+        // if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
+        //     // break;
+        // }
         
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
@@ -230,7 +236,6 @@ int main(void) {
             Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
         }
     }
-    Board_LTC6804_OpenWireTest(msTicks);
     Board_Println_BLOCKING("GOT REKT");
 
     bms_output.close_contactors = false;

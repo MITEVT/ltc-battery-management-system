@@ -500,7 +500,6 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
     	case LTC6804_FAIL:
     		Board_Println("CVST FAIL");
     		Error_Assert(ERROR_LTC6804_CVST, msTicks);
-    		Error_Pass(ERROR_LTC6804_PEC);
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("CVST SPI_ERROR");
@@ -511,7 +510,6 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
         	return false;
     	case LTC6804_PASS:
     		Board_Println("CVST PASS");
-    		Error_Pass(ERROR_LTC6804_PEC);
     		Error_Pass(ERROR_LTC6804_CVST);
     		return true;
     	case LTC6804_WAITING:
@@ -555,7 +553,6 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
     		utoa(ltc6804_owt_res.failed_wire, str, 10);
     		Board_Println(str);
     		Error_Assert(ERROR_LTC6804_OWT, msTicks);
-    		Error_Pass(ERROR_LTC6804_PEC); // [TODO] Error Assert could call pass
     		return false;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("OWT SPI_ERROR");
@@ -566,7 +563,6 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
         	return false;
     	case LTC6804_PASS:
     		Board_Println("OWT PASS");
-    		Error_Pass(ERROR_LTC6804_PEC);
     		Error_Pass(ERROR_LTC6804_OWT);
     		return true;
     	case LTC6804_WAITING:

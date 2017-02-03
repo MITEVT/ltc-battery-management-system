@@ -247,13 +247,14 @@ void Board_CCAN_Init(uint32_t baudRateHz,
 
 void Board_Headroom_Init(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO, HEADROOM);
+	Chip_IOCON_PinMuxSet(LPC_GPIO, IOCON_PIO1_3, IOCON_FUNC1);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, 1,3);
 #endif
 }
 
 void Board_Headroom_Toggle(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
+	Chip_GPIO_SetPinState(LPC_GPIO, 1,3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1,3));
 #endif
 }
 

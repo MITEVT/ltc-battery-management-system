@@ -387,6 +387,7 @@ typedef enum {
 
 static LTC6804_INIT_STATE_T ltc6804_init_state;
 
+// [TODO] Switch to SSP1
 bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return true;
@@ -477,7 +478,7 @@ void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t ms
     	case LTC6804_PASS:
     		pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
         	pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
-        	LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks);
+        	LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks); // [TODO] Use this to your advantage
         	ltc6804_get_cell_voltages = false;
         	Error_Pass(ERROR_LTC6804_PEC);
     	case LTC6804_WAITING:

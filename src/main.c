@@ -216,10 +216,11 @@ int main(void) {
     uint32_t last_count = msTicks;
 
     // [TODO]
-    // Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, (IOCON_FUNC1));
-    // Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 3, true);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, (IOCON_FUNC1));
+    Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 3, true);
 
 	while(1) {
+        Chip_GPIO_SetPinState(LPC_GPIO, 1,3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1,3));
         Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 

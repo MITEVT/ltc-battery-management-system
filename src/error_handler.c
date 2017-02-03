@@ -47,6 +47,12 @@ void Error_Init(void){
 }
 
 void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
+	switch (er_t) {
+		ERROR_LTC6804_CVST:
+		ERROR_LTC6804_OWT:
+			Error_Pass(ERROR_LTC6804_PEC);
+			break;
+	}
 	if (!error_vector[er_t].error) {
 		error_vector[er_t].error = true;
 		error_vector[er_t].time_stamp = msTicks;
@@ -59,6 +65,12 @@ void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 }
 void Error_Pass(ERROR_T er_t) {
 	error_vector[er_t].error = false;
+	switch (er_t) {
+		ERROR_LTC6804_CVST:
+		ERROR_LTC6804_OWT:
+			Error_Pass(ERROR_LTC6804_PEC);
+			break;
+	}
 }
 
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {

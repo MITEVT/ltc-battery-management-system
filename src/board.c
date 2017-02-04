@@ -27,6 +27,9 @@ static bool ltc6804_initialized;
 
 static char str[10];
 
+//CAN STUFF
+CCAN_MSG_OBJ_T can_rx_msg;
+
 #define LTC_CELL_VOLTAGE_FREQ 10
 #endif
 // ------------------------------------------------
@@ -190,33 +193,9 @@ void Board_SPI_Init(uint32_t baudRateHz) {
 #endif
 }
 
-void Board_CCAN_Init(uint32_t baudRateHz, 
-					void (*CAN_rx)(uint8_t), 
-					void (*CAN_tx)(uint8_t), 
-					void (*CAN_error)(uint32_t)) {
-#ifdef TEST_HARDWARE
-	(void)(baudRateHz);
-	(void)(CAN_rx);
-	(void)(CAN_tx);
-	(void)(CAN_error);
-#else
-	uint32_t CanApiClkInitTable[2];
-	CCAN_CALLBACKS_T callbacks = {
-		CAN_rx,
-		CAN_tx,
-		CAN_error,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-		NULL,
-	};
-	canBaudrateCalculate(baudRateHz, CanApiClkInitTable);
 
-	LPC_CCAN_API->init_can(CanApiClkInitTable, TRUE);
-	LPC_CCAN_API->config_calb(&callbacks);
-	NVIC_EnableIRQ(CAN_IRQn);
-#endif
+void Board_CAN_Init(uint32_t baudRateHz){
+	CAN_Init(baudRateHz);
 }
 
 // void Board_LED_Init(void) {

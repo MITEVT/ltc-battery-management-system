@@ -13,6 +13,7 @@
 	#include <stdio.h>
 #else
 	#include "chip.h"
+  	#include "can.h"
 	#include "ltc6804.h"
 	#include "console.h"
 #endif
@@ -92,15 +93,9 @@ void Board_UART_Init(uint32_t baudRateHz);
  */
 void Board_SPI_Init(uint32_t baudRateHz);
 
-/**
- * @details Initialize the on-chip CAN peripheral
- * 
- * @param baudRateHz the desired baud rate
- * @param CAN_rx CAN RX callback function
- * @param CAN_tx CAN TX callback function
- * @param CAN_error CAN error callback function
- */
-void Board_CCAN_Init(uint32_t baudRateHz, void (*CAN_rx)(uint8_t), void (*CAN_tx)(uint8_t), void (*CAN_error)(uint32_t));
+// void Board_CCAN_Init(uint32_t baudRateHz, void (*CAN_rx)(uint8_t), void (*CAN_tx)(uint8_t), void (*CAN_error)(uint32_t));
+void Board_CAN_Init(uint32_t baudRateHz);
+
 
 void Board_GPIO_Init(void);
 

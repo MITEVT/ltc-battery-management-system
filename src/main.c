@@ -199,9 +199,9 @@ int main(void) {
     Board_GPIO_Init();
     Board_Init_Timers(); // [TODO] Think about proper place to put this
     EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
-
     Init_BMS_Structs();
     Board_UART_Init(UART_BAUD);
+    Board_CAN_Init(CAN_BAUD);
 
     Board_Println("Started Up");    
     

@@ -30,7 +30,6 @@ typedef struct BMS_PACK_STATUS {
 	uint32_t pack_voltage_mV;
 	uint32_t precharge_voltage; // [TODO] make contactor driver
 	uint32_t max_cell_temp_C;
-	bool error;
 } BMS_PACK_STATUS_T;
 
 typedef struct BMS_CHARGER_STATUS {

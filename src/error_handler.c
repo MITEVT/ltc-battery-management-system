@@ -48,9 +48,12 @@ void Error_Init(void){
 
 void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 	switch (er_t) {
-		ERROR_LTC6804_CVST:
-		ERROR_LTC6804_OWT:
+		//LTC6804 errors that imply PEC fine should implicitly pass PEC
+		case ERROR_LTC6804_CVST:
+		case ERROR_LTC6804_OWT:
 			Error_Pass(ERROR_LTC6804_PEC);
+			break;
+		default:
 			break;
 	}
 	if (!error_vector[er_t].error) {
@@ -65,10 +68,13 @@ void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 }
 void Error_Pass(ERROR_T er_t) {
 	error_vector[er_t].error = false;
+	//LTC6804 errors that imply PEC fine should implicitly pass PEC
 	switch (er_t) {
-		ERROR_LTC6804_CVST:
-		ERROR_LTC6804_OWT:
+		case ERROR_LTC6804_CVST:
+		case ERROR_LTC6804_OWT:
 			Error_Pass(ERROR_LTC6804_PEC);
+			break;
+		default:
 			break;
 	}
 }
@@ -83,6 +89,10 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
 		}
 	}
 	return HANDLER_FINE;
+}
+
+const ERROR_STATUS_T * Error_Get_Status(void) {
+	return error_vector;
 }
 
 // [TODO] Refactor similiar functions

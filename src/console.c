@@ -5,6 +5,7 @@
 #include "bms_utils.h"
 #include "microrl.h"
 #include "console_types.h"
+#include "error_handler.h"
 
 /***************************************
         Private Variables
@@ -123,6 +124,8 @@ static void get(const char * const * argv) {
         }
         if (foundloc) {
             char tempstr[20];
+            uint32_t i;
+            const ERROR_STATUS_T * error_status_vector;
             switch (roloc) {
                 case ROL_state:
                     Board_Println(BMS_SSM_MODE_NAMES[bms_state->curr_mode]);
@@ -161,14 +164,16 @@ static void get(const char * const * argv) {
                     Board_Println(tempstr);
                     break;
                 case ROL_error:
-                    if(bms_input->pack_status->error) {
-                        Board_Println("Pack has error!");
-                    } else {
-                        Board_Println("Pack has no error!");
-                    } 
+                    error_status_vector = Error_Get_Status();
+                    for (i = 0; i < ERROR_NUM_ERRORS; ++i)
+                    {
+                        if (error_status_vector[i].handling || error_status_vector[i].error) {
+                            Board_Println(ERROR_NAMES[i]);
+                        }
+                    }
                     break;
                 case ROL_LENGTH:
-                    break;
+                    break; //how the hell?
             }
         }
         else{

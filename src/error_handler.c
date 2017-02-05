@@ -3,7 +3,7 @@
 static const uint32_t CELL_OVER_VOLTAGE_timeout_ms = 1000;
 static const uint32_t CELL_UNDER_VOLTAGE_timeout_ms = 1000;
 static const uint32_t OVER_CURRENT_timeout_ms = 500;
-static const uint32_t LTC6802_PEC_timeout_count = 50;
+static const uint32_t LTC6802_PEC_timeout_count = 10;
 static const uint32_t LTC6802_CVST_timeout_count = 2;
 static const uint32_t LTC6802_OWT_timeout_count = 10;
 
@@ -47,12 +47,15 @@ void Error_Init(void){
 }
 
 void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
-	switch (er_t) {
-		ERROR_LTC6804_CVST:
-		ERROR_LTC6804_OWT:
-			Error_Pass(ERROR_LTC6804_PEC);
-			break;
-	}
+	// switch (er_t) {
+	// 	//LTC6804 errors that imply PEC fine should implicitly pass PEC
+	// 	case ERROR_LTC6804_CVST:
+	// 	case ERROR_LTC6804_OWT:
+	// 		Error_Pass(ERROR_LTC6804_PEC);
+	// 		break;
+	// 	default:
+	// 		break;
+	// }
 	if (!error_vector[er_t].error) {
 		error_vector[er_t].error = true;
 		error_vector[er_t].time_stamp = msTicks;
@@ -65,12 +68,15 @@ void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 }
 void Error_Pass(ERROR_T er_t) {
 	error_vector[er_t].error = false;
-	switch (er_t) {
-		ERROR_LTC6804_CVST:
-		ERROR_LTC6804_OWT:
-			Error_Pass(ERROR_LTC6804_PEC);
-			break;
-	}
+	//LTC6804 errors that imply PEC fine should implicitly pass PEC
+	// switch (er_t) {
+	// 	case ERROR_LTC6804_CVST:
+	// 	case ERROR_LTC6804_OWT:
+	// 		Error_Pass(ERROR_LTC6804_PEC);
+	// 		break;
+	// 	default:
+	// 		break;
+	// }
 }
 
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
@@ -85,10 +91,13 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
 	return HANDLER_FINE;
 }
 
+const ERROR_STATUS_T * Error_Get_Status(void) {
+	return error_vector;
+}
+
 // [TODO] Refactor similiar functions
 static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
 	UNUSED(msTicks);
-	Board_Println_BLOCKING("handling pec");
 	if (!er_stat->error) {
 		er_stat->handling = false;
 		return HANDLER_FINE;
@@ -104,7 +113,6 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 }
 static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
 	UNUSED(msTicks);
-	Board_Println_BLOCKING("handling CVST");
 	if (!er_stat->error) {
 		er_stat->handling = false;
 		return HANDLER_FINE;

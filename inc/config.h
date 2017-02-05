@@ -5,5 +5,6 @@
 #define MAX_CELLS_PER_MODULE 12
 
 #define LTC6804_BAUD 1000000
+#define CAN_BAUD 500000
 
 #endif

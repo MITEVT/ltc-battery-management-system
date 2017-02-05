@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "chip.h"
 #include "board.h"
+#include "util.h"
 
 
 typedef enum error {
@@ -20,6 +21,20 @@ typedef enum error {
     ERROR_OVER_CURRENT,
     ERROR_NUM_ERRORS
 } ERROR_T;
+
+static const char * const ERROR_NAMES[ERROR_NUM_ERRORS+1] = {
+    "ERROR_LTC6804_PEC",
+    "ERROR_LTC6804_CVST",
+    "ERROR_LTC6804_OWT",
+    "EEPROM_ERROR",
+    "ERROR_INVALID_SSM_STATE",
+    "ERROR_CONTACTORS_ERRONEOUS_STATE",
+    "ERROR_CELL_UNDER_VOLTAGE",
+    "ERROR_CELL_OVER_VOLTAGE",
+    "ERROR_CELL_OVER_TEMP",
+    "ERROR_OVER_CURRENT",
+    "ERROR_NUM_ERRORS"
+};
 
 typedef enum error_handler_status {
 	HANDLER_FINE,
@@ -39,6 +54,7 @@ typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(ERROR_STATUS_T* , const uint32_
 void Error_Init(void);
 void Error_Assert(ERROR_T er_t, uint32_t msTicks);
 void Error_Pass(ERROR_T er_t);
+const ERROR_STATUS_T *  Error_Get_Status(void);
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 
 

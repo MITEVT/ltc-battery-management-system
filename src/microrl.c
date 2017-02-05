@@ -14,9 +14,6 @@ BUGS and TODO:
 #include <stdio.h>
 #endif
 
-//[TODO] remove this
-//#include "board.h"
-
 //#define DBG(...) fprintf(stderr, "\033[33m");fprintf(stderr,__VA_ARGS__);fprintf(stderr,"\033[0m");
 
 char * prompt_default = _PROMPT_DEFAULT;

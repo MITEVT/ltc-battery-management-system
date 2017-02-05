@@ -195,7 +195,9 @@ void Board_SPI_Init(uint32_t baudRateHz) {
 
 
 void Board_CAN_Init(uint32_t baudRateHz){
+#ifndef TEST_HARDWARE
 	CAN_Init(baudRateHz);
+#endif
 }
 
 // void Board_LED_Init(void) {
@@ -450,11 +452,14 @@ void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t ms
 	switch (res) {
     	case LTC6804_FAIL:
     		Board_Println("Get Vol FAIL");
+    		break;
     	case LTC6804_SPI_ERROR:
 	    	Board_Println("Get Vol SPI_ERROR");
+	    	break;
     	case LTC6804_PEC_ERROR:
     		Board_Println("Get Vol PEC_ERROR");
     		Error_Assert(ERROR_LTC6804_PEC,msTicks);
+    		break;
     	case LTC6804_PASS:
     		pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
         	pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;

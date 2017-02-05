@@ -80,7 +80,6 @@ TEST_SETUP(SSM_Test) {
     pack_status.pack_voltage_mV = 0;
     pack_status.precharge_voltage = 0;
     pack_status.max_cell_temp_C = 0;
-    pack_status.error = 0;
 
     SSM_Init(&bms_input, &bms_state, &bms_output);   
 }

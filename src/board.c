@@ -305,24 +305,6 @@ void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T
 }
 #endif
 
-
-
-bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
-#ifdef TEST_HARDWARE
-	(void)(msTicks);
-	return false;
-#else
-	Board_Print("Initializing LTC6804. Verifying..");
-    if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-        Board_Print(".FAIL. ");
-        return false;
-    } else {
-        Board_Print(".PASS. ");
-        return true;
-    }
-#endif
-}
-
 void Board_Init_Chip(void) {
 
 }
@@ -458,7 +440,7 @@ void Board_Init_Drivers(void) {
 }
 
 //[TODO] check saftey
-void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
+void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -528,7 +510,7 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
 }
 
 //[TODO] add saftey
-void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
+void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -540,7 +522,22 @@ void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks) {
 #endif
 }
 
-// [TODO] Make work pls
+bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
+#ifdef TEST_HARDWARE
+	(void)(msTicks);
+	return false;
+#else
+	Board_Print("Initializing LTC6804. Verifying..");
+    if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+        Board_Print(".FAIL. ");
+        return false;
+    } else {
+        Board_Print(".PASS. ");
+        return true;
+    }
+#endif
+}
+
 bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 #else

@@ -138,7 +138,7 @@ void Board_LTC6804_DeInit(void);
  * @param mutable array of cell voltages
  * @param msTicks current milisecond count
  */
-void Board_LTC6804_Get_Cell_Voltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
+void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
 
 
 /**
@@ -155,7 +155,7 @@ bool Board_LTC6804_CVST(uint32_t msTicks);
  * @param balance_requests balance_requests[i] is true if ith cell should be 
  *                         balanced, false otherwise
  */
-void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks);
+void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
 
 /**
  * @details checks that pack configuration is consistent with number of connected LTC6804 slaves
@@ -163,7 +163,7 @@ void Board_LTC6804_Update_Balance_States(bool *balance_req, uint32_t msTicks);
  * @param pack_config configuration of the battery pack:
  * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
  */
-bool Board_LTC6804_Validate_Configuration(uint32_t msTicks);
+bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks);
 
 
 

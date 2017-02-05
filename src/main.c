@@ -147,7 +147,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
     // [TODO] THis should do nothing if in OWT
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-        Board_LTC6804_Get_Cell_Voltages(&pack_status, msTicks);
+        Board_LTC6804_GetCellVoltages(&pack_status, msTicks);
     }
         
 
@@ -177,7 +177,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
 
     if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
-        Board_LTC6804_Update_Balance_States(bms_output->balance_req, msTicks);
+        Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
     }
 
 }
@@ -192,6 +192,14 @@ void Process_Keyboard(void) {
     }
 }
 
+// [TODO] Rango read this
+// [TODO] Put Systick in Board
+// [TODO] Use new CAN, and CAN errors
+// [TODO] Clean up Board.c
+// [TODO] Remove GCV Timer and replace with msTick thing
+// [TODO, MAYBE] Update to new init order and implement reinit
+// [TODO] Make Defualt Configuration conservative
+// [TODO] Write simple contactor driver that drives LED or Relay
 int main(void) {
 
     UNUSED(delay);
@@ -220,7 +228,7 @@ int main(void) {
     Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 3, true);
 
 	while(1) {
-        Chip_GPIO_SetPinState(LPC_GPIO, 1,3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1,3));
+        Chip_GPIO_SetPinState(LPC_GPIO, 1, 3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1, 3));
         Process_Keyboard(); //do this if you want to add the command line
         Process_Input(&bms_input);
         SSM_Step(&bms_input, &bms_state, &bms_output); 

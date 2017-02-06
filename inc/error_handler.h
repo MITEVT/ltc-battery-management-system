@@ -3,9 +3,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "chip.h"
-#include "board.h"
-#include "util.h"
 
 
 typedef enum error {

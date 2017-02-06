@@ -21,16 +21,18 @@ static uint16_t ltc6804_bal_list[MAX_NUM_MODULES];
 static LTC6804_ADC_RES_T ltc6804_adc_res;
 static LTC6804_OWT_RES_T ltc6804_owt_res; 
 // ltc6804 timing variables
-static bool ltc6804_get_cell_voltages;
+static bool _ltc6804_gcv;
+static uint32_t _ltc6804_last_gcv;
+static uint32_t _ltc6804_gcv_tick_time;
 
-static bool ltc6804_initialized;
+static bool _ltc6804_initialized;
+static LTC6804_INIT_STATE_T _ltc6804_init_state;
 
 static char str[10];
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
 
-#define LTC_CELL_VOLTAGE_FREQ 10
 #endif
 // ------------------------------------------------
 // Private Functions
@@ -77,27 +79,20 @@ void UART_IRQHandler(void) {
 	Chip_UART_IRQRBHandler(LPC_USART, &uart_rx_ring, &uart_tx_ring);
 }
 
-void TIMER32_0_IRQHandler(void) {
-    if (Chip_TIMER_MatchPending(LPC_TIMER32_0, 0)) {
-        Chip_TIMER_ClearMatch(LPC_TIMER32_0, 0);
-        // Do something
-
-        ltc6804_get_cell_voltages = true;
-    }
+void SysTick_Handler(void) {
+	msTicks++;
 }
 
 #endif
 
-/**
- * @brief SysTick Interrupt Handler
- */
-// void SysTick_Handler(void) {
-
-// }
-
 // ------------------------------------------------
 // Public Functions
 
+void Board_Chip_Init(void) {
+#ifndef TEST_HARDWARE
+	SysTick_Config(Hertz2Ticks(1000));
+#endif
+}
 
 
 uint32_t Board_Print(const char *str) {
@@ -175,23 +170,6 @@ void Board_UART_Init(uint32_t baudRateHz) {
 #endif
 }
 
-void Board_SPI_Init(uint32_t baudRateHz) {
-#ifdef TEST_HARDWARE
-	(void)(baudRateHz);
-#else
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MISO0 */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MOSI0 */
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_11, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* SCK0 */
-	Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO2_11);
-
-	Chip_SSP_Init(LPC_SSP0);
-	Chip_SSP_SetBitRate(LPC_SSP0, baudRateHz);
-
-	Chip_SSP_SetFormat(LPC_SSP0, SSP_BITS_8, SSP_FRAMEFORMAT_SPI, SSP_CLOCK_MODE0);
-	Chip_SSP_SetMaster(LPC_SSP0, true);
-	Chip_SSP_Enable(LPC_SSP0);
-#endif
-}
 
 
 void Board_CAN_Init(uint32_t baudRateHz){
@@ -200,49 +178,57 @@ void Board_CAN_Init(uint32_t baudRateHz){
 #endif
 }
 
-// void Board_LED_Init(void) {
-// #ifndef TEST_HARDWARE
-// 	Chip_GPIO_Init(LPC_GPIO);
-// 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0_GPIO, LED0_PIN);
-// #endif
-// }
+void Board_LED_Init(void) {
+#ifndef TEST_HARDWARE
+	Chip_GPIO_Init(LPC_GPIO);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
+	#ifdef LED3
+		#error "Updated Board_LED_Init()"
+	#endif
+#endif
+}
 
-// void Board_LED_On(void) {
-// #ifndef TEST_HARDWARE
-// 	Chip_GPIO_SetPinOutHigh(LPC_GPIO, LED0_GPIO, LED0_PIN);
-// #endif
-// }
+void Board_LED_On(uint8_t led_gpio, uint8_t led_pin) {
+#ifndef TEST_HARDWARE
+	Chip_GPIO_SetPinOutHigh(LPC_GPIO, led_gpio, led_pin);
+#endif
+}
 
-// void Board_LED_Off(void) {
-// #ifndef TEST_HARDWARE
-// 	Chip_GPIO_SetPinOutLow(LPC_GPIO, LED0_GPIO, LED0_PIN);
-// #endif
-// }
+void Board_LED_Off(uint8_t led_gpio, uint8_t led_pin) {
+#ifndef TEST_HARDWARE
+	Chip_GPIO_SetPinOutLow(LPC_GPIO, led_gpio, led_pin);
+#endif
+}
 
-// void Board_LED_Toggle(void) {
-// #ifndef TEST_HARDWARE
-// 	Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));
-// #endif
-// }
+void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin) {
+#ifndef TEST_HARDWARE
+	Chip_GPIO_SetPinState(LPC_GPIO, led_gpio, led_pin, 
+		1 - Chip_GPIO_GetPinState(LPC_GPIO, led_gpio, led_pin));
+#endif
+}
 
 
 void Board_Headroom_Init(void){
 #ifndef TEST_HARDWARE
-	Chip_IOCON_PinMuxSet(LPC_GPIO, IOCON_PIO1_3, IOCON_FUNC1);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO, 1,3);
+#if (HEADROOM != (1, 3))
+	#error "Must Refresh this PinMuxSet"
+#endif
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, IOCON_FUNC1);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, HEADROOM);
 #endif
 }
 
 void Board_Headroom_Toggle(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinState(LPC_GPIO, 1,3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1,3));
+	Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
 #endif
 }
 
 void Board_Switch_Init(void) {
 #ifndef TEST_HARDWARE
 	Chip_GPIO_Init(LPC_GPIO);
-	Chip_GPIO_SetPinDIRInput(LPC_GPIO, SWITCH_GPIO, SWITCH_PIN);
+	Chip_GPIO_SetPinDIRInput(LPC_GPIO, SWITCH);
 #endif
 }
 
@@ -250,7 +236,7 @@ bool Board_Switch_Read(void) {
 #ifdef TEST_HARDWARE
 	return 0;
 #else
-	return Chip_GPIO_GetPinState(LPC_GPIO, SWITCH_GPIO, SWITCH_PIN);
+	return Chip_GPIO_GetPinState(LPC_GPIO, SWITCH);
 #endif
 }
 
@@ -285,10 +271,6 @@ void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T
     }
 }
 #endif
-
-void Board_Init_Chip(void) {
-
-}
 
 void Board_Init_EEPROM(void) {
 
@@ -325,40 +307,14 @@ void Board_GPIO_Init(void) {
 }
 
 
-
-void Board_Init_Timers(void) {
-#ifndef TEST_HARDWARE
-    // Timer 32_0 initialization
-    Chip_TIMER_Init(LPC_TIMER32_0);
-    Chip_TIMER_Reset(LPC_TIMER32_0);
-    Chip_TIMER_MatchEnableInt(LPC_TIMER32_0, 0);
-    Chip_TIMER_SetMatch(LPC_TIMER32_0, 0, Hertz2Ticks(LTC_CELL_VOLTAGE_FREQ));
-    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_0, 0);
-#endif
-}
-
-void Board_Enable_Timers(void) { //[TODO] removeme
-#ifndef TEST_HARDWARE
-    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
-    NVIC_EnableIRQ(TIMER_32_0_IRQn);
-    Chip_TIMER_Enable(LPC_TIMER32_0);
-#endif
-}
-
-typedef enum {
-	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
-} LTC6804_INIT_STATE_T;
-
-static LTC6804_INIT_STATE_T ltc6804_init_state;
-
 // [TODO] Switch to SSP1
 bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return true;
 #else
-	if (ltc6804_initialized) return true;
+	if (_ltc6804_initialized) return true;
 
-	if (ltc6804_init_state == LTC6804_INIT_NONE) {
+	if (_ltc6804_init_state == LTC6804_INIT_NONE) {
 		ltc6804_config.pSSP = LPC_SSP0;
 	    ltc6804_config.baud = LTC6804_BAUD;
 	    ltc6804_config.cs_gpio = 0;
@@ -383,25 +339,26 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 	    ltc6804_owt_res.failed_wire = 0;
 	    ltc6804_owt_res.failed_module = 0;
 
-	    ltc6804_get_cell_voltages = false;
+	    _ltc6804_gcv = false;
+	    _ltc6804_last_gcv = 0;
+	    _ltc6804_gcv_tick_time = Hertz2Ticks(10);
 
 	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 
-	    ltc6804_init_state = LTC6804_INIT_CFG;
-	} else if (ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
+	    _ltc6804_init_state = LTC6804_INIT_CFG;
+	} else if (_ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
 		bool res = Board_LTC6804_CVST(msTicks);
 		if (res) {
-			ltc6804_init_state = LTC6804_INIT_CVST;
+			_ltc6804_init_state = LTC6804_INIT_CVST;
 		}
-	} else if (ltc6804_init_state == LTC6804_INIT_CVST) {
+	} else if (_ltc6804_init_state == LTC6804_INIT_CVST) {
 		bool res = Board_LTC6804_OpenWireTest(msTicks);
 		if (res) {
-			ltc6804_init_state = LTC6804_INIT_DONE;
+			_ltc6804_init_state = LTC6804_INIT_DONE;
 		}
-	} else if (ltc6804_init_state == LTC6804_INIT_DONE) {
-		Board_Enable_Timers();
-	    ltc6804_initialized = true;
-		ltc6804_init_state = 0;
+	} else if (_ltc6804_init_state == LTC6804_INIT_DONE) {
+	    _ltc6804_initialized = true;
+		_ltc6804_init_state = 0;
 		return true;
 	}
 
@@ -411,8 +368,8 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 void Board_LTC6804_DeInit(void) {
 #ifndef TEST_HARDWARE
-	ltc6804_initialized = false;
-	ltc6804_init_state = LTC6804_INIT_NONE;
+	_ltc6804_initialized = false;
+	_ltc6804_init_state = LTC6804_INIT_NONE;
 #endif
 }
 
@@ -425,8 +382,13 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTi
 #ifdef TEST_HARDWARE
 	return;
 #else
+
+	if (msTicks - _ltc6804_last_gcv > _ltc6804_gcv_tick_time) {
+		_ltc6804_gcv = true;
+	}
+
 	// [TODO] Think about this
-	if (!ltc6804_get_cell_voltages) {
+	if (!_ltc6804_gcv) {
 		return;
 	}
 
@@ -446,7 +408,8 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTi
     		pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
         	pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
         	LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks); // [TODO] Use this to your advantage
-        	ltc6804_get_cell_voltages = false;
+        	_ltc6804_gcv = false;
+        	_ltc6804_last_gcv = msTicks;
         	Error_Pass(ERROR_LTC6804_PEC);
     	case LTC6804_WAITING:
     	case LTC6804_WAITING_REFUP:
@@ -506,7 +469,7 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
 #endif
 }
 
-bool Board_LTC6804_Validate_Configuration(uint32_t msTicks) {
+bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	(void)(msTicks);
 	return false;

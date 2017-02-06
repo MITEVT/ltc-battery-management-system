@@ -97,7 +97,7 @@ const ERROR_STATUS_T * Error_Get_Status(void) {
 
 // [TODO] Refactor similiar functions
 static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(msTicks);
+	(void)(msTicks);
 	if (!er_stat->error) {
 		er_stat->handling = false;
 		return HANDLER_FINE;
@@ -112,7 +112,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32
 	}
 }
 static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(msTicks);
+	(void)(msTicks);
 	if (!er_stat->error) {
 		er_stat->handling = false;
 		return HANDLER_FINE;
@@ -127,7 +127,7 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint3
 	}
 }
 static ERROR_HANDLER_STATUS_T handle_LTC6804_OWT(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(msTicks);
+	(void)(msTicks);
 	// Board_Println_BLOCKING("handling OWT");
 	if (!er_stat->error) {
 		er_stat->handling = false;
@@ -144,18 +144,18 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_OWT(ERROR_STATUS_T* er_stat, uint32
 }
 
 static ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(er_stat);
-	UNUSED(msTicks);
+	(void)(er_stat);
+	(void)(msTicks);
 	return HANDLER_HALT;
 }
 static ERROR_HANDLER_STATUS_T handle_INVALID_SSM_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(er_stat);
-	UNUSED(msTicks);
+	(void)(er_stat);
+	(void)(msTicks);
 	return HANDLER_HALT;
 }
 static ERROR_HANDLER_STATUS_T handle_CONTACTORS_ERRONEOUS_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	UNUSED(er_stat);
-	UNUSED(msTicks);
+	(void)(er_stat);
+	(void)(msTicks);
 	return HANDLER_HALT;
 }
 static ERROR_HANDLER_STATUS_T handle_CELL_UNDER_VOLTAGE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {

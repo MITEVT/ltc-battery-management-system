@@ -2,14 +2,10 @@
 #include <stdlib.h>
 #include "board.h"
 #include "ssm.h"
-#include "sysinit.h"
 #include "console.h"
 #include "eeprom_config.h"
 #include "config.h"
 #include "error_handler.h"
-
-#define LED0 2, 8
-#define LED1 2, 10
 
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
@@ -47,14 +43,6 @@ static BMS_STATE_T bms_state;
 static microrl_t rl;
 static CONSOLE_OUTPUT_T console_output;
 
-/****************************
- *          IRQ Vectors
- ****************************/
-
-void SysTick_Handler(void) {
-	msTicks++;
-}
-
 
 /****************************
  *          HELPERS
@@ -69,11 +57,6 @@ static void delay(uint32_t dlyTicks) {
 /****************************
  *       INITIALIZERS
  ****************************/
-
-static void Init_Core(void) {
-	SysTick_Config (TicksPerMS);
-}
-
 
 void Init_BMS_Structs(void) {
     bms_output.charge_req = &charge_req;
@@ -156,24 +139,19 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
-    // Board_Println_BLOCKING("Process output");
     
     if (bms_output->read_eeprom_packconfig){
-        bms_input->eeprom_packconfig_read_done = EEPROM_Load_PackConfig(&pack_config);
+        bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
         Board_LTC6804_DeInit(); // [TODO] Think about this
     }
     else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = 
-            EEPROM_Check_PackConfig_With_LTC(&pack_config);
+            EEPROM_CheckPackConfigWithLTC(&pack_config);
 
         bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
-        // bms_input->ltc_packconfig_check_done = Board_LTC6804_CVST(msTicks);
-        // bms_input->ltc_packconfig_check_done = Board_LTC6804_OpenWireTest(msTicks);
-
     }
-
 
     if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
         Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
@@ -195,7 +173,6 @@ void Process_Keyboard(void) {
 // [TODO] Put Systick in Board
 // [TODO] Use new CAN, and CAN errors
 // [TODO] Clean up Board.c
-// [TODO] Remove GCV Timer and replace with msTick thing
 // [TODO, MAYBE] Update to new init order and implement reinit
 // [TODO] Make Defualt Configuration conservative
 // [TODO] Write simple contactor driver that drives LED or Relay
@@ -203,37 +180,43 @@ int main(void) {
 
     UNUSED(delay);
 
-    Init_Core();
-    Board_GPIO_Init();
-    Board_Init_Timers(); // [TODO] Think about proper place to put this
-    EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
     Init_BMS_Structs();
-    Board_UART_Init(UART_BAUD);
-    Board_CAN_Init(CAN_BAUD);
 
-    Board_Println("Started Up");    
+    Board_Chip_Init();
+    Board_GPIO_Init();
+    Board_LED_Init();
+    Board_Headroom_Init();
+    Board_Switch_Init();
+    Board_CAN_Init(CAN_BAUD);
+    Board_UART_Init(UART_BAUD);
+
+    Board_Println("Board Up");   
+
+    EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN); 
     
+    Error_Init();
+    SSM_Init(&bms_input, &bms_state, &bms_output);
+
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
     console_init(&bms_input, &bms_state, &console_output);
-    Error_Init();
-    SSM_Init(&bms_input, &bms_state, &bms_output);
+
+    Board_Println("Applications Up");
 
     uint32_t last_count = msTicks;
 
-    // [TODO]
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, (IOCON_FUNC1));
-    Chip_GPIO_WriteDirBit(LPC_GPIO, 1, 3, true);
-
 	while(1) {
-        Chip_GPIO_SetPinState(LPC_GPIO, 1, 3, 1 - Chip_GPIO_GetPinState(LPC_GPIO, 1, 3));
-        Process_Keyboard(); //do this if you want to add the command line
-        Process_Input(&bms_input);
-        SSM_Step(&bms_input, &bms_state, &bms_output); 
+
+        Board_Headroom_Toggle(); // Used for measuring main-loop length
+
+        Process_Keyboard(); // Handle UART Input
+        Process_Input(&bms_input); // Process Inputs to board for bms
+        SSM_Step(&bms_input, &bms_state, &bms_output);
         Process_Output(&bms_input, &bms_output);
+
         if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
-            break;
+            break; // Handler requested a Halt
         }
         
         // Testing Code
@@ -242,11 +225,11 @@ int main(void) {
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
+            Board_LED_Toggle(LED0);     
         }
     }
 
-    Board_Println("GOT REKT");
+    Board_Println("FORCED HANG");
 
     bms_output.close_contactors = false;
     bms_output.charge_req->charger_on = false;
@@ -264,17 +247,18 @@ int main(void) {
 
 int hardware_test(void) {
 
-    Init_Core();
-    Board_GPIO_Init();
-    Board_Init_Timers();
-    EEPROM_init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
-
     Init_BMS_Structs();
+
+    Board_Chip_Init();
+    Board_GPIO_Init();
     Board_UART_Init(UART_BAUD);
 
-    Board_Println("Started Up");  
+    Board_Println("Board Up"); 
 
+    EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
     Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+
+    Board_Println("Drivers Up"); 
 
     return 0;
     

@@ -1,6 +1,5 @@
 #include <string.h>
 #include <stdlib.h>
-#include "board.h"
 #include "microrl.h"
 #include "state_types.h"
 #include "util.h"

@@ -1,5 +1,8 @@
 #include "ssm.h"
 
+#include "error_handler.h"
+#include "bms_utils.h"
+
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     // Initialize BMS state variables

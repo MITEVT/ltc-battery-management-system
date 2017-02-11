@@ -30,6 +30,8 @@ static LTC6804_INIT_STATE_T _ltc6804_init_state;
 
 static char str[10];
 
+static BMS_SSM_MODE_T CAN_mode_request;
+
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
 
@@ -263,12 +265,30 @@ void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T
 	// } else {
 	//	 bms_input->mode_request = BMS_SSM_MODE_STANDBY;
 	// }
+
+	//if (console_output -> valid_mode_request) {
+	//	bms_input->mode_request = console_output->mode_request;
+	//	bms_input->balance_mV = console_output->balance_mV;
+	//} else {
+	//	bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+	//}
+
+	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
 	if (console_output -> valid_mode_request) {
-		bms_input->mode_request = console_output->mode_request;
-		bms_input->balance_mV = console_output->balance_mV;
+                console_mode_request = console_output->mode_request;
+                bms_input->balance_mV = console_output->balance_mV;
+        } else {
+                console_mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+        }
+
+	if (console_mode_request==BMS_SSM_MODE_STANDBY && 
+			CAN_mode_request==BMS_SSM_MODE_DISCHARGE) {
+		bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
 	} else {
-		bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+		//TODO: set bms_input->mode_request for different combinations 
+		//console_mode_request and CAN_mode_request
 	}
+
 }
 #endif
 
@@ -283,11 +303,19 @@ void Process_CAN_Inputs(BMS_INPUT_T * bms_input) {
 	return;
 	#else
 	CCAN_MSG_OBJ_T rx_msg;
-	while (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-		if (rx_msg.mode_id == 0x010) {
-			bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
+		const uint32_t VCU_ID = 0x010;
+		if (rx_msg.mode_id == VCU_ID) {
+			const uint8_t VCU_DISCHARGE_MODE_REQUEST = 0x01;
+			if (rx_msg.data[0] == VCU_DISCHARGE_MODE_REQUEST) {
+				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
+			} else {
+				// TODO: handle other VCU mode requests
+			}
+		} else {
+			// TODO: handle other types of CAN messages
 		}
-	}
+	}	
 	#endif
 }
 

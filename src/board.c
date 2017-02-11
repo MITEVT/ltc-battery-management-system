@@ -272,6 +272,25 @@ void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T
 }
 #endif
 
+/**
+ * @details Reads CAN messages and empties CAN ring buffer. Mutates bms_input
+ *          to reflect CAN messages received
+ * 
+ * @param bms_input data strcuture representing BMS inputs
+ */
+void Process_CAN_Inputs(BMS_INPUT_T * bms_input) {
+	#ifdef TEST_HARDWARE
+	return;
+	#else
+	CCAN_MSG_OBJ_T rx_msg;
+	while (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
+		if (rx_msg.mode_id == 0x010) {
+			bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+		}
+	}
+	#endif
+}
+
 void Board_Init_EEPROM(void) {
 
 }

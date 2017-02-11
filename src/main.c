@@ -126,6 +126,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // update and other fields in msTicks in &input
 
     Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
+    
+    Process_CAN_Inputs(&bms_input);
 
     // [TODO] THis should do nothing if in OWT
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {

@@ -127,6 +127,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
 	Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
 
+	Process_CAN_Inputs(&bms_input);	
+
 	// [TODO] THis should do nothing if in OWT
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_LTC6804_GetCellVoltages(&pack_status, msTicks);

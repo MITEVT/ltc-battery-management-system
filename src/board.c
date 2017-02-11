@@ -341,7 +341,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 	    _ltc6804_gcv = false;
 	    _ltc6804_last_gcv = 0;
-	    _ltc6804_gcv_tick_time = Hertz2Ticks(10);
+	    _ltc6804_gcv_tick_time = 100;
 
 	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 

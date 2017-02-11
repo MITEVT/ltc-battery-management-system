@@ -48,13 +48,13 @@ void Error_Init(void){
 
 void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
 	// switch (er_t) {
-	// 	//LTC6804 errors that imply PEC fine should implicitly pass PEC
-	// 	case ERROR_LTC6804_CVST:
-	// 	case ERROR_LTC6804_OWT:
-	// 		Error_Pass(ERROR_LTC6804_PEC);
-	// 		break;
-	// 	default:
-	// 		break;
+	//  //LTC6804 errors that imply PEC fine should implicitly pass PEC
+	//  case ERROR_LTC6804_CVST:
+	//  case ERROR_LTC6804_OWT:
+	//	  Error_Pass(ERROR_LTC6804_PEC);
+	//	  break;
+	//  default:
+	//	  break;
 	// }
 	if (!error_vector[er_t].error) {
 		error_vector[er_t].error = true;
@@ -70,12 +70,12 @@ void Error_Pass(ERROR_T er_t) {
 	error_vector[er_t].error = false;
 	//LTC6804 errors that imply PEC fine should implicitly pass PEC
 	// switch (er_t) {
-	// 	case ERROR_LTC6804_CVST:
-	// 	case ERROR_LTC6804_OWT:
-	// 		Error_Pass(ERROR_LTC6804_PEC);
-	// 		break;
-	// 	default:
-	// 		break;
+	//  case ERROR_LTC6804_CVST:
+	//  case ERROR_LTC6804_OWT:
+	//	  Error_Pass(ERROR_LTC6804_PEC);
+	//	  break;
+	//  default:
+	//	  break;
 	// }
 }
 

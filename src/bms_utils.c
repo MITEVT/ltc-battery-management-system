@@ -7,6 +7,6 @@ uint16_t Get_Total_Cell_Count(PACK_CONFIG_T *pack_config) {
 	for (i = 0; i < pack_config->num_modules; i++) {
 		total_num_cells += pack_config->module_cell_count[i];
 	}
-    return total_num_cells;
+	return total_num_cells;
 }
 

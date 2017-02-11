@@ -70,8 +70,8 @@ void canBaudrateCalculate(uint32_t baud_rate, uint32_t *can_api_timing_cfg) {
 #ifndef TEST_HARDWARE
 
 /**
- * @brief	UART Interrupt Handler
- * @return	Nothing
+ * @brief   UART Interrupt Handler
+ * @return  Nothing
  * @note	stuff more stuff into the buffer
  */
 
@@ -254,21 +254,21 @@ bool Board_Are_Contactors_Closed(void) {
 void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
 	//TODO: implement function
 	// if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-    //     bms_input->balance_mV = 3300;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
-    // } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
-    //     bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-    // } else {
-    //     bms_input->mode_request = BMS_SSM_MODE_STANDBY;
-    // }
+	//	 bms_input->mode_request = BMS_SSM_MODE_BALANCE;
+	//	 bms_input->balance_mV = 3300;
+	// } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
+	//	 bms_input->mode_request = BMS_SSM_MODE_CHARGE;
+	// } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
+	//	 bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+	// } else {
+	//	 bms_input->mode_request = BMS_SSM_MODE_STANDBY;
+	// }
 	if (console_output -> valid_mode_request) {
-        bms_input->mode_request = console_output->mode_request;
-        bms_input->balance_mV = console_output->balance_mV;
-    } else {
-        bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-    }
+		bms_input->mode_request = console_output->mode_request;
+		bms_input->balance_mV = console_output->balance_mV;
+	} else {
+		bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+	}
 }
 #endif
 
@@ -297,30 +297,30 @@ void Board_Init_EEPROM(void) {
 
 void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE
-    // [TODO] verify that pins don't collide
-    //  move pin selections to preprocesser defines
+	// [TODO] verify that pins don't collide
+	//  move pin selections to preprocesser defines
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
-    Board_Headroom_Init();
+	Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+	Board_Headroom_Init();
 
-    Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
-    
-    //SSP for EEPROM
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MOSI1 */
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK1 */
+	Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
+	
+	//SSP for EEPROM
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* MISO1 */ 
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_3, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* MOSI1 */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* SCK1 */
 
-    //SSP for LTC6804
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MISO0 */ 
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));    /* MOSI0 */
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
-    Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
+	//SSP for LTC6804
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MISO0 */ 
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MOSI0 */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* SCK0 */
+	Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 #endif
 
 }
@@ -335,36 +335,36 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 	if (_ltc6804_init_state == LTC6804_INIT_NONE) {
 		ltc6804_config.pSSP = LPC_SSP0;
-	    ltc6804_config.baud = LTC6804_BAUD;
-	    ltc6804_config.cs_gpio = 0;
-	    ltc6804_config.cs_pin = 2;
+		ltc6804_config.baud = LTC6804_BAUD;
+		ltc6804_config.cs_gpio = 0;
+		ltc6804_config.cs_pin = 2;
 
-	    ltc6804_config.num_modules = pack_config->num_modules;
-	    ltc6804_config.module_cell_count = pack_config->module_cell_count;
+		ltc6804_config.num_modules = pack_config->num_modules;
+		ltc6804_config.module_cell_count = pack_config->module_cell_count;
 
-	    ltc6804_config.min_cell_mV = pack_config->cell_min_mV;
-	    ltc6804_config.max_cell_mV = pack_config->cell_max_mV;
+		ltc6804_config.min_cell_mV = pack_config->cell_min_mV;
+		ltc6804_config.max_cell_mV = pack_config->cell_max_mV;
 
-	    ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
-	    
-	    ltc6804_state.xf = &ltc6804_xf_setup;
-	    ltc6804_state.tx_buf = ltc6804_tx_buf;
-	    ltc6804_state.rx_buf = ltc6804_rx_buf;
-	    ltc6804_state.cfg = ltc6804_cfg;
-	    ltc6804_state.bal_list = ltc6804_bal_list;
+		ltc6804_config.adc_mode = LTC6804_ADC_MODE_NORMAL;
+		
+		ltc6804_state.xf = &ltc6804_xf_setup;
+		ltc6804_state.tx_buf = ltc6804_tx_buf;
+		ltc6804_state.rx_buf = ltc6804_rx_buf;
+		ltc6804_state.cfg = ltc6804_cfg;
+		ltc6804_state.bal_list = ltc6804_bal_list;
 
-	    ltc6804_adc_res.cell_voltages_mV = cell_voltages_mV;
+		ltc6804_adc_res.cell_voltages_mV = cell_voltages_mV;
 
-	    ltc6804_owt_res.failed_wire = 0;
-	    ltc6804_owt_res.failed_module = 0;
+		ltc6804_owt_res.failed_wire = 0;
+		ltc6804_owt_res.failed_module = 0;
 
-	    _ltc6804_gcv = false;
-	    _ltc6804_last_gcv = 0;
-	    _ltc6804_gcv_tick_time = Hertz2Ticks(10);
+		_ltc6804_gcv = false;
+		_ltc6804_last_gcv = 0;
+		_ltc6804_gcv_tick_time = 100;
 
-	    LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
+		LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 
-	    _ltc6804_init_state = LTC6804_INIT_CFG;
+		_ltc6804_init_state = LTC6804_INIT_CFG;
 	} else if (_ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
 		bool res = Board_LTC6804_CVST(msTicks);
 		if (res) {
@@ -376,7 +376,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 			_ltc6804_init_state = LTC6804_INIT_DONE;
 		}
 	} else if (_ltc6804_init_state == LTC6804_INIT_DONE) {
-	    _ltc6804_initialized = true;
+		_ltc6804_initialized = true;
 		_ltc6804_init_state = 0;
 		return true;
 	}
@@ -413,29 +413,29 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTi
 
 	LTC6804_STATUS_T res = LTC6804_GetCellVoltages(&ltc6804_config, &ltc6804_state, &ltc6804_adc_res, msTicks);
 	switch (res) {
-    	case LTC6804_FAIL:
-    		Board_Println("Get Vol FAIL");
-    		break;
-    	case LTC6804_SPI_ERROR:
-	    	Board_Println("Get Vol SPI_ERROR");
-	    	break;
-    	case LTC6804_PEC_ERROR:
-    		Board_Println("Get Vol PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
-    		break;
-    	case LTC6804_PASS:
-    		pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
-        	pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
-        	LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks); // [TODO] Use this to your advantage
-        	_ltc6804_gcv = false;
-        	_ltc6804_last_gcv = msTicks;
-        	Error_Pass(ERROR_LTC6804_PEC);
-    	case LTC6804_WAITING:
-    	case LTC6804_WAITING_REFUP:
-    		break;
-    	default:
-    		Board_Println("WTF");
-    }
+		case LTC6804_FAIL:
+			Board_Println("Get Vol FAIL");
+			break;
+		case LTC6804_SPI_ERROR:
+			Board_Println("Get Vol SPI_ERROR");
+			break;
+		case LTC6804_PEC_ERROR:
+			Board_Println("Get Vol PEC_ERROR");
+			Error_Assert(ERROR_LTC6804_PEC,msTicks);
+			break;
+		case LTC6804_PASS:
+			pack_status->pack_cell_min_mV = ltc6804_adc_res.pack_cell_min_mV;
+			pack_status->pack_cell_max_mV = ltc6804_adc_res.pack_cell_max_mV;
+			LTC6804_ClearCellVoltages(&ltc6804_config, &ltc6804_state, msTicks); // [TODO] Use this to your advantage
+			_ltc6804_gcv = false;
+			_ltc6804_last_gcv = msTicks;
+			Error_Pass(ERROR_LTC6804_PEC);
+		case LTC6804_WAITING:
+		case LTC6804_WAITING_REFUP:
+			break;
+		default:
+			Board_Println("WTF");
+	}
 #endif
 }
 
@@ -445,33 +445,33 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
 	return false;
 #else
 	LTC6804_STATUS_T res;
-    res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
+	res = LTC6804_CVST(&ltc6804_config, &ltc6804_state, msTicks);
 
-    switch (res) {
-    	case LTC6804_FAIL:
-    		Board_Println("CVST FAIL");
-    		Error_Assert(ERROR_LTC6804_CVST, msTicks);
-    		return false;
-    	case LTC6804_SPI_ERROR:
-	    	Board_Println("CVST SPI_ERROR");
-	        return false;
-    	case LTC6804_PEC_ERROR:
-    		Board_Println("CVST PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC, msTicks);
-        	return false;
-    	case LTC6804_PASS:
-    		Board_Println("CVST PASS");
-    		Error_Pass(ERROR_LTC6804_CVST);
-    		return true;
-    	case LTC6804_WAITING:
-    	case LTC6804_WAITING_REFUP:
-    		return false;
-    	default:
-    		Board_Println("WTF");
-    		return false;
-    }
+	switch (res) {
+		case LTC6804_FAIL:
+			Board_Println("CVST FAIL");
+			Error_Assert(ERROR_LTC6804_CVST, msTicks);
+			return false;
+		case LTC6804_SPI_ERROR:
+			Board_Println("CVST SPI_ERROR");
+			return false;
+		case LTC6804_PEC_ERROR:
+			Board_Println("CVST PEC_ERROR");
+			Error_Assert(ERROR_LTC6804_PEC, msTicks);
+			return false;
+		case LTC6804_PASS:
+			Board_Println("CVST PASS");
+			Error_Pass(ERROR_LTC6804_CVST);
+			return true;
+		case LTC6804_WAITING:
+		case LTC6804_WAITING_REFUP:
+			return false;
+		default:
+			Board_Println("WTF");
+			return false;
+	}
 
-    return false;
+	return false;
 #endif
 }
 
@@ -481,10 +481,10 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
 	return;
 #else
 	LTC6804_STATUS_T res;
-    res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
-    if (res == LTC6804_SPI_ERROR) {
-        Board_Println("SetBalanceStates SPI_ERROR");
-    }
+	res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
+	if (res == LTC6804_SPI_ERROR) {
+		Board_Println("SetBalanceStates SPI_ERROR");
+	}
 #endif
 }
 
@@ -494,13 +494,13 @@ bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks) {
 	return false;
 #else
 	Board_Print("Initializing LTC6804. Verifying..");
-    if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
-        Board_Print(".FAIL. ");
-        return false;
-    } else {
-        Board_Print(".PASS. ");
-        return true;
-    }
+	if (!LTC6804_VerifyCFG(&ltc6804_config, &ltc6804_state, msTicks)) {
+		Board_Print(".FAIL. ");
+		return false;
+	} else {
+		Board_Print(".PASS. ");
+		return true;
+	}
 #endif
 }
 
@@ -508,37 +508,37 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 #else
 	LTC6804_STATUS_T res;
-    res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, &ltc6804_owt_res, msTicks);
+	res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, &ltc6804_owt_res, msTicks);
 
-    switch (res) {
-    	case LTC6804_FAIL:
-    		Board_Print("OWT FAIL, mod=");
-    		itoa(ltc6804_owt_res.failed_module, str, 10);
-    		Board_Print(str);
-    		Board_Print(" wire=");
-    		itoa(ltc6804_owt_res.failed_wire, str, 10);
-    		Board_Println(str);
-    		Error_Assert(ERROR_LTC6804_OWT, msTicks);
-    		return false;
-    	case LTC6804_SPI_ERROR:
-	    	Board_Println("OWT SPI_ERROR");
-	        return false;
-    	case LTC6804_PEC_ERROR:
-    		Board_Println("OWT PEC_ERROR");
-    		Error_Assert(ERROR_LTC6804_PEC,msTicks);
-        	return false;
-    	case LTC6804_PASS:
-    		Board_Println("OWT PASS");
-    		Error_Pass(ERROR_LTC6804_OWT);
-    		return true;
-    	case LTC6804_WAITING:
-    	case LTC6804_WAITING_REFUP:
-    		// Board_Println("*");
-    		return false;
-    	default:
-    		Board_Println("WTF");
-    		return false;
-    }
+	switch (res) {
+		case LTC6804_FAIL:
+			Board_Print("OWT FAIL, mod=");
+			itoa(ltc6804_owt_res.failed_module, str, 10);
+			Board_Print(str);
+			Board_Print(" wire=");
+			itoa(ltc6804_owt_res.failed_wire, str, 10);
+			Board_Println(str);
+			Error_Assert(ERROR_LTC6804_OWT, msTicks);
+			return false;
+		case LTC6804_SPI_ERROR:
+			Board_Println("OWT SPI_ERROR");
+			return false;
+		case LTC6804_PEC_ERROR:
+			Board_Println("OWT PEC_ERROR");
+			Error_Assert(ERROR_LTC6804_PEC,msTicks);
+			return false;
+		case LTC6804_PASS:
+			Board_Println("OWT PASS");
+			Error_Pass(ERROR_LTC6804_OWT);
+			return true;
+		case LTC6804_WAITING:
+		case LTC6804_WAITING_REFUP:
+			// Board_Println("*");
+			return false;
+		default:
+			Board_Println("WTF");
+			return false;
+	}
 #endif
 }
 

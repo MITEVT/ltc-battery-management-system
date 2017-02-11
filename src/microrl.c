@@ -70,7 +70,7 @@ static int hist_is_space_for_new (ring_history_t * pThis, int len)
 	if (pThis->end >= pThis->begin) {
 		if (_RING_HISTORY_LEN - pThis->end + pThis->begin - 1 > len)
 			return true;
-	}	else {
+	}   else {
 		if (pThis->begin - pThis->end - 1> len)
 			return true;
 	}
@@ -115,7 +115,7 @@ static void hist_save_line (ring_history_t * pThis, char * line, int len)
 static int hist_restore_line (ring_history_t * pThis, char * line, int dir)
 {
 	int cnt = 0;
-	// count history record	
+	// count history record 
 	int header = pThis->begin;
 	while (pThis->ring_buf [header] != 0) {
 		header += pThis->ring_buf [header] + 1;
@@ -275,7 +275,7 @@ static void terminal_move_cursor (microrl_t * pThis, int offset)
 		strcpy (endstr, "D");
 	} else
 		return;
-#endif	
+#endif  
 	pThis->print (str);
 }
 
@@ -302,7 +302,7 @@ static void terminal_reset_cursor (microrl_t * pThis)
 // print cmdline to screen, replace '\0' to wihitespace 
 static void terminal_print_line (microrl_t * pThis, int pos, int cursor)
 {
-	pThis->print ("\033[K");    // delete all from cursor to end
+	pThis->print ("\033[K");	// delete all from cursor to end
 	char nch [] = {0,0};
 	int i;
 	for (i = pos; i < pThis->cmdlen; i++) {
@@ -540,7 +540,7 @@ void new_line_handler(microrl_t * pThis){
 	terminal_newline (pThis);
 	status = split (pThis, pThis->cmdlen, tkn_arr);
 	if (status == -1){
-		//          pThis->print ("ERROR: Max token amount exseed\n");
+		//		  pThis->print ("ERROR: Max token amount exseed\n");
 		pThis->print ("ERROR:too many tokens");
 		pThis->print (ENDL);
 	}

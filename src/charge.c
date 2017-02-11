@@ -29,31 +29,31 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
 		case BMS_SSM_MODE_INIT:
-            // Invalid, shouldn't be called from init
+			// Invalid, shouldn't be called from init
 			return BMS_INVALID_SSM_STATE_ERROR;
-            
+			
 		case BMS_SSM_MODE_CHARGE:
 			if (state->charge_state == BMS_CHARGE_OFF 
-                    || state->charge_state == BMS_CHARGE_BAL) {
+					|| state->charge_state == BMS_CHARGE_BAL) {
 				state->charge_state = BMS_CHARGE_INIT;
 			}
 			break;
 
 		case BMS_SSM_MODE_BALANCE:
 			if (state->charge_state == BMS_CHARGE_OFF 
-                    || state->charge_state == BMS_CHARGE_CC 
-                    || state->charge_state == BMS_CHARGE_CV) {
+					|| state->charge_state == BMS_CHARGE_CC 
+					|| state->charge_state == BMS_CHARGE_CV) {
 				state->charge_state = BMS_CHARGE_INIT;
 			}
 			break;
 
-        // we want to switch states (either to STANDBY/DISCHARGE/ERROR)
+		// we want to switch states (either to STANDBY/DISCHARGE/ERROR)
 		default:
-            if(state->charge_state == BMS_CHARGE_OFF) {
-                state->charge_state = BMS_CHARGE_OFF;
-            } else {
-                state->charge_state = BMS_CHARGE_DONE;
-            }
+			if(state->charge_state == BMS_CHARGE_OFF) {
+				state->charge_state = BMS_CHARGE_OFF;
+			} else {
+				state->charge_state = BMS_CHARGE_DONE;
+			}
 			break;
 	}
 
@@ -99,23 +99,23 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			}
 			
 			// int i;
-            // checks that each cell is within some threshold of the minimum cell
-            //  voltage. uses two different thresholds based on whether 
-            //  we were just balancing or not (account for hysteresis)
+			// checks that each cell is within some threshold of the minimum cell
+			//  voltage. uses two different thresholds based on whether 
+			//  we were just balancing or not (account for hysteresis)
 			// for (i = 0; i < total_num_cells; i++) {
-			// 	if (output->balance_req[i]) {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
-			// 	} else {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
-			// 	}
+			//  if (output->balance_req[i]) {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
+			//  } else {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
+			//  }
 			// }
 
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
-            if(!input->contactors_closed) {
-            	// [TODO] Consider setting outputs to zero
-                return BMS_CONTACTORS_ERRONEOUS_STATE;
-            }
+			if(!input->contactors_closed) {
+				// [TODO] Consider setting outputs to zero
+				return BMS_CONTACTORS_ERRONEOUS_STATE;
+			}
 
 			break;
 		case BMS_CHARGE_CV:
@@ -147,19 +147,19 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			}
 
 			// for (i = 0; i < total_num_cells; i++) {
-			// 	if (output->balance_req[i]) {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
-			// 	} else {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
-			// 	}
+			//  if (output->balance_req[i]) {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
+			//  } else {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
+			//  }
 			// }
 
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
-            if(!input->contactors_closed) {
-            	// [TODO] Consider setting outputs to zero
-                return BMS_CONTACTORS_ERRONEOUS_STATE;
-            }
+			if(!input->contactors_closed) {
+				// [TODO] Consider setting outputs to zero
+				return BMS_CONTACTORS_ERRONEOUS_STATE;
+			}
 
 			break;
 
@@ -171,12 +171,12 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			// bool balancing = false;
 			// for (i = 0; i < total_num_cells; i++) {
-			// 	if (output->balance_req[i]) {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
-			// 	} else {
-			// 		output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
-			// 	}
-			// 	if (output->balance_req[i]) balancing = true;
+			//  if (output->balance_req[i]) {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
+			//  } else {
+			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
+			//  }
+			//  if (output->balance_req[i]) balancing = true;
 			// }
 
 			bool balancing = _calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->balance_mV, state->pack_config);
@@ -195,9 +195,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			_set_output(false, false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 
-            // if not in Charge or Balance, that means SSM is trying to switch to another mode so wait for contactors to close
-            // if in charge or balance, make sure we don't need to go back to charge or balance
-            //		if we do, go back to init
+			// if not in Charge or Balance, that means SSM is trying to switch to another mode so wait for contactors to close
+			// if in charge or balance, make sure we don't need to go back to charge or balance
+			//	  if we do, go back to init
 			if (input->mode_request != BMS_SSM_MODE_CHARGE && input->mode_request != BMS_SSM_MODE_BALANCE) {
 				if (!input->contactors_closed) {
 					state->charge_state = BMS_CHARGE_OFF;
@@ -217,7 +217,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				}
 			}
 	}
-    return BMS_NO_ERROR;
+	return BMS_NO_ERROR;
 }
 
 bool _calc_balance(bool *balance_req, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config) {

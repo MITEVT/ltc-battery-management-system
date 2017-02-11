@@ -242,7 +242,7 @@ bool Board_Switch_Read(void) {
 
 void Board_Close_Contactors(bool close_contactors) {
 	//TODO: implement function
-	UNUSED(close_contactors);
+	(void)(close_contactors);
 }
 
 bool Board_Are_Contactors_Closed(void) {

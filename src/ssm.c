@@ -20,8 +20,8 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 
     input->eeprom_read_error = false;
 
-	Charge_Init(state);
-	Discharge_Init(state);
+    Charge_Init(state);
+    Discharge_Init(state);
 }
 
 BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {

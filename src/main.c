@@ -50,8 +50,8 @@ static CONSOLE_OUTPUT_T console_output;
 
 // [TODO] Remove
 static void delay(uint32_t dlyTicks) {
-	uint32_t curTicks = msTicks;
-	while ((msTicks - curTicks) < dlyTicks);
+    uint32_t curTicks = msTicks;
+    while ((msTicks - curTicks) < dlyTicks);
 }
 
 /****************************
@@ -206,7 +206,7 @@ int main(void) {
 
     uint32_t last_count = msTicks;
 
-	while(1) {
+    while(1) {
 
         Board_Headroom_Toggle(); // Used for measuring main-loop length
 
@@ -242,7 +242,7 @@ int main(void) {
         Process_Output(&bms_input, &bms_output);
         Process_Keyboard();
     }
-	return 0;
+    return 0;
 }
 
 int hardware_test(void) {
@@ -272,7 +272,7 @@ int hardware_test(void) {
 
 //    uint32_t last_count = msTicks;
 
-//	while(1) {
+//  while(1) {
 //        Process_Keyboard(); //do this if you want to add the command line
 //        Process_Input(&bms_input);
 //        SSM_Step(&bms_input, &bms_state, &bms_output); 
@@ -296,6 +296,6 @@ int hardware_test(void) {
         //process_output(bms_outputs);
         //process_keyboard()
 //    }
-//	return 0;
+//  return 0;
 }
 

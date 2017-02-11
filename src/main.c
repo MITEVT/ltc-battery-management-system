@@ -192,7 +192,7 @@ int main(void) {
 
     Board_Println("Board Up");   
 
-    EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN); 
+    EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
     
     Error_Init();
     SSM_Init(&bms_input, &bms_state, &bms_output);

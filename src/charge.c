@@ -60,17 +60,11 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 	switch (state->charge_state) {
 
 		case BMS_CHARGE_OFF:
-			// output->close_contactors = false;
-			// output->charge_req->charger_on = false;
-
 			_set_output(false, false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			break;
 
 		case BMS_CHARGE_INIT:
-			// output->close_contactors = (input->mode_request == BMS_SSM_MODE_CHARGE);
-			// output->charge_req->charger_on = false;
-
 			_set_output((input->mode_request == BMS_SSM_MODE_CHARGE), false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			
@@ -84,31 +78,12 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			}
 			break;
 		case BMS_CHARGE_CC:
-
 			if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
-				// Need to go to CV Mode
-				state->charge_state = BMS_CHARGE_CV;
+				state->charge_state = BMS_CHARGE_CV; // Need to go to CV Mode
 			} else {
 				// Charge in CC Mode
-				// output->charge_req->charge_voltage_mV = cc_charge_voltage_mV;
-				// output->charge_req->charge_current_mA = cc_charge_current_mA;
-				// output->charge_req->charger_on = true;
-				// output->close_contactors = true;
-
 				_set_output(true, true, cc_charge_voltage_mV, cc_charge_current_mA, output);
 			}
-			
-			// int i;
-			// checks that each cell is within some threshold of the minimum cell
-			//  voltage. uses two different thresholds based on whether 
-			//  we were just balancing or not (account for hysteresis)
-			// for (i = 0; i < total_num_cells; i++) {
-			//  if (output->balance_req[i]) {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
-			//  } else {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
-			//  }
-			// }
 
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
@@ -124,11 +99,6 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				// Need to go back to CC Mode
 				state->charge_state = BMS_CHARGE_CC;
 			} else {
-				// output->charge_req->charge_voltage_mV = cv_charge_voltage_mV;
-				// output->charge_req->charge_current_mA = cv_charge_current_mA;
-				// output->charge_req->charger_on = true;
-				// output->close_contactors = true;
-
 				_set_output(true, true, cv_charge_voltage_mV, cv_charge_current_mA, output);
 
 				// [TODO] change to cv_min_current times num p
@@ -146,14 +116,6 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				}
 			}
 
-			// for (i = 0; i < total_num_cells; i++) {
-			//  if (output->balance_req[i]) {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_off_thresh_mV);
-			//  } else {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->pack_status->pack_cell_min_mV + state->pack_config->bal_on_thresh_mV);
-			//  }
-			// }
-
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
 			if(!input->contactors_closed) {
@@ -164,21 +126,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			break;
 
 		case BMS_CHARGE_BAL:
-			// output->close_contactors = false;
-			// output->charge_req->charger_on = false;
-
 			_set_output(false, false, 0, 0, output);
-
-			// bool balancing = false;
-			// for (i = 0; i < total_num_cells; i++) {
-			//  if (output->balance_req[i]) {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_off_thresh_mV);
-			//  } else {
-			//	  output->balance_req[i] = (input->pack_status->cell_voltages_mV[i] > input->balance_mV + state->pack_config->bal_on_thresh_mV);
-			//  }
-			//  if (output->balance_req[i]) balancing = true;
-			// }
-
 			bool balancing = _calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->balance_mV, state->pack_config);
 
 			// Done balancing
@@ -189,9 +137,6 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			// [TODO] add errors such as contactors opening
 			break;
 		case BMS_CHARGE_DONE:
-			// output->close_contactors = false;
-			// output->charge_req->charger_on = false;
-
 			_set_output(false, false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 
@@ -220,6 +165,10 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 	return BMS_NO_ERROR;
 }
 
+
+// checks that each cell is within some threshold of the minimum cell
+			//  voltage. uses two different thresholds based on whether 
+			//  we were just balancing or not (account for hysteresis)
 bool _calc_balance(bool *balance_req, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config) {
 	bool balancing = false;
 	int i;

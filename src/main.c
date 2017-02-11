@@ -246,7 +246,6 @@ int main(void) {
 }
 
 int hardware_test(void) {
-
     Init_BMS_Structs();
 
     Board_Chip_Init();
@@ -261,41 +260,5 @@ int hardware_test(void) {
     Board_Println("Drivers Up"); 
 
     return 0;
-    
-
-    //setup readline
-//    microrl_init(&rl, Board_Print);
-//    microrl_set_execute_callback(&rl, executerl);
-//    console_init(&bms_input, &bms_state, &console_output);
-//    Error_Init();
-//    SSM_Init(&bms_input, &bms_state, &bms_output);
-
-//    uint32_t last_count = msTicks;
-
-//  while(1) {
-//        Process_Keyboard(); //do this if you want to add the command line
-//        Process_Input(&bms_input);
-//        SSM_Step(&bms_input, &bms_state, &bms_output); 
-//        Process_Output(&bms_input, &bms_output);
-//        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
-//            break;
-//        }
-        
-        // Testing Code
-//        bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
-
-        // LED Heartbeat
-//        if (msTicks - last_count > 1000) {
-//            last_count = msTicks;
-//            Chip_GPIO_SetPinState(LPC_GPIO, LED0, 1 - Chip_GPIO_GetPinState(LPC_GPIO, LED0));     
-//        }
-//    }
-//    Board_Println_BLOCKING("GOT REKT");
-//    while(1) {
-        //set bms_outputs
-        //process_output(bms_outputs);
-        //process_keyboard()
-//    }
-//  return 0;
 }
 

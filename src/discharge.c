@@ -8,7 +8,7 @@ static uint16_t max_cell_temp_thres_C;
 // current, temperature, and voltage
 
 void Discharge_Init(BMS_STATE_T *state) {
-	state->discharge_state = BMS_DISCHARGE_OFF;
+    state->discharge_state = BMS_DISCHARGE_OFF;
 }
 
 uint32_t Calculate_Max_Current(
@@ -19,7 +19,7 @@ uint32_t Calculate_Max_Current(
 }
 
 void Discharge_Config(PACK_CONFIG_T *pack_config) {
-	total_num_cells = Get_Total_Cell_Count(pack_config);
+    total_num_cells = Get_Total_Cell_Count(pack_config);
 
     min_cell_voltage_mV = pack_config->cell_min_mV;
     max_cell_temp_thres_C = pack_config->max_cell_temp_C;
@@ -31,43 +31,43 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 }
 
 BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-	switch (input->mode_request) {
-		case BMS_SSM_MODE_INIT:
+    switch (input->mode_request) {
+        case BMS_SSM_MODE_INIT:
             // Invalid, shouldn't be requestable
-			return BMS_INVALID_SSM_STATE_ERROR;
+            return BMS_INVALID_SSM_STATE_ERROR;
 
-		case BMS_SSM_MODE_DISCHARGE:
-			if (state->discharge_state == BMS_DISCHARGE_OFF) {
-				state->discharge_state = BMS_DISCHARGE_INIT;
-			}
-			break;
+        case BMS_SSM_MODE_DISCHARGE:
+            if (state->discharge_state == BMS_DISCHARGE_OFF) {
+                state->discharge_state = BMS_DISCHARGE_INIT;
+            }
+            break;
 
         // we want to switch states (either to STANDBY/CHARGE/ERROR)
-		default: 
+        default: 
             if(state->discharge_state != BMS_DISCHARGE_OFF) {
                 state->discharge_state = BMS_DISCHARGE_DONE;
             }
-			break;
-	}
+            break;
+    }
 
 handler:
-	switch (state->discharge_state) {
-		case BMS_DISCHARGE_OFF:
-			output->close_contactors = false;
-			break;
+    switch (state->discharge_state) {
+        case BMS_DISCHARGE_OFF:
+            output->close_contactors = false;
+            break;
 
-		case BMS_DISCHARGE_INIT:
-			output->close_contactors = true;
+        case BMS_DISCHARGE_INIT:
+            output->close_contactors = true;
 
-			if (input->contactors_closed == output->close_contactors) {
-				if(input->mode_request == BMS_SSM_MODE_DISCHARGE) {
-					state->discharge_state = BMS_DISCHARGE_RUN;
-				} 
-				goto handler;
-			}
-			break;
+            if (input->contactors_closed == output->close_contactors) {
+                if(input->mode_request == BMS_SSM_MODE_DISCHARGE) {
+                    state->discharge_state = BMS_DISCHARGE_RUN;
+                } 
+                goto handler;
+            }
+            break;
 
-		case BMS_DISCHARGE_RUN:
+        case BMS_DISCHARGE_RUN:
             // error: if contactors are open when we ordered them close
             // error: if temperature gets too high shut off
             
@@ -76,13 +76,13 @@ handler:
             }
 
             uint8_t i;
-			for (i = 0; i < total_num_cells; i++) {
+            for (i = 0; i < total_num_cells; i++) {
                 if(input->pack_status->cell_voltages_mV[i] < min_cell_voltage_mV) { // [TODO] SSM is responsible for for temp and UV
                     return BMS_CELL_UNDER_VOLTAGE;
                 }
             }
 
-			if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
+            if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
                 return BMS_CELL_OVER_TEMP;
             }
 
@@ -96,17 +96,17 @@ handler:
                 return BMS_OVER_CURRENT;
             }
 
-			output->close_contactors = true;
-			break;
+            output->close_contactors = true;
+            break;
 
-		case BMS_DISCHARGE_DONE:
-			output->close_contactors = false;
+        case BMS_DISCHARGE_DONE:
+            output->close_contactors = false;
             // if contactors open, then we can turn discharge off
             if (!input->contactors_closed) {
                 state->discharge_state = BMS_DISCHARGE_OFF;
             }
-			break;
-	}
+            break;
+    }
 
     return BMS_NO_ERROR;
 }

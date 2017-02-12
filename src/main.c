@@ -6,6 +6,7 @@
 #include "eeprom_config.h"
 #include "config.h"
 #include "error_handler.h"
+#include "brusa.h"
 
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
@@ -125,15 +126,13 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	// Read hardware signal inputs
 	// update and other fields in msTicks in &input
 
-	Board_Get_Mode_Request(&console_output, bms_input); //mutates bms_input
-
-	Process_CAN_Inputs(&bms_input);	
+	Board_GetModeRequest(&console_output, bms_input);
+	Board_CAN_ProcessInput(bms_input, msTicks);	// CAN has precedence over console
 
 	// [TODO] THis should do nothing if in OWT
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_LTC6804_GetCellVoltages(&pack_status, msTicks);
 	}
-		
 
 	bms_input->msTicks = msTicks;
 }
@@ -158,6 +157,8 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 	if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
 		Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
 	}
+
+	Board_CAN_ProcessOutput(bms_output, msTicks);
 
 }
 
@@ -192,7 +193,11 @@ int main(void) {
 	Board_CAN_Init(CAN_BAUD);
 	Board_UART_Init(UART_BAUD);
 
+#ifdef DEBUG_ENABLE
+    Board_Println("Board Up (DEBUG)");
+#else
 	Board_Println("Board Up");   
+#endif
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
 	

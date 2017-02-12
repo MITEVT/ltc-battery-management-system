@@ -1,5 +1,6 @@
 #include <string.h>
 #include "board.h"
+#include "brusa.h"
 
 const uint32_t OscRateIn = 0;
 
@@ -172,11 +173,10 @@ void Board_UART_Init(uint32_t baudRateHz) {
 #endif
 }
 
-
-
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
 	CAN_Init(baudRateHz);
+	CAN_mode_request = BMS_SSM_MODE_STANDBY;
 #endif
 }
 
@@ -185,7 +185,7 @@ void Board_LED_Init(void) {
 	Chip_GPIO_Init(LPC_GPIO);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
-	#ifdef LED3
+	#ifdef LED2
 		#error "Updated Board_LED_Init()"
 	#endif
 #endif
@@ -252,73 +252,6 @@ bool Board_Are_Contactors_Closed(void) {
 	return false;
 }
 
-#ifndef TEST_HARDWARE
-void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
-	//TODO: implement function
-	// if (Chip_GPIO_GetPinState(LPC_GPIO, BAL_SW)) {
-	//	 bms_input->mode_request = BMS_SSM_MODE_BALANCE;
-	//	 bms_input->balance_mV = 3300;
-	// } else if (Chip_GPIO_GetPinState(LPC_GPIO, CHRG_SW)) {
-	//	 bms_input->mode_request = BMS_SSM_MODE_CHARGE;
-	// } else if (Chip_GPIO_GetPinState(LPC_GPIO, DISCHRG_SW)) {
-	//	 bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-	// } else {
-	//	 bms_input->mode_request = BMS_SSM_MODE_STANDBY;
-	// }
-
-	//if (console_output -> valid_mode_request) {
-	//	bms_input->mode_request = console_output->mode_request;
-	//	bms_input->balance_mV = console_output->balance_mV;
-	//} else {
-	//	bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-	//}
-
-	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
-	if (console_output -> valid_mode_request) {
-                console_mode_request = console_output->mode_request;
-                bms_input->balance_mV = console_output->balance_mV;
-        } else {
-                console_mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-        }
-
-	if (console_mode_request==BMS_SSM_MODE_STANDBY && 
-			CAN_mode_request==BMS_SSM_MODE_DISCHARGE) {
-		bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
-	} else {
-		//TODO: set bms_input->mode_request for different combinations 
-		//console_mode_request and CAN_mode_request
-	}
-
-}
-#endif
-
-/**
- * @details Reads CAN messages and empties CAN ring buffer. Mutates bms_input
- *          to reflect CAN messages received
- * 
- * @param bms_input data strcuture representing BMS inputs
- */
-void Process_CAN_Inputs(BMS_INPUT_T * bms_input) {
-	#ifdef TEST_HARDWARE
-	return;
-	#else
-	CCAN_MSG_OBJ_T rx_msg;
-	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-		const uint32_t VCU_ID = 0x010;
-		if (rx_msg.mode_id == VCU_ID) {
-			const uint8_t VCU_DISCHARGE_MODE_REQUEST = 0x01;
-			if (rx_msg.data[0] == VCU_DISCHARGE_MODE_REQUEST) {
-				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
-			} else {
-				// TODO: handle other VCU mode requests
-			}
-		} else {
-			// TODO: handle other types of CAN messages
-		}
-	}	
-	#endif
-}
-
 void Board_Init_EEPROM(void) {
 
 }
@@ -353,8 +286,6 @@ void Board_GPIO_Init(void) {
 
 }
 
-
-// [TODO] Switch to SSP1
 bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
 #ifdef TEST_HARDWARE
 	return true;
@@ -569,4 +500,99 @@ bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
 	}
 #endif
 }
+
+static bool brusa_clear_error;
+
+#ifndef TEST_HARDWARE
+void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
+	//if (console_output -> valid_mode_request) {
+	//	bms_input->mode_request = console_output->mode_request;
+	//	bms_input->balance_mV = console_output->balance_mV;
+	//} else {
+	//	bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+	//}
+
+	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
+	if (console_output -> valid_mode_request) {
+                console_mode_request = console_output->mode_request;
+                bms_input->balance_mV = console_output->balance_mV;
+        } else {
+                console_mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
+        }
+
+	if (console_mode_request==BMS_SSM_MODE_STANDBY && 
+			CAN_mode_request==BMS_SSM_MODE_DISCHARGE) {
+		bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+	} else {
+		//TODO: set bms_input->mode_request for different combinations 
+		//console_mode_request and CAN_mode_request
+	}
+
+}
+
+/**
+ * @details Reads CAN messages and empties CAN ring buffer. Mutates bms_input
+ *          to reflect CAN messages received
+ * 
+ * @param bms_input data strcuture representing BMS inputs
+ */
+void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, uint32_t msTicks) {
+	CCAN_MSG_OBJ_T rx_msg;
+	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
+		const uint32_t VCU_ID = 0x010;
+		if (rx_msg.mode_id == VCU_ID) {
+			const uint8_t VCU_DISCHARGE_MODE_REQUEST = 0x01;
+			if (rx_msg.data[0] == VCU_DISCHARGE_MODE_REQUEST) {
+				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
+			} else {
+				// TODO: handle other VCU mode requests
+			}
+		} else if (rx_msg.mode_id == NLG5_STATUS) { 
+			
+		} else if (rx_msg.mode_id == NLG5_ACT_I) {
+			NLG5_ACT_I_T act_i;
+			Brusa_DecodeActI(&act_i, &rx_msg);
+			bms_input->pack_status->pack_current_mA = act_i.output_cAmps*10; // [TODO] Consider using current sense as well
+			bms_input->pack_status->pack_voltage_mV = act_i.output_mVolts;
+		} else if (rx_msg.mode_id == NLG5_ACT_II) {
+
+		} else if (rx_msg.mode_id == NLG5_TEMP) {
+
+		} else if (rx_msg.mode_id == NLG5_ERR) {
+			if (!Brusa_CheckErr(&rx_msg)) { // We've recevied a Brusa Error Message
+				Error_Assert(ERROR_BRUSA, msTicks);
+				// We should try to clear but also assert error for count
+				brusa_clear_error = true; // [TODO] This might be bad because we have to adust error count for timing
+					// Timing idea: Brusa error msg happens as often as ctrl message
+			} else {
+				brusa_clear_error = false;
+			}
+		} else {
+			// [TODO] handle other types of CAN messages
+		}
+	}
+}
+
+static uint32_t _last_bms_ctrl = 0;
+
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, uint32_t msTicks) {
+
+	#define _bms_ctrl_time 99
+	// [TODO] Consider adding checks that in right mode just in case
+		// Easy way to turn off charger in case of accident
+    if (bms_output->charge_req->charger_on && msTicks - _last_bms_ctrl >= _bms_ctrl_time) {
+        NLG5_CTL_T brusa_control;
+        CCAN_MSG_OBJ_T temp_msg;
+        brusa_control.enable = 1;
+        brusa_control.clear_error = brusa_clear_error; // Use this to clear error
+        brusa_control.ventilation_request = 0;
+        brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
+        brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
+        brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+        Brusa_MakeCTL(&brusa_control, &temp_msg);
+        CAN_TransmitMsgObj(&temp_msg);
+        _last_bms_ctrl = msTicks;
+    }
+}
+#endif
 

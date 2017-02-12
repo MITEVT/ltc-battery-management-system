@@ -189,7 +189,12 @@ bool Board_Are_Contactors_Closed(void);
  * @param bms_input pointer to input to SSMs to modify bal and req
  * @return none
  */
-void Board_Get_Mode_Request(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
+void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
+
+
+void Board_CAN_ProcessInput(BMS_INPUT_T * bms_input, uint32_t msTicks);
+
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, uint32_t msTicks);
 
 #endif
 

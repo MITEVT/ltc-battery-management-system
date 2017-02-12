@@ -149,10 +149,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 		Board_LTC6804_DeInit(); // [TODO] Think about this
 	}
 	else if (bms_output->check_packconfig_with_ltc) {
-		bms_input->ltc_packconfig_check_done = 
-			EEPROM_CheckPackConfigWithLTC(&pack_config);
-
-		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
+		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
 	}
 
 	if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {

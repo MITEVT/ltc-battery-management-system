@@ -129,7 +129,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	Board_GetModeRequest(&console_output, bms_input);
 	Board_CAN_ProcessInput(bms_input, msTicks);	// CAN has precedence over console
 
-	// [TODO] THis should do nothing if in OWT
+	// [TODO] Board_LTC6804_ProcessInputs
+		// GetsVoltages, Does OWT, Temps
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_LTC6804_GetCellVoltages(&pack_status, msTicks);
 	}
@@ -160,6 +161,9 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
 	Board_CAN_ProcessOutput(bms_output, msTicks);
 
+	// [TODO] Board_LTC6804_ProcessOutputs
+		// balance
+
 }
 
 // [TODO] Turn off and move command prompt when others are typing....bitch
@@ -172,13 +176,43 @@ void Process_Keyboard(void) {
 	}
 }
 
-// [TODO] Rango read this
-// [TODO] Put Systick in Board
-// [TODO] Use new CAN, and CAN errors
-// [TODO] Clean up Board.c
-// [TODO, MAYBE] Update to new init order and implement reinit
-// [TODO] Make Defualt Configuration conservative
-// [TODO] Write simple contactor driver that drives LED or Relay
+// PLANNED DEMO FOR FSAE AT END OF FEB
+	// Turn on BMS
+	// Get Cell Voltages
+	// Over Serial, Balance 4mV below min
+		// If taking too long, get balance to finish by changing voltage
+	// Go back to BMS_SSM_MODE_STANDBY
+	// Use VCU to enter discharge
+		// Look at contactors, current, voltage, etc
+	// Go back to BMS_SSM_MODE_STANDBY
+	// Plug in Brusa
+	// Use serial to enter charge
+		// Look at contactors, current, voltage, etc
+	// Go back to BMS_SSM_MODE_STANDBY
+	// Modify parameters
+	// Repeat
+	// Cause Error
+	// Restart
+
+// [TODO] Figure out output timing method/checkers 		WHO:Everyone
+// [TODO] Get rid of all msTicks paramters in board.c 	WHO:Eric
+// [TODO] Write simple contactor Drivers 				WHO:Jorge
+// [TODO] Validate 2 board LTC6804 driver ** 			WHO:Eric
+// [TODO] Do heartbeats, see board.c todo 				WHO:Rango
+// [TODO] Move all board state to struct 				WHO:Rango
+// [TODO] Finish discharge!! 							WHO:Skanda
+// [TODO] Add charge to console 						WHO:Rango
+// [TODO] Finish Brusa Implementation 					WHO:Eric
+// [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
+// [TODO] Finish testing EEPROM branch **				WHO:Skanda
+// [TODO] Finish console config (unimplemented stuff) 	WHO:RANGO
+//----------------------------
+// After demo
+//
+// [TODO] Add console print handling **
+// [TODO] Make Default configuration conservative
+// [TODO] Hardware implement reinit (CAN, SPI)
+// [TODO at the end] Add console history
 int main(void) {
 
 	UNUSED(delay);

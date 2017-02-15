@@ -142,6 +142,7 @@ typedef struct BMS_INPUT {
 	bool contactors_closed;
     uint32_t msTicks;
 	BMS_PACK_STATUS_T *pack_status;
+	// [TODO] Add input charge connected
 
     // for bms initialization
     bool eeprom_packconfig_read_done;

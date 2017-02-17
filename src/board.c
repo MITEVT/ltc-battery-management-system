@@ -544,7 +544,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 			if (rx_msg.data[0] == VCU_DISCHARGE_MODE_REQUEST) {
 				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
 			} else {
-				// TODO: handle other VCU mode requests
+				// [TODO] handle other VCU mode requests
 			}
 		} else if (rx_msg.mode_id == NLG5_STATUS) { 
 			

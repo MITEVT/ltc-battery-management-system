@@ -144,6 +144,9 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 			&& Is_State_Done(state))
 			|| Is_Charge_Balance_Switch(state->curr_mode, input->mode_request)) {
 		state->curr_mode = input->mode_request;
+		output->close_contactors = false;
+		output->charge_req->charger_on = false;
+		memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
 	}
 
 	switch(state->curr_mode) {

@@ -185,7 +185,7 @@ TEST_GROUP_RUNNER(Discharge_Test) {
 	RUN_TEST_CASE(Discharge_Test, discharge_step_invalid_mode_req);
 	RUN_TEST_CASE(Discharge_Test, discharge_step_to_standby);
 	RUN_TEST_CASE(Discharge_Test, discharge_step_to_run);
-	RUN_TEST_CASE(Discharge_Test, discharge_step_undervoltage_error);
-	RUN_TEST_CASE(Discharge_Test, discharge_step_overcurrent_error);
+	// RUN_TEST_CASE(Discharge_Test, discharge_step_undervoltage_error);
+	// RUN_TEST_CASE(Discharge_Test, discharge_step_overcurrent_error);
 }
 

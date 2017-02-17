@@ -75,17 +75,6 @@ handler:
 				return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
 
-			uint8_t i;
-			for (i = 0; i < total_num_cells; i++) {
-				if(input->pack_status->cell_voltages_mV[i] < min_cell_voltage_mV) { // [TODO] SSM is responsible for for temp and UV
-					return BMS_CELL_UNDER_VOLTAGE;
-				}
-			}
-
-			if(input->pack_status->max_cell_temp_C >= max_cell_temp_thres_C) {
-				return BMS_CELL_OVER_TEMP;
-			}
-
 			// recalculate max current with new temperature
 			max_pack_current_mA = Calculate_Max_Current(
 									state->pack_config->cell_capacity_cAh,

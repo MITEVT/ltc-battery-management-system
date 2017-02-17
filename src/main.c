@@ -127,12 +127,12 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	// update and other fields in msTicks in &input
 
 	Board_GetModeRequest(&console_output, bms_input);
-	Board_CAN_ProcessInput(bms_input, msTicks);	// CAN has precedence over console
+	Board_CAN_ProcessInput(bms_input);	// CAN has precedence over console
 
 	// [TODO] Board_LTC6804_ProcessInputs
 		// GetsVoltages, Does OWT, Temps
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-		Board_LTC6804_GetCellVoltages(&pack_status, msTicks);
+		Board_LTC6804_GetCellVoltages(&pack_status);
 	}
 
 	bms_input->msTicks = msTicks;
@@ -152,14 +152,14 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 		bms_input->ltc_packconfig_check_done = 
 			EEPROM_CheckPackConfigWithLTC(&pack_config);
 
-		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 	}
 
 	if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
-		Board_LTC6804_UpdateBalanceStates(bms_output->balance_req, msTicks);
+		Board_LTC6804_UpdateBalanceStates(bms_output->balance_req);
 	}
 
-	Board_CAN_ProcessOutput(bms_output, msTicks);
+	Board_CAN_ProcessOutput(bms_output);
 
 	// [TODO] Board_LTC6804_ProcessOutputs
 		// balance
@@ -195,7 +195,6 @@ void Process_Keyboard(void) {
 	// Restart
 
 // [TODO] Figure out output timing method/checkers 		WHO:Everyone
-// [TODO] Get rid of all msTicks paramters in board.c 	WHO:Eric
 // [TODO] Write simple contactor Drivers 				WHO:Jorge
 // [TODO] Validate 2 board LTC6804 driver ** 			WHO:Eric
 // [TODO] Do heartbeats, see board.c todo 				WHO:Rango
@@ -296,7 +295,7 @@ int hardware_test(void) {
 	Board_Println("Board Up"); 
 
 	EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
-	Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+	Board_LTC6804_Init(&pack_config, cell_voltages);
 
 	Board_Println("Drivers Up"); 
 

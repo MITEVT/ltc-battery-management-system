@@ -286,7 +286,7 @@ void Board_GPIO_Init(void) {
 
 }
 
-bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks) {
+bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV) {
 #ifdef TEST_HARDWARE
 	return true;
 #else
@@ -325,12 +325,12 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 		_ltc6804_init_state = LTC6804_INIT_CFG;
 	} else if (_ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
-		bool res = Board_LTC6804_CVST(msTicks);
+		bool res = Board_LTC6804_CVST();
 		if (res) {
 			_ltc6804_init_state = LTC6804_INIT_CVST;
 		}
 	} else if (_ltc6804_init_state == LTC6804_INIT_CVST) {
-		bool res = Board_LTC6804_OpenWireTest(msTicks);
+		bool res = Board_LTC6804_OpenWireTest();
 		if (res) {
 			_ltc6804_init_state = LTC6804_INIT_DONE;
 		}
@@ -356,7 +356,7 @@ void Board_Init_Drivers(void) {
 }
 
 //[TODO] check saftey
-void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks) {
+void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -399,7 +399,7 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTi
 }
 
 //[TODO] check saftey 
-bool Board_LTC6804_CVST(uint32_t msTicks) {
+bool Board_LTC6804_CVST(void) {
 #ifdef TEST_HARDWARE
 	return false;
 #else
@@ -435,7 +435,7 @@ bool Board_LTC6804_CVST(uint32_t msTicks) {
 }
 
 //[TODO] add saftey
-void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
+void Board_LTC6804_UpdateBalanceStates(bool *balance_req) {
 #ifdef TEST_HARDWARE
 	return;
 #else
@@ -447,9 +447,8 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks) {
 #endif
 }
 
-bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks) {
+bool Board_LTC6804_ValidateConfiguration(void) {
 #ifdef TEST_HARDWARE
-	(void)(msTicks);
 	return false;
 #else
 	Board_Print("Initializing LTC6804. Verifying..");
@@ -463,7 +462,7 @@ bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks) {
 #endif
 }
 
-bool Board_LTC6804_OpenWireTest(uint32_t msTicks) {
+bool Board_LTC6804_OpenWireTest(void) {
 #ifdef TEST_HARDWARE
 #else
 	LTC6804_STATUS_T res;
@@ -505,27 +504,23 @@ static bool brusa_clear_error;
 
 #ifndef TEST_HARDWARE
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
-	//if (console_output -> valid_mode_request) {
-	//	bms_input->mode_request = console_output->mode_request;
-	//	bms_input->balance_mV = console_output->balance_mV;
-	//} else {
-	//	bms_input->mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-	//}
 
 	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
 	if (console_output -> valid_mode_request) {
-                console_mode_request = console_output->mode_request;
-                bms_input->balance_mV = console_output->balance_mV;
-        } else {
-                console_mode_request = BMS_SSM_MODE_STANDBY; // [TODO] Change this
-        }
+            console_mode_request = console_output->mode_request;
+            bms_input->balance_mV = console_output->balance_mV;
+    } else {
+            console_mode_request = BMS_SSM_MODE_STANDBY;
+    }
 
-	if (console_mode_request==BMS_SSM_MODE_STANDBY && 
-			CAN_mode_request==BMS_SSM_MODE_DISCHARGE) {
-		bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+	if (CAN_mode_request != BMS_SSM_MODE_STANDBY) {
+		bms_input->mode_request = CAN_mode_request;
+	} else if (console_mode_request != BMS_SSM_MODE_STANDBY) {
+		bms_input->mode_request = console_mode_request;
 	} else {
 		//TODO: set bms_input->mode_request for different combinations 
 		//console_mode_request and CAN_mode_request
+		bms_input->mode_request = BMS_SSM_MODE_STANDBY;
 	}
 
 }
@@ -540,7 +535,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 	// Reduce static variables
 // [TODO] Refactor to case
 // [TODO] Add heartbeat checking (new file like error_handler)
-void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, uint32_t msTicks) {
+void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 	CCAN_MSG_OBJ_T rx_msg;
 	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
 		const uint32_t VCU_ID = 0x010;
@@ -595,7 +590,7 @@ static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
 	#define NLG5_CTL_STATE_REQ(curr_mode) ()
 #endif
 
-void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, uint32_t msTicks) {
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output) {
 
 	
 	// [TODO] Consider adding checks that in right mode just in case

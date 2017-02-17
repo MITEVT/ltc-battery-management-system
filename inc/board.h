@@ -123,7 +123,7 @@ uint32_t Board_Println_BLOCKING(const char *str);
 /**
  * @details Initialize board input switch
  */
-bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV, uint32_t msTicks);
+bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV);
 
 void Board_LTC6804_DeInit(void);
 
@@ -131,18 +131,16 @@ void Board_LTC6804_DeInit(void);
  * @details get cell voltages
  *
  * @param mutable array of cell voltages
- * @param msTicks current milisecond count
  */
-void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status, uint32_t msTicks);
+void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
 
 
 /**
  * @details does a CVST
  *
- * @param msTicks current milisecond count
  * @return true if CVST shows working config, false if waiting. 
  */
-bool Board_LTC6804_CVST(uint32_t msTicks);
+bool Board_LTC6804_CVST(void);
 
 /**
  * @details balance selected cell
@@ -150,7 +148,7 @@ bool Board_LTC6804_CVST(uint32_t msTicks);
  * @param balance_requests balance_requests[i] is true if ith cell should be 
  *                         balanced, false otherwise
  */
-void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
+void Board_LTC6804_UpdateBalanceStates(bool *balance_req);
 
 /**
  * @details checks that pack configuration is consistent with number of connected LTC6804 slaves
@@ -158,9 +156,9 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req, uint32_t msTicks);
  * @param pack_config configuration of the battery pack:
  * @return true if pack configuration is consistent with number of connected LTC6804 slaves, false otherwise
  */
-bool Board_LTC6804_ValidateConfiguration(uint32_t msTicks);
+bool Board_LTC6804_ValidateConfiguration(void);
 
-bool Board_LTC6804_OpenWireTest(uint32_t msTicks);
+bool Board_LTC6804_OpenWireTest(void);
 
 /******** Contactor Board Functions ***********/
 
@@ -192,9 +190,9 @@ bool Board_Are_Contactors_Closed(void);
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
 
 
-void Board_CAN_ProcessInput(BMS_INPUT_T * bms_input, uint32_t msTicks);
+void Board_CAN_ProcessInput(BMS_INPUT_T * bms_input);
 
-void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, uint32_t msTicks);
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output);
 
 #endif
 

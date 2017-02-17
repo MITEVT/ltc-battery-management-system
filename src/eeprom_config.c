@@ -12,7 +12,8 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config);
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
 	LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
-	Load_PackConfig_Defaults(&eeprom_data_buf);
+	eeprom_packconf_buf.module_cell_count = &module_cell_count;
+	Load_PackConfig_Defaults(&eeprom_packconf_buf);
 	eeprom_data_addr[0] = EEPROM_DATA_START >> 16;
 	eeprom_data_addr[1] = (EEPROM_DATA_START & 0xFF00) >> 8;
 	eeprom_data_addr[2] = (EEPROM_DATA_START & 0xFF);
@@ -42,6 +43,7 @@ bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
 		Load_PackConfig_Defaults(pack_config);
 		return false;
 	}
+
 }
 
 static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
@@ -59,10 +61,12 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->cell_discharge_c_rating_cC = 200; // at 27 degrees C
 	pack_config->max_cell_temp_C = 50;
 	pack_config->module_cell_count[0] = 12;
+	/*
 	uint8_t i;
 	for(i = 1; i < MAX_NUM_MODULES; i++) {
 		pack_config->module_cell_count[i] = 0;
 	}
+	*/
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE, so only need to run checks

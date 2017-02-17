@@ -16,7 +16,7 @@
 #define IOCON_DISCHRG_SW IOCON_PIO1_2
 
 #define EEPROM_BAUD 600000
-#define EEPROM_CS_PIN 1, 7
+#define EEPROM_CS_PIN 0, 7
 
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
@@ -147,9 +147,9 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
 		Board_LTC6804_DeInit(); // [TODO] Think about this
-	}
-	else if (bms_output->check_packconfig_with_ltc) {
-		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages, msTicks);
+
+	} else if (bms_output->check_packconfig_with_ltc) {
+		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 	}
 
 	if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
@@ -262,7 +262,7 @@ int main(void) {
 		// LED Heartbeat
 		if (msTicks - last_count > 1000) {
 			last_count = msTicks;
-			Board_LED_Toggle(LED0);	 
+			Board_LED_Toggle(LED1);	 
 		}
 	}
 
@@ -291,10 +291,32 @@ int hardware_test(void) {
 
 	Board_Println("Board Up"); 
 
-	EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
-	Board_LTC6804_Init(&pack_config, cell_voltages);
+	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
+	// Board_LTC6804_Init(&pack_config, cell_voltages);
 
 	Board_Println("Drivers Up"); 
+
+
+	SSM_Init(&bms_input, &bms_state, &bms_output);
+	//setup readline
+	microrl_init(&rl, Board_Print);
+	microrl_set_execute_callback(&rl, executerl);
+	console_init(&bms_input, &bms_state, &console_output);
+	
+	Board_Println("Applications Up");
+
+	uint32_t last_count = msTicks;
+
+	while(1) {
+		// Process_Output(&bms_input, &bms_output);
+		Process_Keyboard();
+
+		// LED Heartbeat
+		if (msTicks - last_count > 1000) {
+			last_count = msTicks;
+			Board_LED_Toggle(LED1);	 
+		}
+	}
 
 	return 0;
 }

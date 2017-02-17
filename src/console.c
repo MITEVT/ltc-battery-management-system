@@ -273,9 +273,26 @@ static void bal(const char * const * argv) {
 	} else {
 		Board_Println("Must be in standby");
 	}
-}					   
+}	
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal};
+static void chrg(const char * const * argv) {
+	UNUSED(argv);
+	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
+			bms_state->curr_mode == BMS_SSM_MODE_CHARGE) {	
+		if (console_output->valid_mode_request) {
+			console_output->valid_mode_request = false;
+			Board_Println("chrg off");
+		} else {
+			console_output->valid_mode_request = true;
+			console_output->mode_request = BMS_SSM_MODE_CHARGE;
+			Board_Println("chrg on");
+		}
+	} else {
+		Board_Println("Must be in standby");
+	}
+}				   
+
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg};
 
 /***************************************
 		Public Functions

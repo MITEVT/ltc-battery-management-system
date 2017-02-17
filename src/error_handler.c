@@ -7,6 +7,7 @@ static const uint32_t LTC6802_PEC_timeout_count = 10;
 static const uint32_t LTC6802_CVST_timeout_count = 2;
 static const uint32_t LTC6802_OWT_timeout_count = 10;
 static const uint32_t BRUSA_count = 5;
+static const uint32_t CAN_count = 5;
 
 
 
@@ -23,6 +24,7 @@ static ERROR_HANDLER_STATUS_T handle_CELL_OVER_VOLTAGE(ERROR_STATUS_T* er_stat, 
 static ERROR_HANDLER_STATUS_T handle_CELL_OVER_TEMP(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_OVER_CURRENT(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_BRUSA(ERROR_STATUS_T* er_stat, uint32_t msTicks);
+static ERROR_HANDLER_STATUS_T handle_CAN(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 
 static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
 														handle_LTC6804_PEC,
@@ -35,7 +37,8 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
 														handle_CELL_OVER_VOLTAGE,
 														handle_CELL_OVER_TEMP,
 														handle_OVER_CURRENT,
-														handle_BRUSA};
+														handle_BRUSA,
+														handle_CAN};
 
 
 
@@ -225,6 +228,22 @@ static ERROR_HANDLER_STATUS_T handle_BRUSA(ERROR_STATUS_T* er_stat, uint32_t msT
 		return HANDLER_FINE;
 	} else {
 		if (er_stat->count < BRUSA_count) {
+			er_stat->handling = true;
+			return HANDLER_FINE;
+		} else {
+			return HANDLER_HALT;
+		}
+	}
+}
+
+static ERROR_HANDLER_STATUS_T handle_CAN(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+	(void)(msTicks);
+	if (!er_stat->error) {
+		er_stat->handling = false;
+		return HANDLER_FINE;
+	} else {
+		//[TODO] magic numbers changeme 
+		if (er_stat->count < CAN_count) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {

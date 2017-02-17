@@ -17,10 +17,11 @@ typedef enum error {
     ERROR_CELL_OVER_TEMP,
     ERROR_OVER_CURRENT,
     ERROR_BRUSA,
+    ERROR_CAN,
     ERROR_NUM_ERRORS
 } ERROR_T;
 
-static const char * const ERROR_NAMES[ERROR_BRUSA+1] = {
+static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
     "ERROR_LTC6804_PEC",
     "ERROR_LTC6804_CVST",
     "ERROR_LTC6804_OWT",
@@ -31,7 +32,8 @@ static const char * const ERROR_NAMES[ERROR_BRUSA+1] = {
     "ERROR_CELL_OVER_VOLTAGE",
     "ERROR_CELL_OVER_TEMP",
     "ERROR_OVER_CURRENT",
-    "ERROR_BRUSA" // [TODO] Remove for FSAE
+    "ERROR_BRUSA", // [TODO] Remove for FSAE
+    "ERROR_CAN"
 };
 
 typedef enum error_handler_status {

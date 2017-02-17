@@ -200,7 +200,6 @@ void Process_Keyboard(void) {
 // [TODO] Do heartbeats, see board.c todo 				WHO:Rango
 // [TODO] Move all board state to struct 				WHO:Rango
 // [TODO] Finish discharge!! 							WHO:Skanda
-// [TODO] Add charge to console 						WHO:Rango
 // [TODO] Finish Brusa Implementation 					WHO:Eric
 // [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
 // [TODO] Finish testing EEPROM branch **				WHO:Skanda

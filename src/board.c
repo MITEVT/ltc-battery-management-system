@@ -614,6 +614,12 @@ void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output) {
 			// [TODO] Add these errors with debug_enable compilation flag
 		// }
 	} 
+
+	if (CAN_GetErrorStatus()) {
+		Error_Assert(ERROR_CAN, msTicks);
+		CAN_ResetPeripheral();
+		Board_CAN_Init(CAN_BAUD);
+	}
 }
 #endif
 

@@ -7,6 +7,7 @@ typedef enum {
     C_HELP,
     C_CONFIG,
     C_BAL,
+    C_CHRG,
     NUMCOMMANDS
 } command_label_t;
 

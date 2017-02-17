@@ -16,14 +16,14 @@ static const char * const commands[] = { "get",
                             "help",
                             "config",
                             "bal",
-                            "dis",
-                            "charge"};
+                            "chrg"};
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         2 ,
                         1 ,
                         0 ,
-                        1};
+                        1 ,
+                        0};
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
 							"Set a value. Possible options:", "This", 

@@ -1,45 +1,109 @@
 #include "eeprom_config.h"
+#include "board.h"
 
+
+// TODO update eeprom driver to handle pages
 // local buf copies of packconfig
+#define DATA_BLOCK_SIZE sizeof(PACK_CONFIG_T) + CHECKSUM_BYTESIZE + VERSION_BYTESIZE + MAX_NUM_MODULES
 static uint8_t eeprom_data_buf[DATA_BLOCK_SIZE];
 static PACK_CONFIG_T eeprom_packconf_buf;
 static uint8_t module_cell_count[MAX_NUM_MODULES];
 static uint8_t eeprom_data_addr[3]; // LC1024 eeprom address length is 3 bytes
 
+static char str[10];
+
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum);
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config);
 static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config);
+static void Print_EEPROM_DataBuffer(void);
+static void Zero_EEPROM_DataBuffer(void);
+static void Run_EEPROM_Test(void);
+
+static void Zero_EEPROM_DataBuffer(void) {
+	uint8_t i;
+	for (i = 0; i < DATA_BLOCK_SIZE; i++) {
+		eeprom_data_buf[i] = 0;
+	}
+}
+
+static void Print_EEPROM_DataBuffer(void) {
+    Board_Print_BLOCKING("0x");
+    uint8_t i;
+    for(i = 0; i < DATA_BLOCK_SIZE; i++) {
+        itoa(eeprom_data_buf[i], str, 16);
+        if(eeprom_data_buf[i] < 16) {
+            Board_Print_BLOCKING("0");
+        	Board_Print_BLOCKING(str);
+        } else {
+        	Board_Print_BLOCKING(str);
+		}
+        Board_Print_BLOCKING(" ");
+    }
+    Board_Println_BLOCKING("");
+}
+
+static void Run_EEPROM_Test(void) {
+    Zero_EEPROM_DataBuffer();
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+    LC1024_ReadStatusReg(&eeprom_data_buf);
+	Board_Println_BLOCKING("Running EEPROM test...");
+
+    eeprom_data_buf[0] = 0x0E;
+    eeprom_data_buf[1] = 0x0E;
+
+    LC1024_WriteMem(&eeprom_data_addr, &eeprom_data_buf, 2);
+	Board_BlockingDelay(200);
+	
+    LC1024_ReadMem(&eeprom_data_addr, &eeprom_data_buf, 2);
+	Board_BlockingDelay(200);
+    
+    if(eeprom_data_buf[0] == 0xE) {
+        Board_Println_BLOCKING("EEPROM passed write test!");
+    } else {
+        Board_Println_BLOCKING("EEPROM failed write test!");
+    }
+}
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
 	LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
-	eeprom_packconf_buf.module_cell_count = &module_cell_count;
-	Load_PackConfig_Defaults(&eeprom_packconf_buf);
+
 	eeprom_data_addr[0] = EEPROM_DATA_START >> 16;
 	eeprom_data_addr[1] = (EEPROM_DATA_START & 0xFF00) >> 8;
 	eeprom_data_addr[2] = (EEPROM_DATA_START & 0xFF);
+
+	// Run_EEPROM_Test();
+
+	Zero_EEPROM_DataBuffer();
+	eeprom_packconf_buf.module_cell_count = &module_cell_count;
+
+	EEPROM_LoadPackConfig(&eeprom_packconf_buf);
+	Board_BlockingDelay(200);
 }
 
 // entry from Process_Output(..) in main.c, executed during start
 bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
-	LC1024_ReadMem(&eeprom_data_addr[0], &eeprom_data_buf, DATA_BLOCK_SIZE);
+	Board_Println_BLOCKING("Loading PackConfig from EEPROM...");
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_ReadMem(&eeprom_data_addr, &eeprom_data_buf, DATA_BLOCK_SIZE);
+	Board_BlockingDelay(200);
 
-	// TODO: auto-calculate pointer/alloc/idx constants with macro magic
-	//
-	// offset in the below line: we do not copy
-	// 		the module cell count ptr (1 byte) 
-	// 		+ version (2 byte) 
-	// 		+ checksum (2 byte) 
-	// 		+ max cell module (16) = 21 bytes
-	memcpy(&eeprom_packconf_buf, &eeprom_data_buf, DATA_BLOCK_SIZE-21); 
-	memcpy(&module_cell_count, &eeprom_data_buf[52], MAX_NUM_MODULES); 
-	uint16_t version = eeprom_data_buf[69];
-	uint8_t checksum = eeprom_data_buf[71];
+	// offset in the below line: we do not copy module cell count ptr (1 byte)
+	// loading into the eeprom driver packconfig buffer
+	memcpy(&eeprom_packconf_buf, &eeprom_data_buf, sizeof(PACK_CONFIG_T)-1); 
+	memcpy(&module_cell_count, &eeprom_data_buf[sizeof(PACK_CONFIG_T)], MAX_NUM_MODULES); 
+	uint16_t version = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE];
+	uint8_t checksum = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE];
 
-	if (Validate_PackConfig(&eeprom_data_buf, version, checksum)) {
-		memcpy(pack_config, &eeprom_packconf_buf, DATA_BLOCK_SIZE-21); 
+	if (Validate_PackConfig(&eeprom_packconf_buf, version, checksum)) {
+		Board_Println_BLOCKING("Passed validation, using load from EEPROM...");
+		// loading from eeprom driver packconfig buffer
+		memcpy(pack_config, &eeprom_packconf_buf, sizeof(PACK_CONFIG_T)-1); 
 		memcpy(pack_config->module_cell_count, &module_cell_count, MAX_NUM_MODULES); 
 		return true;
 	} else {
+		Board_Println_BLOCKING("Using pre-configured defaults...");
 		Load_PackConfig_Defaults(pack_config);
 		return false;
 	}
@@ -61,12 +125,11 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->cell_discharge_c_rating_cC = 200; // at 27 degrees C
 	pack_config->max_cell_temp_C = 50;
 	pack_config->module_cell_count[0] = 12;
-	/*
+	
 	uint8_t i;
 	for(i = 1; i < MAX_NUM_MODULES; i++) {
 		pack_config->module_cell_count[i] = 0;
 	}
-	*/
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE, so only need to run checks
@@ -120,21 +183,17 @@ uint8_t EEPROM_ChangeConfig(rw_loc_lable_t rw_loc, uint32_t val) {
 			break;
 	}
 
-	// TODO: auto-calculate pointer/alloc/idx constants with macro magic
-	//
-	// offset in the below line: we do not copy
-	// 		the module cell count ptr (1 byte) 
-	// 		+ version (2 byte) 
-	// 		+ checksum (2 byte) 
-	// 		+ max cell module (16) = 21 bytes
-	memcpy(&eeprom_data_buf, &eeprom_packconf_buf, DATA_BLOCK_SIZE-21); 
-	memcpy(&eeprom_data_buf[52], &module_cell_count, MAX_NUM_MODULES); 
-	eeprom_data_buf[69] = STORAGE_VERSION;
-	eeprom_data_buf[71] = Calculate_Checksum(&eeprom_packconf_buf);
-	// write config to eeprom
-	
-	LC1024_WriteMem(&eeprom_data_addr[0], &eeprom_data_buf, DATA_BLOCK_SIZE);
+	// offset in the below line: we do not copy the module cell count ptr (1 byte) 
+	memcpy(&eeprom_data_buf, &eeprom_packconf_buf, sizeof(PACK_CONFIG_T)-1); 
+	memcpy(&eeprom_data_buf[sizeof(PACK_CONFIG_T)], &module_cell_count, MAX_NUM_MODULES); 
+	eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE] = STORAGE_VERSION;
+	eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE] = Calculate_Checksum(&eeprom_packconf_buf);
 
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_WriteMem(&eeprom_data_addr, &eeprom_data_buf, DATA_BLOCK_SIZE);
+	Board_BlockingDelay(200);
+	Board_Println_BLOCKING("Finished writing pack config to EEPROM.");
 	return 0;
 }
 

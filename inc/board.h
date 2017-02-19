@@ -78,6 +78,8 @@ void Board_Headroom_Init(void);
 
 void Board_Headroom_Toggle(void);
 
+void Board_BlockingDelay(uint32_t dlyTicks);
+
 void Board_Switch_Init(void);
 
 bool Board_Switch_Read(void);

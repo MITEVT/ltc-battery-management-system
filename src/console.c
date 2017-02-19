@@ -37,6 +37,7 @@ static void get(const char * const * argv) {
 	rw_loc_lable_t rwloc;
 	uint8_t i;
 
+
 	//loop over r/w entries
 	bool foundloc = false;
 	for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
@@ -47,6 +48,8 @@ static void get(const char * const * argv) {
 	}
 
 	if (foundloc) {
+		// TO REVERT
+		EEPROM_LoadPackConfig(bms_state->pack_config);
 		char tempstr[20];
 		switch (rwloc) {
 			case RWL_cell_min_mV:
@@ -184,11 +187,13 @@ static void get(const char * const * argv) {
 
 // [TODO] Check max/min bounds and max > min
 static void set(const char * const * argv) {
+	// TO REVERT
+	/*
 	if (bms_state->curr_mode != BMS_SSM_MODE_STANDBY)
 	{
 		Board_Println("Set failed (not in standby mode)!");
 		return;
-	}
+	}*/
 	rw_loc_lable_t rwloc;
 	//loop over r/w entries
 	bool foundloc = false;

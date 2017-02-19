@@ -207,9 +207,9 @@ void Process_Keyboard(void) {
 //
 // [TODO] Add console print handling **
 // [TODO] Make Default configuration conservative
-// [TODO] Hardware implement reinit (CAN, SPI)
+// [TODO] Hardware implement reinit (SPI)
 // [TODO at the end] Add console history
-int main(void) {
+int test_hw(void) {
 
 	UNUSED(delay);
 
@@ -282,20 +282,19 @@ int main(void) {
 	return 0;
 }
 
-int hardware_test(void) {
+int main(void) {
 	Init_BMS_Structs();
 
 	Board_Chip_Init();
 	Board_GPIO_Init();
 	Board_UART_Init(UART_BAUD);
 
-	Board_Println("Board Up"); 
+	Board_Println("HW Test Board Up"); 
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
 	// Board_LTC6804_Init(&pack_config, cell_voltages);
 
-	Board_Println("Drivers Up"); 
-
+	Board_Println("HW Test Drivers Up"); 
 
 	SSM_Init(&bms_input, &bms_state, &bms_output);
 	//setup readline
@@ -303,7 +302,7 @@ int hardware_test(void) {
 	microrl_set_execute_callback(&rl, executerl);
 	console_init(&bms_input, &bms_state, &console_output);
 	
-	Board_Println("Applications Up");
+	Board_Println("HW Test Applications Up");
 
 	uint32_t last_count = msTicks;
 

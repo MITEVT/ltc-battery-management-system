@@ -111,6 +111,11 @@ uint32_t Board_Print(const char *str) {
 #endif
 }
 
+void Board_BlockingDelay(uint32_t dlyTicks) {
+	uint32_t curTicks = msTicks;
+	while ((msTicks - curTicks) < dlyTicks);
+}
+
 uint32_t Board_Println(const char *str) {
 #ifdef TEST_HARDWARE
 	return printf("%s\r\n", str);

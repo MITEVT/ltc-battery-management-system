@@ -117,7 +117,7 @@ C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/c
 #=============================================================================#
 
 COMPORT = $(word 1, $(wildcard /dev/tty.usbserial-*) $(wildcard /dev/ttyUSB*))
-BAUDRATE = 115200
+BAUDRATE = 57600
 CLOCK_OSC = 0
 
 #=============================================================================#
@@ -242,8 +242,8 @@ test : LD_FLAGS_F 	= $(LD_FLAGS_F_TEST)
 test : make_test_output_dir $(TEST_TARGET)
 	./$(TEST_TARGET)
 
-test_writeflash:  AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=hardware_test
-test_writeflash: all
+test_writeflash: AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=hardware_test
+test_writeflash: writeflash
 
 # make object files dependent on Makefile
 $(OBJS) : Makefile

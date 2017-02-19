@@ -8,7 +8,14 @@
 #include "error_handler.h"
 #include "brusa.h"
 
-#define EEPROM_CS_PIN 1, 7
+#define BAL_SW 1, 2
+#define IOCON_BAL_SW IOCON_PIO1_2
+#define CHRG_SW 1, 2
+#define IOCON_CHRG_SW IOCON_PIO1_2
+#define DISCHRG_SW 1, 2
+#define IOCON_DISCHRG_SW IOCON_PIO1_2
+
+#define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
 
@@ -140,11 +147,8 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
 		Board_LTC6804_DeInit(); // [TODO] Think about this
-	}
-	else if (bms_output->check_packconfig_with_ltc) {
-		bms_input->ltc_packconfig_check_done = 
-			EEPROM_CheckPackConfigWithLTC(&pack_config);
 
+	} else if (bms_output->check_packconfig_with_ltc) {
 		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 	} else {
 
@@ -189,7 +193,6 @@ void Process_Keyboard(void) {
 // [TODO] Move all board state to struct 				WHO:Rango
 // [TODO] Finish Brusa Implementation 					WHO:Eric
 // [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
-// [TODO] Finish testing EEPROM branch **				WHO:Skanda
 // [TODO] Finish console config (unimplemented stuff) 	WHO:RANGO
 // [TODO] PEC error fails as undervoltage				WHO:RANGO
 // [TODO] Add mod/cell to min/max and error 			WHO:Eric
@@ -198,7 +201,7 @@ void Process_Keyboard(void) {
 //
 // [TODO] Add console print handling **
 // [TODO] Make Default configuration conservative
-// [TODO] Hardware implement reinit (CAN, SPI)
+// [TODO] Hardware implement reinit (SPI)
 // [TODO at the end] Add console history
 int main(void) {
 
@@ -221,6 +224,7 @@ int main(void) {
 #endif
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
+    Board_Println_BLOCKING("Finished EEPROM init");
 	
 	Error_Init();
 	SSM_Init(&bms_input, &bms_state, &bms_output);
@@ -253,7 +257,7 @@ int main(void) {
 		// LED Heartbeat
 		if (msTicks - last_count > 1000) {
 			last_count = msTicks;
-			Board_LED_Toggle(LED0);	 
+			Board_LED_Toggle(LED1);	 
 		}
 	}
 
@@ -269,6 +273,10 @@ int main(void) {
 		//set bms_output
 		Process_Output(&bms_input, &bms_output);
 		Process_Keyboard();
+		if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {
+			Write_EEPROM_PackConfig_Defaults();
+			bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
+		}
 	}
 	return 0;
 }
@@ -280,12 +288,33 @@ int hardware_test(void) {
 	Board_GPIO_Init();
 	Board_UART_Init(UART_BAUD);
 
-	Board_Println("Board Up"); 
+	Board_Println("HW Test Board Up"); 
 
-	EEPROM_Init(LPC_SSP0, EEPROM_BAUD, EEPROM_CS_PIN);
-	Board_LTC6804_Init(&pack_config, cell_voltages);
+	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
+	// Board_LTC6804_Init(&pack_config, cell_voltages);
 
-	Board_Println("Drivers Up"); 
+	Board_Println("HW Test Drivers Up"); 
+
+	SSM_Init(&bms_input, &bms_state, &bms_output);
+	//setup readline
+	microrl_init(&rl, Board_Print);
+	microrl_set_execute_callback(&rl, executerl);
+	console_init(&bms_input, &bms_state, &console_output);
+	
+	Board_Println("HW Test Applications Up");
+
+	uint32_t last_count = msTicks;
+
+	while(1) {
+		// Process_Output(&bms_input, &bms_output);
+		Process_Keyboard();
+
+		// LED Heartbeat
+		if (msTicks - last_count > 1000) {
+			last_count = msTicks;
+			Board_LED_Toggle(LED1);	 
+		}
+	}
 
 	return 0;
 }

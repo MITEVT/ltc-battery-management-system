@@ -46,7 +46,6 @@
 #define HEADROOM 1, 3
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
-extern volatile uint32_t msTicks;
 
 typedef enum {
 	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
@@ -126,6 +125,10 @@ uint32_t Board_Println_BLOCKING(const char *str);
 bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV);
 
 void Board_LTC6804_DeInit(void);
+
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status);
+
+void Board_LTC6804_ProcessOutput(bool *balance_req);
 
 /**
  * @details get cell voltages

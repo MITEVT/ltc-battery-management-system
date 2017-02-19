@@ -124,7 +124,7 @@ static void get(const char * const * argv) {
 		}
 		if (foundloc) {
 			char tempstr[20];
-			uint32_t i;
+			uint32_t i, j, idx;
 			const ERROR_STATUS_T * error_status_vector;
 			switch (roloc) {
 				case ROL_state:
@@ -134,9 +134,14 @@ static void get(const char * const * argv) {
 					Board_Println(BMS_DISCHARGE_MODE_NAMES[bms_state->discharge_state]);
 					break;
 				case ROL_cell_voltages_mV:
-					for(i = 0; i < Get_Total_Cell_Count(bms_state->pack_config); i++) {
-					   utoa(bms_input->pack_status->cell_voltages_mV[i], tempstr, 10);
-					   Board_Println(tempstr);
+					idx = 0;
+					for (i = 0; i < bms_state->pack_config->num_modules; i++) {
+						for (j = 0; j < bms_state->pack_config->module_cell_count[i]; j++) {
+							utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
+							Board_Println_BLOCKING(tempstr);
+							idx++;
+						}
+						Board_Println_BLOCKING("----");
 					}
 					break;
 				case ROL_pack_cell_max_mV:

@@ -3,7 +3,7 @@
 
 uint8_t eeprom_table_buffer[TABLE_SIZE];
 
-uint8_t module_cell_count[] = {12};
+uint8_t module_cell_count[] = {12, 12};
 
 static void load_table_eeprom(uint8_t* eeprom_table_buffer);
 static bool validate_table_eeprom(uint8_t* eeprom_table_buffer);
@@ -16,10 +16,10 @@ static void set_config_eeprom(uint8_t* eeprom_table_buffer, PACK_CONFIG_T *pack_
 PACK_CONFIG_T pack_config_defaults;
 
 static void EEPROM_Default_Config(void) {
-	pack_config_defaults.cell_min_mV = 1000;
-	pack_config_defaults.cell_max_mV = 5000; // [TODO] Fix
-	pack_config_defaults.cell_capacity_cAh = 530;
-	pack_config_defaults.num_modules = 1;
+	pack_config_defaults.cell_min_mV = 2800;
+	pack_config_defaults.cell_max_mV = 4500; // [TODO] Fix
+	pack_config_defaults.cell_capacity_cAh = 0;
+	pack_config_defaults.num_modules = 2;
 	pack_config_defaults.cell_charge_c_rating_cC = 70;
 	pack_config_defaults.bal_on_thresh_mV = 4;
 	pack_config_defaults.bal_off_thresh_mV = 1;
@@ -141,6 +141,7 @@ static void write_set_config_defaults_eeprom(uint8_t* eeprom_table_buffer, PACK_
 
 	//[TODO] remove hack
 	pack_config->module_cell_count[0] = 12;
+	pack_config->module_cell_count[1] = 12;
 	write_table_eeprom(eeprom_table_buffer);
 	write_checksum_eeprom(eeprom_table_buffer);
 }

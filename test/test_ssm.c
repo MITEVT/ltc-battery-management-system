@@ -66,6 +66,7 @@ TEST_SETUP(SSM_Test) {
     bms_input.mode_request = BMS_SSM_MODE_STANDBY;
     bms_input.balance_mV = 0; // console request balance to mV
     bms_input.contactors_closed = false;
+    bms_input.charger_on = false;
     bms_input.msTicks = 0;
     bms_input.pack_status = &pack_status;
     bms_input.eeprom_packconfig_read_done = false;
@@ -109,7 +110,8 @@ TEST(SSM_Test, init_step_complete) {
 	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
 
     bms_input.eeprom_packconfig_read_done = true;
-    
+    bms_input.ltc_packconfig_check_done = false;
+
     Init_Step(&bms_input, &bms_state, &bms_output); 
 	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_CHECK_PACKCONFIG);
     TEST_ASSERT(bms_output.check_packconfig_with_ltc);

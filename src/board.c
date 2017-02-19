@@ -25,6 +25,9 @@ static LTC6804_OWT_RES_T ltc6804_owt_res;
 static bool _ltc6804_gcv;
 static uint32_t _ltc6804_last_gcv;
 static uint32_t _ltc6804_gcv_tick_time;
+static bool _ltc6804_owt;
+static uint32_t _ltc6804_last_owt;
+static uint32_t _ltc6804_owt_tick_time;
 
 static bool _ltc6804_initialized;
 static LTC6804_INIT_STATE_T _ltc6804_init_state;
@@ -37,6 +40,8 @@ static BMS_SSM_MODE_T CAN_mode_request;
 CCAN_MSG_OBJ_T can_rx_msg;
 
 #endif
+
+volatile uint32_t msTicks;
 // ------------------------------------------------
 // Private Functions
 
@@ -320,6 +325,9 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 		_ltc6804_gcv = false;
 		_ltc6804_last_gcv = 0;
 		_ltc6804_gcv_tick_time = 100;
+		_ltc6804_owt = true;
+		_ltc6804_last_owt = 0;
+		_ltc6804_owt_tick_time = 60000;
 
 		LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 
@@ -353,6 +361,17 @@ void Board_LTC6804_DeInit(void) {
 
 void Board_Init_Drivers(void) {
 
+}
+
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
+	Board_LTC6804_GetCellVoltages(pack_status);
+	Board_LTC6804_OpenWireTest();
+
+	// Get Temps
+}
+
+void Board_LTC6804_ProcessOutput(bool *balance_req) {
+	Board_LTC6804_UpdateBalanceStates(balance_req);
 }
 
 //[TODO] check saftey
@@ -465,6 +484,15 @@ bool Board_LTC6804_ValidateConfiguration(void) {
 bool Board_LTC6804_OpenWireTest(void) {
 #ifdef TEST_HARDWARE
 #else
+
+	if (msTicks - _ltc6804_last_owt > _ltc6804_owt_tick_time) {
+		_ltc6804_owt = true;
+	}
+
+	if (!_ltc6804_owt) {
+		return false;
+	}
+
 	LTC6804_STATUS_T res;
 	res = LTC6804_OpenWireTest(&ltc6804_config, &ltc6804_state, &ltc6804_owt_res, msTicks);
 
@@ -487,6 +515,8 @@ bool Board_LTC6804_OpenWireTest(void) {
 			return false;
 		case LTC6804_PASS:
 			Board_Println("OWT PASS");
+			_ltc6804_owt = false;
+			_ltc6804_last_owt = msTicks;
 			Error_Pass(ERROR_LTC6804_OWT);
 			return true;
 		case LTC6804_WAITING:
@@ -547,7 +577,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 				// [TODO] handle other VCU mode requests
 			}
 		} else if (rx_msg.mode_id == NLG5_STATUS) { 
-			
+						
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {
 			NLG5_ACT_I_T act_i;
 			Brusa_DecodeActI(&act_i, &rx_msg);
@@ -616,6 +646,7 @@ void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output) {
 	} 
 
 	if (CAN_GetErrorStatus()) {
+		Board_Println("CAN Error");
 		Error_Assert(ERROR_CAN, msTicks);
 		CAN_ResetPeripheral();
 		Board_CAN_Init(CAN_BAUD);

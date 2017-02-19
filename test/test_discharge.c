@@ -6,7 +6,6 @@
 #include "ssm.h"
 #include "discharge.h"
 
-#define MAX_NUM_MODULES 20
 #define MAX_CELLS_PER_MODULE 12
 
 // memory allocation for BMS_OUTPUT_T
@@ -52,8 +51,10 @@ TEST_SETUP(Discharge_Test) {
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
     SSM_Init(&bms_input, &bms_state, &bms_output);
     TEST_ASSERT_EQUAL(BMS_SSM_MODE_INIT, bms_state.curr_mode);
+    TEST_ASSERT_EQUAL(BMS_INIT_OFF, bms_state.init_state);
     SSM_Step(&bms_input, &bms_state, &bms_output); 
     bms_input.eeprom_packconfig_read_done = true;
+    TEST_ASSERT_EQUAL(BMS_INIT_READ_PACKCONFIG, bms_state.init_state);
     SSM_Step(&bms_input, &bms_state, &bms_output); 
     TEST_ASSERT_EQUAL(BMS_SSM_MODE_INIT, bms_state.curr_mode);
     bms_input.ltc_packconfig_check_done = true;

@@ -8,19 +8,9 @@
 #include "error_handler.h"
 #include "brusa.h"
 
-#define BAL_SW 1, 2
-#define IOCON_BAL_SW IOCON_PIO1_2
-#define CHRG_SW 1, 2
-#define IOCON_CHRG_SW IOCON_PIO1_2
-#define DISCHRG_SW 1, 2
-#define IOCON_DISCHRG_SW IOCON_PIO1_2
-
-#define EEPROM_BAUD 600000
 #define EEPROM_CS_PIN 1, 7
 
-#define Hertz2Ticks(freq) SystemCoreClock / freq
-
-volatile uint32_t msTicks;
+extern volatile uint32_t msTicks;
 
 static char str[10];
 
@@ -104,6 +94,7 @@ void Init_BMS_Structs(void) {
 	bms_input.contactors_closed = false;
 	bms_input.msTicks = msTicks;
 	bms_input.pack_status = &pack_status;
+	bms_input.charger_on = false;
 	bms_input.eeprom_packconfig_read_done = false;
 	bms_input.ltc_packconfig_check_done = false;
 	bms_input.eeprom_read_error = false;
@@ -126,14 +117,16 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	// Read hardware signal inputs
 	// update and other fields in msTicks in &input
 
-	Board_GetModeRequest(&console_output, bms_input);
-	Board_CAN_ProcessInput(bms_input);	// CAN has precedence over console
-
+	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+		Board_GetModeRequest(&console_output, bms_input);
+		Board_CAN_ProcessInput(bms_input);	// CAN has precedence over console
+		Board_LTC6804_ProcessInputs(&pack_status);
+	}
 	// [TODO] Board_LTC6804_ProcessInputs
 		// GetsVoltages, Does OWT, Temps
-	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-		Board_LTC6804_GetCellVoltages(&pack_status);
-	}
+	// if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+	// 	Board_LTC6804_GetCellVoltages(&pack_status);
+	// }s
 
 	bms_input->msTicks = msTicks;
 }
@@ -153,16 +146,12 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 			EEPROM_CheckPackConfigWithLTC(&pack_config);
 
 		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
+	} else {
+
+		// [TODO] Ensure this else is correct
+		Board_LTC6804_ProcessOutput(bms_output->balance_req);
+		Board_CAN_ProcessOutput(bms_output);
 	}
-
-	if (bms_state.curr_mode == BMS_SSM_MODE_CHARGE || bms_state.curr_mode == BMS_SSM_MODE_BALANCE) {
-		Board_LTC6804_UpdateBalanceStates(bms_output->balance_req);
-	}
-
-	Board_CAN_ProcessOutput(bms_output);
-
-	// [TODO] Board_LTC6804_ProcessOutputs
-		// balance
 
 }
 
@@ -196,13 +185,14 @@ void Process_Keyboard(void) {
 
 // [TODO] Figure out output timing method/checkers 		WHO:Everyone
 // [TODO] Write simple contactor Drivers 				WHO:Jorge
-// [TODO] Validate 2 board LTC6804 driver ** 			WHO:Eric
 // [TODO] Do heartbeats, see board.c todo 				WHO:Rango
 // [TODO] Move all board state to struct 				WHO:Rango
 // [TODO] Finish Brusa Implementation 					WHO:Eric
 // [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
 // [TODO] Finish testing EEPROM branch **				WHO:Skanda
 // [TODO] Finish console config (unimplemented stuff) 	WHO:RANGO
+// [TODO] PEC error fails as undervoltage				WHO:RANGO
+// [TODO] Add mod/cell to min/max and error 			WHO:Eric
 //----------------------------
 // After demo
 //

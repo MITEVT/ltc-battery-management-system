@@ -1,10 +1,13 @@
 #include <string.h>
 #include "board.h"
 #include "brusa.h"
+#include "can_constants.h"
 
 const uint32_t OscRateIn = 0;
 
 #define UART_BUFFER_SIZE 100
+#define BMS_HEARTBEAT_PERIOD 1000
+#define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 
 #ifndef TEST_HARDWARE
 static RINGBUFF_T uart_rx_ring;
@@ -35,6 +38,10 @@ static LTC6804_INIT_STATE_T _ltc6804_init_state;
 static char str[10];
 
 static BMS_SSM_MODE_T CAN_mode_request;
+
+static uint32_t last_bms_heartbeat_time = 0;
+
+static uint8_t received_discharge_request = 0;
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
@@ -90,6 +97,84 @@ void UART_IRQHandler(void) {
 void SysTick_Handler(void) {
 	msTicks++;
 }
+
+/**
+ * @details send a BMS discharge response indicating that the BMS is in discharge state
+ */
+void Send_BMS_Discharge_Response_Ready(void) {
+	uint8_t bms_discharge_bytes = 1;
+	uint8_t bms_discharge_bits = bms_discharge_bytes*8;
+	uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
+	uint8_t data[bms_discharge_bits];
+	data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__READY << max_bit_bms_discharge);
+	CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
+}
+
+/**
+ * @details send a BMS discharge response indicating that the BMS is not in discharge state
+ */
+void Send_BMS_Discharge_Response_Not_Ready(void) { 
+	uint8_t bms_discharge_bytes = 1;
+	uint8_t bms_discharge_bits = bms_discharge_bytes*8;
+        uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
+	uint8_t data[bms_discharge_bytes];
+	data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__NOT_READY << max_bit_bms_discharge);
+        CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
+}
+
+/**
+ * @details sends a BMS discharge response over CAN
+ */
+void Send_BMS_Discharge_Response(BMS_SSM_MODE_T current_state) {
+	if (current_state == BMS_SSM_MODE_DISCHARGE) {
+		Send_BMS_Discharge_Response_Ready();
+	} else {
+		Send_BMS_Discharge_Response_Not_Ready();
+	}
+}
+
+/**
+ * @details sends BMS heartbeat
+ *
+ * @param bms_state current state of the BMS
+ */
+void Send_BMS_Heartbeat(BMS_STATE_T * bms_state) {
+	const uint8_t bms_heartbeat_bytes = 2; //TODO: don't hardcode bms_heartbeat_bytes
+       	const uint8_t bms_heartbeat_bits = bms_heartbeat_bytes * 8;
+       	const uint8_t bms_heartbeat_max_bit = bms_heartbeat_bits - 1;
+       	uint8_t state = ____BMS_HEARTBEAT__STATE__INIT;
+       	uint16_t soc = 0; //TODO: compute soc in the state machine and save it in some datatype
+       	switch(bms_state->curr_mode) {
+               	case BMS_SSM_MODE_INIT:
+                       	state = ____BMS_HEARTBEAT__STATE__INIT;
+                       	break;
+               	case BMS_SSM_MODE_STANDBY:
+                       	state = ____BMS_HEARTBEAT__STATE__STANDBY;
+                       	break;
+               	case BMS_SSM_MODE_CHARGE:
+                       	state = ____BMS_HEARTBEAT__STATE__CHARGE;
+                       	break;
+               	case BMS_SSM_MODE_BALANCE:
+                       	state = ____BMS_HEARTBEAT__STATE__BALANCE;
+                       	break;
+               	case BMS_SSM_MODE_DISCHARGE:
+                       	state = ____BMS_HEARTBEAT__STATE__DISCHARGE;
+                       	break;
+               	default:
+                       	DEBUG_Print("Unrecognized mode. You should never reach here.");
+                        break;
+       	}
+       	uint16_t bms_heartbeat_data = 0 |
+               	(state << (bms_heartbeat_max_bit - __BMS_HEARTBEAT__STATE__end)) |
+               	(soc << (bms_heartbeat_max_bit - __BMS_HEARTBEAT__SOC_PERCENTAGE__end));
+	uint8_t bms_heartbeat_data_byte_chunks[bms_heartbeat_bytes];
+	bms_heartbeat_data_byte_chunks[0] = bms_heartbeat_data >> 8;
+	bms_heartbeat_data_byte_chunks[1] = bms_heartbeat_data << 8;
+       	CAN_Transmit(BMS_HEARTBEAT__id, bms_heartbeat_data_byte_chunks, bms_heartbeat_bytes);
+	last_bms_heartbeat_time = msTicks;
+
+}
+
 
 #endif
 
@@ -548,14 +633,15 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
             console_mode_request = BMS_SSM_MODE_STANDBY;
     }
 
-	if (CAN_mode_request != BMS_SSM_MODE_STANDBY) {
-		bms_input->mode_request = CAN_mode_request;
-	} else if (console_mode_request != BMS_SSM_MODE_STANDBY) {
+	if (console_mode_request == BMS_SSM_MODE_STANDBY) {
+		bms_input->mode_request == CAN_mode_request;
+	} else if (CAN_mode_request == BMS_SSM_MODE_STANDBY) {
+		bms_input->mode_request = console_mode_request;
+	} else if (console_mode_request == CAN_mode_request) {
 		bms_input->mode_request = console_mode_request;
 	} else {
-		//TODO: set bms_input->mode_request for different combinations 
-		//console_mode_request and CAN_mode_request
-		bms_input->mode_request = BMS_SSM_MODE_STANDBY;
+		DEBUG_Print("Error! Illegal combination of CAN mode request and console mode request");
+		//TODO: go into error state
 	}
 
 }
@@ -573,14 +659,23 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 	CCAN_MSG_OBJ_T rx_msg;
 	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-		const uint32_t VCU_ID = 0x010;
-		if (rx_msg.mode_id == VCU_ID) {
-			const uint8_t VCU_DISCHARGE_MODE_REQUEST = 0x01;
-			if (rx_msg.data[0] == VCU_DISCHARGE_MODE_REQUEST) {
+		if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
+			//TODO: create helper function that parses VCU heartbeat
+			if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
 				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
+			} else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
+				CAN_mode_request = BMS_SSM_MODE_STANDBY;
 			} else {
-				// [TODO] handle other VCU mode requests
+				DEBUG_Print("Unrecognized VCU heartbeat state. You should never reach here.");
 			}
+		} else if (rx_msg.mode_id == VCU_DISCHARGE_REQUEST__id) {
+			//TODO: create helper function that parses VCU discharge request message
+			if ((rx_msg.data[0]>>7) == ____VCU_DISCHARGE_REQUEST__DISCHARGE_REQUEST__ENTER_DISCHARGE) {
+				received_discharge_request = 1;
+			} else {
+				DEBUG_Print("Invalid discharge request. You should never reach here");
+			}
+			//set received_discharge_request
 		} else if (rx_msg.mode_id == NLG5_STATUS) { 
 						
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {
@@ -625,11 +720,11 @@ static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
 	#define NLG5_CTL_STATE_REQ(curr_mode) ()
 #endif
 
-void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output) {
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, BMS_STATE_T * bms_state) {
 
 	
 	// [TODO] Consider adding checks that in right mode just in case
-		// Easy way to turn off charger in case of accident
+	// Easy way to turn off charger in case of accident
 	if (bms_output->charge_req->charger_on && msTicks - _last_brusa_ctrl >= NLG5_CTL_DLY_mS) {
 		// if (NLG5_CTL_STATE_REQ(curr_mode)) {
 	        NLG5_CTL_T brusa_control;
@@ -648,6 +743,18 @@ void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output) {
 			// Error_Assert(IM FUCKED)
 			// [TODO] Add these errors with debug_enable compilation flag
 		// }
+	}
+
+	//Send BMS Heartbeat
+	if (msTicks - last_bms_heartbeat_time > BMS_HEARTBEAT_PERIOD) {
+		Send_BMS_Heartbeat(bms_state);
+		last_bms_heartbeat_time = msTicks;
+	}
+	
+	//Send BMS Discharge response
+	if (received_discharge_request) {
+		Send_BMS_Discharge_Response(bms_state->curr_mode);
+		received_discharge_request = 0;
 	} 
 
 	if (CAN_GetErrorStatus()) {

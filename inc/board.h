@@ -197,7 +197,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 
 void Board_CAN_ProcessInput(BMS_INPUT_T * bms_input);
 
-void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output);
+void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, BMS_STATE_T * bms_state);
 
 #endif
 

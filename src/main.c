@@ -138,7 +138,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	bms_input->msTicks = msTicks;
 }
 
-void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
+void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
 	// If SSM changed state, output appropriate visual indicators
 	// Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
 	
@@ -154,7 +154,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output) {
 
 		// [TODO] Ensure this else is correct
 		Board_LTC6804_ProcessOutput(bms_output->balance_req);
-		Board_CAN_ProcessOutput(bms_output);
+		Board_CAN_ProcessOutput(bms_output, bms_state);
 	}
 
 }
@@ -245,7 +245,7 @@ int main(void) {
 		Process_Keyboard(); // Handle UART Input
 		Process_Input(&bms_input); // Process Inputs to board for bms
 		SSM_Step(&bms_input, &bms_state, &bms_output);
-		Process_Output(&bms_input, &bms_output);
+		Process_Output(&bms_input, &bms_output, &bms_state);
 
 		if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
 			break; // Handler requested a Halt
@@ -271,7 +271,7 @@ int main(void) {
 
 	while(1) {
 		//set bms_output
-		Process_Output(&bms_input, &bms_output);
+		Process_Output(&bms_input, &bms_output, &bms_state);
 		Process_Keyboard();
 		if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {
 			Write_EEPROM_PackConfig_Defaults();

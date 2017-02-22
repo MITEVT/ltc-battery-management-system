@@ -634,7 +634,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
     }
 
 	if (console_mode_request == BMS_SSM_MODE_STANDBY) {
-		bms_input->mode_request == CAN_mode_request;
+		bms_input->mode_request = CAN_mode_request;
 	} else if (CAN_mode_request == BMS_SSM_MODE_STANDBY) {
 		bms_input->mode_request = console_mode_request;
 	} else if (console_mode_request == CAN_mode_request) {
@@ -671,11 +671,12 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 		} else if (rx_msg.mode_id == VCU_DISCHARGE_REQUEST__id) {
 			//TODO: create helper function that parses VCU discharge request message
 			if ((rx_msg.data[0]>>7) == ____VCU_DISCHARGE_REQUEST__DISCHARGE_REQUEST__ENTER_DISCHARGE) {
+				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
+				//set flag that tells Board_CAN_ProcessOutputs() to send discharge response message
 				received_discharge_request = 1;
 			} else {
 				DEBUG_Print("Invalid discharge request. You should never reach here");
 			}
-			//set received_discharge_request
 		} else if (rx_msg.mode_id == NLG5_STATUS) { 
 						
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {

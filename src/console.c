@@ -169,7 +169,7 @@ static void get(const char * const * argv) {
 					Board_Println(tempstr);
 					break;
 				case ROL_error:
-					error_status_vector = Error_Get_Status();
+					error_status_vector = Error_GetStatus(0);
 					for (i = 0; i < ERROR_NUM_ERRORS; ++i)
 					{
 						if (error_status_vector[i].handling || error_status_vector[i].error) {

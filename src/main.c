@@ -188,21 +188,21 @@ void Process_Keyboard(void) {
 	// Restart
 
 // [TODO] Figure out output timing method/checkers 		WHO:Everyone
-// [TODO] Write simple contactor Drivers 				WHO:Jorge
-// [TODO] Do heartbeats, see board.c todo 				WHO:Rango
-// [TODO] Move all board state to struct 				WHO:Rango
-// [TODO] Finish Brusa Implementation 					WHO:Eric
-// [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
-// [TODO] Finish console config (unimplemented stuff) 	WHO:RANGO
-// [TODO] PEC error fails as undervoltage				WHO:RANGO
+// [TODO] Write simple contactor Drivers 			WHO:Jorge
+// [TODO] Do heartbeats, see board.c todo 			WHO:Rango
+// [TODO] Move all board state to struct 			WHO:Rango
+// [TODO] Finish Brusa Implementation 				WHO:Eric
+// [TODO] Validate Brusa Error Handling ** 			WHO:Eric+Rango
+// [TODO] Finish console config (unimplemented stuff) 		WHO:RANGO
+// [TODO] PEC error fails as undervoltage			WHO:RANGO
 // [TODO] Add mod/cell to min/max and error 			WHO:Eric
 //----------------------------
 // After demo
 //
-// [TODO] Add console print handling **
-// [TODO] Make Default configuration conservative
+// [TODO] Add console print handling **				WHO:Rango
+// [TODO] Make Default configuration conservative		WHO:All
 // [TODO] Hardware implement reinit (SPI)
-// [TODO at the end] Add console history
+// [TODO at the end] Add console history			WHO:Rango
 int main(void) {
 
 	UNUSED(delay);

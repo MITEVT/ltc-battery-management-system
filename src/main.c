@@ -154,7 +154,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 
 		// [TODO] Ensure this else is correct
 		Board_LTC6804_ProcessOutput(bms_output->balance_req);
-		Board_CAN_ProcessOutput(bms_output, bms_state);
+		// Board_CAN_ProcessOutput(bms_output, bms_state);
 	}
 
 }

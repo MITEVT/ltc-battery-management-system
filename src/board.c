@@ -318,7 +318,7 @@ void Board_Headroom_Init(void){
 
 void Board_Headroom_Toggle(void){
 #ifndef TEST_HARDWARE
-	Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
+	// Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
 #endif
 }
 
@@ -656,7 +656,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 	// Reduce static variables
 // [TODO] Refactor to case
 // [TODO] Add heartbeat checking (new file like error_handler)
-void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
+void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 	CCAN_MSG_OBJ_T rx_msg;
 	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
 		if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
@@ -678,7 +678,6 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 				DEBUG_Print("Invalid discharge request. You should never reach here");
 			}
 		} else if (rx_msg.mode_id == NLG5_STATUS) { 
-						
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {
 			NLG5_ACT_I_T act_i;
 			Brusa_DecodeActI(&act_i, &rx_msg);
@@ -690,7 +689,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input) {
 
 		} else if (rx_msg.mode_id == NLG5_TEMP) {
 
-		} else if (rx_msg.mode_id == NLG5_ERR) {
+		} else if (rx_msg.mode_id == NLG5_ERR && bms_output->charge_req->charger_on) {
 			// [TODO] Distinguish errors
 			if (!Brusa_CheckErr(&rx_msg)) { // We've recevied a Brusa Error Message
 				// if (output->charge_req->charger_on) {
@@ -721,7 +720,7 @@ static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
 	#define NLG5_CTL_STATE_REQ(curr_mode) ()
 #endif
 
-void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, BMS_STATE_T * bms_state) {
+void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
 
 	
 	// [TODO] Consider adding checks that in right mode just in case
@@ -732,11 +731,21 @@ void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, BMS_STATE_T * bms_state) 
 	        CCAN_MSG_OBJ_T temp_msg;
 	        brusa_control.enable = 1;
 	        //[TODO] use Error_Get_Status(BRUSA_ERROR) to set clear_error
-	        brusa_control.clear_error = brusa_clear_error; // Use this to clear error 
+	        // brusa_control.clear_error = brusa_clear_error; // Use this to clear error 
+	        const ERROR_STATUS_T * stat = Error_GetStatus(ERROR_BRUSA);
+	        if (stat->handling) {
+	        	 brusa_control.clear_error = stat->count & 1;
+
+	        } else {
+	        	 brusa_control.clear_error = 0;
+	        	 bms_input->charger_on = true;
+	        }
 	        brusa_control.ventilation_request = 0;
 	        brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
-	        brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
-	        brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+	        // brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
+	        // brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+	        brusa_control.output_mV = 0;
+	        brusa_control.output_cA = 0;
 	        Brusa_MakeCTL(&brusa_control, &temp_msg);
 	        CAN_TransmitMsgObj(&temp_msg);
 	        _last_brusa_ctrl = msTicks;
@@ -746,15 +755,19 @@ void Board_CAN_ProcessOutput(BMS_OUTPUT_T *bms_output, BMS_STATE_T * bms_state) 
 		// }
 	}
 
+	if (!bms_output->charge_req->charger_on) {
+		bms_input->charger_on = false;
+	}
+
 	//Send BMS Heartbeat
 	if (msTicks - last_bms_heartbeat_time > BMS_HEARTBEAT_PERIOD) {
-		Send_BMS_Heartbeat(bms_state);
+		// Send_BMS_Heartbeat(bms_state);
 		last_bms_heartbeat_time = msTicks;
 	}
 	
 	//Send BMS Discharge response
 	if (received_discharge_request) {
-		Send_BMS_Discharge_Response(bms_state->curr_mode);
+		// Send_BMS_Discharge_Response(bms_state->curr_mode);
 		received_discharge_request = 0;
 	} 
 

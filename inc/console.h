@@ -16,14 +16,16 @@ static const char * const commands[] = { "get",
                             "help",
                             "config",
                             "bal",
-                            "chrg"};
+                            "chrg",
+                            "config_def"};
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         2 ,
                         1 ,
                         0 ,
                         1 ,
-                        0};
+                        0 ,
+                        0 };
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
 							"Set a value. Possible options:", "This", 
@@ -88,6 +90,7 @@ typedef void (* const EXECUTE_HANDLER)(const char * const *);
 
 typedef struct {
     bool valid_mode_request;
+    bool config_default;
     BMS_SSM_MODE_T mode_request;
     uint32_t balance_mV;
 } CONSOLE_OUTPUT_T;

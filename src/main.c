@@ -155,6 +155,10 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 	}
 	
 	if (bms_output->read_eeprom_packconfig){
+		if(console_output.config_default){
+			Write_EEPROM_PackConfig_Defaults();
+			console_output.config_default = false;
+		}
 		bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
@@ -283,7 +287,8 @@ int main(void) {
 		//set bms_output
 		Process_Output(&bms_input, &bms_output, &bms_state);
 		Process_Keyboard();
-		if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {
+		if(bms_state.curr_mode == BMS_SSM_MODE_INIT && true) {
+			console_output.config_default = false;
 			Write_EEPROM_PackConfig_Defaults();
 			bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
 		}

@@ -27,6 +27,10 @@
 
 #define LED0 2, 8
 #define LED1 2, 10
+#define LED2 1, 3 // pin 39
+#define IOCON_LED2 IOCON_PIO1_3
+#define CTR_SWTCH 1, 4 // pin 40 on lpc24, used as input 
+#define IOCON_CTR_SWTCH IOCON_PIO1_4
 
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
@@ -35,15 +39,14 @@
 #define DISCHRG_SW 1, 2
 #define IOCON_DISCHRG_SW IOCON_PIO1_2
 
-#define SWITCH 0, 1
-
 #define UART_BUFFER_SIZE 100 // may need to change based on number of BMS size, Rx and Tx size
 
 #define CONTACTOR_P 2, 8
 #define CONTACTOR_N 2, 7
 #define CONTACTOR_PRE 2, 1
 
-#define HEADROOM 1, 3
+#define HEADROOM 3, 2
+#define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
 
@@ -79,9 +82,7 @@ void Board_Headroom_Toggle(void);
 
 void Board_BlockingDelay(uint32_t dlyTicks);
 
-void Board_Switch_Init(void);
-
-bool Board_Switch_Read(void);
+bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin);
 
 void Board_CAN_Init(uint32_t baudRateHz);
 

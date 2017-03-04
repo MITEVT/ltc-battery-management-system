@@ -241,17 +241,6 @@ void Board_CAN_Init(uint32_t baudRateHz){
 #endif
 }
 
-void Board_LED_Init(void) {
-#ifndef TEST_HARDWARE
-	Chip_GPIO_Init(LPC_GPIO);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
-	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
-	#ifdef LED2
-		#error "Updated Board_LED_Init()"
-	#endif
-#endif
-}
-
 void Board_LED_On(uint8_t led_gpio, uint8_t led_pin) {
 #ifndef TEST_HARDWARE
 	Chip_GPIO_SetPinOutHigh(LPC_GPIO, led_gpio, led_pin);
@@ -271,15 +260,9 @@ void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin) {
 #endif
 }
 
-
 void Board_Headroom_Init(void){
-#ifndef TEST_HARDWARE
-#if (HEADROOM != (1, 3))
-	#error "Must Refresh this PinMuxSet"
-#endif
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_3, IOCON_FUNC1);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_HEADROOM, IOCON_FUNC1);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, HEADROOM);
-#endif
 }
 
 void Board_Headroom_Toggle(void){
@@ -288,19 +271,8 @@ void Board_Headroom_Toggle(void){
 #endif
 }
 
-void Board_Switch_Init(void) {
-#ifndef TEST_HARDWARE
-	Chip_GPIO_Init(LPC_GPIO);
-	Chip_GPIO_SetPinDIRInput(LPC_GPIO, SWITCH);
-#endif
-}
-
-bool Board_Switch_Read(void) {
-#ifdef TEST_HARDWARE
-	return 0;
-#else
-	return Chip_GPIO_GetPinState(LPC_GPIO, SWITCH);
-#endif
+bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
+	return Chip_GPIO_GetPinState(LPC_GPIO, gpio_port, pin);
 }
 
 void Board_Close_Contactors(bool close_contactors) {
@@ -322,9 +294,19 @@ void Board_GPIO_Init(void) {
 	// [TODO] verify that pins don't collide
 	//  move pin selections to preprocesser defines
 	Chip_GPIO_Init(LPC_GPIO);
+
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
+	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	/* MISO1 */ 
+	Chip_GPIO_SetPinDIRInput(LPC_GPIO, CTR_SWTCH);
+
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
 	Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
+	Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
 	Board_Headroom_Init();
+
+	// Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CTR_SWTCH, IOCON_MODE_PULLUP);
 
 	Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);

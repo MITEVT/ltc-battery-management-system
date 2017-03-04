@@ -123,6 +123,13 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	// Read pack status
 	// Read hardware signal inputs
 	// update and other fields in msTicks in &input
+	
+	// Contactor Mocking
+	if(Board_Switch_Read(CTR_SWTCH) == 0) {
+		bms_input->contactors_closed = true;
+	} else {
+		bms_input->contactors_closed = false;
+	}
 
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_GetModeRequest(&console_output, bms_input);
@@ -141,6 +148,11 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
 	// If SSM changed state, output appropriate visual indicators
 	// Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+	if(bms_output->close_contactors) {
+		Board_LED_On(LED2);
+	} else {
+		Board_LED_Off(LED2);
+	}
 	
 	if (bms_output->read_eeprom_packconfig){
 		bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
@@ -211,9 +223,7 @@ int main(void) {
 
 	Board_Chip_Init();
 	Board_GPIO_Init();
-	Board_LED_Init();
 	Board_Headroom_Init();
-	Board_Switch_Init();
 	Board_CAN_Init(CAN_BAUD);
 	Board_UART_Init(UART_BAUD);
 

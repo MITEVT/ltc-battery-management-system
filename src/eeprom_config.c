@@ -129,7 +129,6 @@ void Write_EEPROM_PackConfig_Defaults(void) {
 }
 
 static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
-<<<<<<< HEAD
 	pack_config->cell_min_mV = 2800;
 	pack_config->cell_max_mV = 4200;
 	pack_config->cell_capacity_cAh = 250;

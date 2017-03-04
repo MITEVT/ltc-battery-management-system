@@ -210,6 +210,15 @@ uint32_t Board_Println(const char *str) {
 #endif
 }
 
+uint32_t Board_PrintNum(uint32_t a, uint8_t base) {
+#ifdef TEST_HARDWARE
+	return printf("%d", a);
+#else
+	itoa(a, str, base);
+	return Board_Print(str);
+#endif
+}
+
 uint32_t Board_Write(const char *str, uint32_t count) {
 #ifdef TEST_HARDWARE
 	return printf("%.*s", count, str);
@@ -373,8 +382,8 @@ void Board_GPIO_Init(void) {
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_1, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* SCK1 */
 
 	//SSP for LTC6804
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MISO0 */ 
-	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_INACT));	/* MOSI0 */
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_8, (IOCON_FUNC1 | IOCON_MODE_PULLUP));	/* MISO0 */ 
+	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_PULLUP));	/* MOSI0 */
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));	/* SCK0 */
 	Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 #endif
@@ -714,6 +723,7 @@ static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
 // [TODO] Make timing.h that has this (or board.h)
 	// Make pythong script generate
 #define NLG5_CTL_DLY_mS 99
+// #define NLG5_CTL_DLY_mS 1000
 #ifdef DEBUG_ENABLE
 	#define NLG5_CTL_STATE_REQ(curr_mode) (curr_mode==ASDF && conditional)
 #else
@@ -726,33 +736,34 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
 	// [TODO] Consider adding checks that in right mode just in case
 	// Easy way to turn off charger in case of accident
 	if (bms_output->charge_req->charger_on && msTicks - _last_brusa_ctrl >= NLG5_CTL_DLY_mS) {
-		// if (NLG5_CTL_STATE_REQ(curr_mode)) {
-	        NLG5_CTL_T brusa_control;
-	        CCAN_MSG_OBJ_T temp_msg;
-	        brusa_control.enable = 1;
-	        //[TODO] use Error_Get_Status(BRUSA_ERROR) to set clear_error
-	        // brusa_control.clear_error = brusa_clear_error; // Use this to clear error 
-	        const ERROR_STATUS_T * stat = Error_GetStatus(ERROR_BRUSA);
-	        if (stat->handling) {
-	        	 brusa_control.clear_error = stat->count & 1;
+        // NLG5_CTL_T brusa_control;
+        // CCAN_MSG_OBJ_T temp_msg;
+        // brusa_control.enable = 1;
+        // const ERROR_STATUS_T * stat = Error_GetStatus(ERROR_BRUSA);
+        // if (stat->handling) {
+        // 	 brusa_control.clear_error = stat->count & 1;
 
-	        } else {
-	        	 brusa_control.clear_error = 0;
-	        	 bms_input->charger_on = true;
-	        }
-	        brusa_control.ventilation_request = 0;
-	        brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
-	        // brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
-	        // brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
-	        brusa_control.output_mV = 0;
-	        brusa_control.output_cA = 0;
-	        Brusa_MakeCTL(&brusa_control, &temp_msg);
-	        CAN_TransmitMsgObj(&temp_msg);
-	        _last_brusa_ctrl = msTicks;
-	    // } else {
-			// Error_Assert(IM FUCKED)
-			// [TODO] Add these errors with debug_enable compilation flag
-		// }
+        // } else {
+        // 	 brusa_control.clear_error = 0;
+        // 	 bms_input->charger_on = true;
+        // }
+        // brusa_control.ventilation_request = 0;
+        // brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
+        // // brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
+        // // brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+        // brusa_control.output_mV = 0;
+        // brusa_control.output_cA = 0;
+        // Brusa_MakeCTL(&brusa_control, &temp_msg);
+        // CAN_TransmitMsgObj(&temp_msg);
+        _last_brusa_ctrl = msTicks;
+
+        bms_input->charger_on = true;
+        Board_Print("B_V: ");
+        Board_PrintNum(bms_output->charge_req->charge_voltage_mV, 10);
+        Board_Println("");
+        Board_Print("B_C: ");
+        Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
+        Board_Println("");
 	}
 
 	if (!bms_output->charge_req->charger_on) {

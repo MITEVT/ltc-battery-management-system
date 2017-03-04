@@ -46,6 +46,9 @@ TEST_SETUP(Charge_Test) {
 	config.bal_on_thresh_mV = 4;
 	config.bal_off_thresh_mV = 1;
 	config.pack_cells_p = 1;
+	config.cc_cell_voltage_mV = CELL_MAX;
+	config.cv_min_current_mA = 100;
+	config.cv_min_current_ms = 100;	
 
 	input.mode_request = BMS_SSM_MODE_STANDBY;
 	input.balance_mV = 0;
@@ -54,6 +57,7 @@ TEST_SETUP(Charge_Test) {
 	input.pack_status->cell_voltages_mV = cell_voltages_mV;
 	input.pack_status->pack_cell_max_mV = CELL_MAX;
 	input.charger_on = false;
+	input.msTicks = 0;
     
 	output.charge_req = &_charge_req;
 	output.balance_req = balance_requests;
@@ -382,6 +386,56 @@ TEST(Charge_Test, to_bal) {
 	Test_Charge_SM_Shutdown();
 }
 
+TEST(Charge_Test, to_cv_finish) {
+	printf("to_cv");
+	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
+
+	input.mode_request = BMS_SSM_MODE_CHARGE;
+	input.contactors_closed = true;
+	input.charger_on = true;
+	input.pack_status->pack_cell_min_mV = 3599;
+	input.pack_status->pack_cell_max_mV = 3600;
+	cell_voltages_mV[0] = 3599; cell_voltages_mV[1] = 3600; cell_voltages_mV[2] = 3599; cell_voltages_mV[3] = 3600;
+
+	Charge_Step(&input, &state, &output);
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CV, state.charge_state);
+	TEST_ASSERT_TRUE(output.close_contactors);
+    TEST_ASSERT_TRUE(output.charge_req->charger_on);
+    int i;
+    for (i = 0; i < TOTAL_CELLS; i++) {
+            TEST_ASSERT_FALSE(output.balance_req[i]);
+    }
+	
+	Charge_Step(&input, &state, &output);	
+	TEST_ASSERT_EQUAL(BMS_CHARGE_CV, state.charge_state);
+	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CV_CHARGE_VOLTAGE);
+	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CV_CHARGE_CURRENT);
+	TEST_ASSERT_TRUE(output.charge_req->charger_on);
+	TEST_ASSERT_TRUE(output.close_contactors);
+
+	input.pack_status->pack_current_mA = 99;
+	for (i = 0; i < config.cv_min_current_ms; i++) {
+		Charge_Step(&input, &state, &output);	
+		TEST_ASSERT_EQUAL(BMS_CHARGE_CV, state.charge_state);
+		TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, CV_CHARGE_VOLTAGE);
+		TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, CV_CHARGE_CURRENT);
+		TEST_ASSERT_TRUE(output.charge_req->charger_on);
+		TEST_ASSERT_TRUE(output.close_contactors);
+		input.msTicks++;
+	}
+
+	Charge_Step(&input, &state, &output);	
+	TEST_ASSERT_EQUAL(BMS_CHARGE_DONE, state.charge_state);
+	TEST_ASSERT_EQUAL(output.charge_req->charge_voltage_mV, 0);
+	TEST_ASSERT_EQUAL(output.charge_req->charge_current_mA, 0);
+	TEST_ASSERT_FALSE(output.charge_req->charger_on);
+	TEST_ASSERT_FALSE(output.close_contactors);
+
+
+	
+	Test_Charge_SM_Shutdown();
+}
+
 /*
  * Testing strategy:
  *   - Test standby mode requests
@@ -469,6 +523,7 @@ TEST_GROUP_RUNNER(Charge_Test) {
 	RUN_TEST_CASE(Charge_Test, to_cv_w_bal);
 	RUN_TEST_CASE(Charge_Test, to_cc_to_cv);
 	RUN_TEST_CASE(Charge_Test, to_bal);
+	RUN_TEST_CASE(Charge_Test, to_cv_finish);
 	RUN_TEST_CASE(Charge_Test, test_standby_mode_request_from_charge_init);
 }
 

@@ -387,7 +387,7 @@ TEST(Charge_Test, to_bal) {
 }
 
 TEST(Charge_Test, to_cv_finish) {
-	printf("to_cv");
+	printf("to_cv_finish");
 	TEST_ASSERT_EQUAL(state.charge_state, BMS_CHARGE_OFF);
 
 	input.mode_request = BMS_SSM_MODE_CHARGE;
@@ -431,8 +431,6 @@ TEST(Charge_Test, to_cv_finish) {
 	TEST_ASSERT_FALSE(output.charge_req->charger_on);
 	TEST_ASSERT_FALSE(output.close_contactors);
 
-
-	
 	Test_Charge_SM_Shutdown();
 }
 

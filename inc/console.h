@@ -17,6 +17,7 @@ static const char * const commands[] = { "get",
                             "config",
                             "bal",
                             "chrg",
+                            "dis",
                             "config_def"};
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
@@ -24,6 +25,7 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         1 ,
                         0 ,
                         1 ,
+                        0 ,
                         0 ,
                         0 };
 

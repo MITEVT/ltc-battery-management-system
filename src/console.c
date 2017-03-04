@@ -297,6 +297,23 @@ static void chrg(const char * const * argv) {
 	}
 }	
 
+static void dis(const char * const * argv) {
+	UNUSED(argv);
+	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
+			bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) {	
+		if (console_output->valid_mode_request) {
+			console_output->valid_mode_request = false;
+			Board_Println("dis off");
+		} else {
+			console_output->valid_mode_request = true;
+			console_output->mode_request = BMS_SSM_MODE_DISCHARGE;
+			Board_Println("dis on");
+		}
+	} else {
+		Board_Println("Must be in standby");
+	}
+}	
+
 static void config_def(const char * const * argv) {
 	UNUSED(argv);
 	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
@@ -307,7 +324,7 @@ static void config_def(const char * const * argv) {
 	}
 }			   
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, config_def};
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def};
 
 /***************************************
 		Public Functions

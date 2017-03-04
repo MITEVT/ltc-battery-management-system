@@ -13,10 +13,10 @@ static uint8_t eeprom_data_addr[3]; // LC1024 eeprom address length is 3 bytes
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum);
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config);
 static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config);
-static void Print_EEPROM_DataBuffer(void);
 static void Zero_EEPROM_DataBuffer(void);
-static void Run_EEPROM_Test(void);
 static void Write_PackConfig_EEPROM(void);
+// static void Print_EEPROM_DataBuffer(void);
+// static void Run_EEPROM_Test(void);
 
 static void Zero_EEPROM_DataBuffer(void) {
 	uint8_t i;
@@ -41,39 +41,35 @@ static void Zero_EEPROM_DataBuffer(void) {
 //     Board_Println_BLOCKING("");
 // }
 
-static void Run_EEPROM_Test(void) {
-    Zero_EEPROM_DataBuffer();
-    LC1024_WriteEnable();
-    LC1024_WriteEnable();
-    LC1024_ReadStatusReg(eeprom_data_buf);
-	Board_Println_BLOCKING("Running EEPROM test...");
-
-    eeprom_data_buf[0] = 0x0E;
-    eeprom_data_buf[1] = 0x0E;
-
-    LC1024_WriteMem(eeprom_data_addr, eeprom_data_buf, 2);
-	Board_BlockingDelay(200);
-	
-    LC1024_ReadMem(eeprom_data_addr, eeprom_data_buf, 2);
-	Board_BlockingDelay(200);
-    
-    if(eeprom_data_buf[0] == 0xE) {
-        Board_Println_BLOCKING("EEPROM passed write test!");
-    } else {
-        Board_Println_BLOCKING("EEPROM failed write test!");
-    }
-}
+// static void Run_EEPROM_Test(void) {
+//     Zero_EEPROM_DataBuffer();
+//     LC1024_WriteEnable();
+//     LC1024_WriteEnable();
+//     LC1024_ReadStatusReg(eeprom_data_buf);
+// 	Board_Println_BLOCKING("Running EEPROM test...");
+// 
+//     eeprom_data_buf[0] = 0x0E;
+//     eeprom_data_buf[1] = 0x0E;
+// 
+//     LC1024_WriteMem(eeprom_data_addr, eeprom_data_buf, 2);
+// 	Board_BlockingDelay(200);
+// 	
+//     LC1024_ReadMem(eeprom_data_addr, eeprom_data_buf, 2);
+// 	Board_BlockingDelay(200);
+//     
+//     if(eeprom_data_buf[0] == 0xE) {
+//         Board_Println_BLOCKING("EEPROM passed write test!");
+//     } else {
+//         Board_Println_BLOCKING("EEPROM failed write test!");
+//     }
+// }
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
 	LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
 
-	// eeprom_data_addr[0] = EEPROM_DATA_START >> 16;
-	// eeprom_data_addr[1] = (EEPROM_DATA_START & 0xFF00) >> 8;
-	// eeprom_data_addr[2] = (EEPROM_DATA_START & 0xFF);
-
-	eeprom_data_addr[0] = 0x00;
-	eeprom_data_addr[1] = 0x00;
-	eeprom_data_addr[2] = 0x00;
+	eeprom_data_addr[0] = EEPROM_DATA_START >> 16;
+	eeprom_data_addr[1] = (EEPROM_DATA_START & 0xFF00) >> 8;
+	eeprom_data_addr[2] = (EEPROM_DATA_START & 0xFF);
 
 	// Run_EEPROM_Test();
 

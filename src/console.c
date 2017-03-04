@@ -295,9 +295,19 @@ static void chrg(const char * const * argv) {
 	} else {
 		Board_Println("Must be in standby");
 	}
-}				   
+}	
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg};
+static void config_def(const char * const * argv) {
+	UNUSED(argv);
+	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
+	{
+		bms_state->curr_mode = BMS_SSM_MODE_INIT;
+		bms_state->init_state = BMS_INIT_OFF;
+		console_output->config_default = true;
+	}
+}			   
+
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, config_def};
 
 /***************************************
 		Public Functions
@@ -309,6 +319,7 @@ void console_init(BMS_INPUT_T * input, BMS_STATE_T * state, CONSOLE_OUTPUT_T *co
 	console_output = con_output;
 	console_output->valid_mode_request = false;
 	console_output->mode_request = BMS_SSM_MODE_STANDBY;
+	console_output->config_default = false;
 }
 
 void executerl(uint32_t argc, const char * const * argv){

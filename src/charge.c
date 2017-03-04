@@ -89,7 +89,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			if(!input->contactors_closed) {
 				// [TODO] Consider setting outputs to zero
-				return BMS_CONTACTORS_ERRONEOUS_STATE;
+				_set_output(true, false, 0, 0, output);
+				state->charge_state = BMS_CHARGE_INIT;
+				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
 
 			break;
@@ -120,7 +122,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			if(!input->contactors_closed) {
 				// [TODO] Consider setting outputs to zero
-				return BMS_CONTACTORS_ERRONEOUS_STATE;
+				_set_output(true, false, 0, 0, output);
+				state->charge_state = BMS_CHARGE_INIT;
+				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
 
 			break;
@@ -132,6 +136,13 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			// Done balancing
 			if (!balancing) {
 				state->charge_state = BMS_CHARGE_DONE;
+			}
+
+			if(input->contactors_closed) {
+				// [TODO] Consider setting outputs to zero
+				_set_output(false, false, 0, 0, output);
+				state->charge_state = BMS_CHARGE_INIT;
+				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
 
 			// [TODO] add errors such as contactors opening

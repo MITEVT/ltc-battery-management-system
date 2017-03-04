@@ -151,7 +151,6 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 	} else if (bms_output->check_packconfig_with_ltc) {
 		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 	} else {
-
 		// [TODO] Ensure this else is correct
 		Board_LTC6804_ProcessOutput(bms_output->balance_req);
 		Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);

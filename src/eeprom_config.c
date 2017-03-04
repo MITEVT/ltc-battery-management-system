@@ -132,8 +132,9 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->cell_min_mV = 2800;
 	pack_config->cell_max_mV = 4200;
 	pack_config->cell_capacity_cAh = 250;
-	pack_config->num_modules = 1;
-	pack_config->cell_charge_c_rating_cC = 50;
+	pack_config->num_modules = 2;
+	// pack_config->cell_charge_c_rating_cC = 50;
+	pack_config->cell_charge_c_rating_cC = 05;
 	pack_config->bal_on_thresh_mV = 4;
 	pack_config->bal_off_thresh_mV = 1;
 	pack_config->pack_cells_p = 12;

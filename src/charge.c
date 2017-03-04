@@ -65,7 +65,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			break;
 
 		case BMS_CHARGE_INIT:
-			_set_output((input->mode_request == BMS_SSM_MODE_CHARGE), (input->mode_request == BMS_SSM_MODE_CHARGE), 0, 0, output);
+			_set_output((input->mode_request == BMS_SSM_MODE_CHARGE), false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			
 			if (input->contactors_closed == output->close_contactors && input->charger_on == output->charge_req->charger_on) {

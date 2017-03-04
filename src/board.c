@@ -684,34 +684,36 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
 	// [TODO] Consider adding checks that in right mode just in case
 	// Easy way to turn off charger in case of accident
 	if (bms_output->charge_req->charger_on && msTicks - _last_brusa_ctrl >= NLG5_CTL_DLY_mS) {
-        // NLG5_CTL_T brusa_control;
-        // CCAN_MSG_OBJ_T temp_msg;
-        // brusa_control.enable = 1;
-        // const ERROR_STATUS_T * stat = Error_GetStatus(ERROR_BRUSA);
-        // if (stat->handling) {
-        // 	 brusa_control.clear_error = stat->count & 1;
-
-        // } else {
-        // 	 brusa_control.clear_error = 0;
-        // 	 bms_input->charger_on = true;
-        // }
-        // brusa_control.ventilation_request = 0;
-        // brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
-        // // brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
-        // // brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+        NLG5_CTL_T brusa_control;
+        CCAN_MSG_OBJ_T temp_msg;
+        brusa_control.enable = 1;
+        brusa_control.ventilation_request = 0;
+        brusa_control.max_mains_cAmps = 1000; // [TODO] Magic Numbers
+        brusa_control.output_mV = bms_output->charge_req->charge_voltage_mV;
+        brusa_control.output_cA = bms_output->charge_req->charge_current_mA / 10;
+        const ERROR_STATUS_T * stat = Error_GetStatus(ERROR_BRUSA);
+        if (stat->handling) {
+        	brusa_control.clear_error = stat->count & 1;
+        	brusa_control.output_mV = 0;
+        	brusa_control.output_cA = 0;
+        	bms_input->charger_on = false;
+        } else {
+        	 brusa_control.clear_error = 0;
+        	 bms_input->charger_on = true;
+        }
         // brusa_control.output_mV = 0;
         // brusa_control.output_cA = 0;
-        // Brusa_MakeCTL(&brusa_control, &temp_msg);
-        // CAN_TransmitMsgObj(&temp_msg);
+        Brusa_MakeCTL(&brusa_control, &temp_msg);
+        CAN_TransmitMsgObj(&temp_msg);
         _last_brusa_ctrl = msTicks;
 
-        bms_input->charger_on = true;
-        Board_Print("B_V: ");
-        Board_PrintNum(bms_output->charge_req->charge_voltage_mV, 10);
-        Board_Println("");
-        Board_Print("B_C: ");
-        Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
-        Board_Println("");
+        // bms_input->charger_on = true;
+        // Board_Print("B_V: ");
+        // Board_PrintNum(bms_output->charge_req->charge_voltage_mV, 10);
+        // Board_Println("");
+        // Board_Print("B_C: ");
+        // Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
+        // Board_Println("");
 	}
 
 	if (!bms_output->charge_req->charger_on) {

@@ -97,8 +97,8 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
 	return HANDLER_FINE;
 }
 
-const ERROR_STATUS_T * Error_Get_Status(void) {
-	return error_vector;
+const ERROR_STATUS_T * Error_GetStatus(ERROR_T er_t) {
+	return &error_vector[er_t];
 }
 
 // [TODO] Refactor similiar functions

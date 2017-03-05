@@ -169,7 +169,7 @@ static void get(const char * const * argv) {
 					Board_Println(tempstr);
 					break;
 				case ROL_error:
-					error_status_vector = Error_Get_Status();
+					error_status_vector = Error_GetStatus(0);
 					for (i = 0; i < ERROR_NUM_ERRORS; ++i)
 					{
 						if (error_status_vector[i].handling || error_status_vector[i].error) {
@@ -295,9 +295,36 @@ static void chrg(const char * const * argv) {
 	} else {
 		Board_Println("Must be in standby");
 	}
-}				   
+}	
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg};
+static void dis(const char * const * argv) {
+	UNUSED(argv);
+	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
+			bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) {	
+		if (console_output->valid_mode_request) {
+			console_output->valid_mode_request = false;
+			Board_Println("dis off");
+		} else {
+			console_output->valid_mode_request = true;
+			console_output->mode_request = BMS_SSM_MODE_DISCHARGE;
+			Board_Println("dis on");
+		}
+	} else {
+		Board_Println("Must be in standby");
+	}
+}	
+
+static void config_def(const char * const * argv) {
+	UNUSED(argv);
+	if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
+	{
+		bms_state->curr_mode = BMS_SSM_MODE_INIT;
+		bms_state->init_state = BMS_INIT_OFF;
+		console_output->config_default = true;
+	}
+}			   
+
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def};
 
 /***************************************
 		Public Functions
@@ -309,6 +336,7 @@ void console_init(BMS_INPUT_T * input, BMS_STATE_T * state, CONSOLE_OUTPUT_T *co
 	console_output = con_output;
 	console_output->valid_mode_request = false;
 	console_output->mode_request = BMS_SSM_MODE_STANDBY;
+	console_output->config_default = false;
 }
 
 void executerl(uint32_t argc, const char * const * argv){

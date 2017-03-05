@@ -1,7 +1,7 @@
-#ifndef _EEPROM_CONFIG_H
-#define _EEPROM_CONFIG_H
+#ifndef _EEPROM_CONFIG_H_
+#define _EEPROM_CONFIG_H_
 
-#include <stddef.h>
+
 #include "chip.h"
 #include "state_types.h"
 #include "console_types.h"

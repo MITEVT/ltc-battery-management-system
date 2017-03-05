@@ -181,4 +181,6 @@ SECTIONS
 	/* [TODO] Figure out alternative to this? Maybe check against RAM size */
 
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
+	ASSERT(__StackLimit >= ORIGIN(RAM), "region RAM overflowed with stack")
+	ASSERT(__StackLimit >= __bss_end__, "stack may overflow into BSS")
 }

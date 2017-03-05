@@ -118,12 +118,12 @@ static void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			return;
 		}
 
-		if (input->pack_status->pack_cell_min_mV <= state->pack_config->cell_min_mV) {
+		if (input->pack_status->pack_cell_min_mV < state->pack_config->cell_min_mV) {
 			Error_Assert(ERROR_CELL_UNDER_VOLTAGE, input->msTicks);
 			return;
 		}
 
-		if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
+		if (input->pack_status->pack_cell_max_mV > state->pack_config->cell_max_mV + 5) {
 			Error_Assert(ERROR_CELL_OVER_VOLTAGE, input->msTicks);
 			return;
 		}

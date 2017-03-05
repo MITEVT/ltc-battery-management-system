@@ -122,11 +122,18 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	// Read pack status
 	// Read hardware signal inputs
 	// update and other fields in msTicks in &input
+	
+	// Contactor Mocking
+	if(Board_Switch_Read(CTR_SWTCH) == 0) {
+		bms_input->contactors_closed = true;
+	} else {
+		bms_input->contactors_closed = false;
+	}
 
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_GetModeRequest(&console_output, bms_input);
-		Board_CAN_ProcessInput(bms_input);	// CAN has precedence over console
-		//Board_LTC6804_ProcessInputs(&pack_status);
+		Board_CAN_ProcessInput(bms_input, &bms_output);	// CAN has precedence over console
+		Board_LTC6804_ProcessInputs(&pack_status);
 	}
 	// [TODO] Board_LTC6804_ProcessInputs
 		// GetsVoltages, Does OWT, Temps
@@ -140,20 +147,29 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
 	// If SSM changed state, output appropriate visual indicators
 	// Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+	if(bms_output->close_contactors) {
+		Board_LED_On(LED2);
+	} else {
+		Board_LED_Off(LED2);
+	}
 	
 	if (bms_output->read_eeprom_packconfig){
+		if(console_output.config_default){
+			Write_EEPROM_PackConfig_Defaults();
+			console_output.config_default = false;
+		}
 		bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
-		//Board_LTC6804_DeInit(); // [TODO] Think about this
+		Board_LTC6804_DeInit(); // [TODO] Think about this
 
 	} else if (bms_output->check_packconfig_with_ltc) {
-		bms_input->ltc_packconfig_check_done = true; //Board_LTC6804_Init(&pack_config, cell_voltages);
+		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 	} else {
-
 		// [TODO] Ensure this else is correct
-		//Board_LTC6804_ProcessOutput(bms_output->balance_req);
-		Board_CAN_ProcessOutput(bms_output, bms_state);
+		Board_LTC6804_ProcessOutput(bms_output->balance_req);
+		Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
+
 	}
 
 }
@@ -187,21 +203,21 @@ void Process_Keyboard(void) {
 	// Restart
 
 // [TODO] Figure out output timing method/checkers 		WHO:Everyone
-// [TODO] Write simple contactor Drivers 				WHO:Jorge
-// [TODO] Do heartbeats, see board.c todo 				WHO:Rango
-// [TODO] Move all board state to struct 				WHO:Rango
-// [TODO] Finish Brusa Implementation 					WHO:Eric
-// [TODO] Validate Brusa Error Handling ** 				WHO:Eric+Rango
-// [TODO] Finish console config (unimplemented stuff) 	WHO:RANGO
-// [TODO] PEC error fails as undervoltage				WHO:RANGO
+// [TODO] Write simple contactor Drivers 			WHO:Jorge
+// [TODO] Do heartbeats, see board.c todo 			WHO:Rango
+// [TODO] Move all board state to struct 			WHO:Rango
+// [TODO] Finish Brusa Implementation 				WHO:Eric
+// [TODO] Validate Brusa Error Handling ** 			WHO:Eric+Rango
+// [TODO] Finish console config (unimplemented stuff) 		WHO:RANGO
+// [TODO] PEC error fails as undervoltage			WHO:RANGO
 // [TODO] Add mod/cell to min/max and error 			WHO:Eric
 //----------------------------
 // After demo
 //
-// [TODO] Add console print handling **
-// [TODO] Make Default configuration conservative
+// [TODO] Add console print handling **				WHO:Rango
+// [TODO] Make Default configuration conservative		WHO:All
 // [TODO] Hardware implement reinit (SPI)
-// [TODO at the end] Add console history
+// [TODO at the end] Add console history			WHO:Rango
 int main(void) {
 
 	UNUSED(delay);
@@ -210,9 +226,7 @@ int main(void) {
 
 	Board_Chip_Init();
 	Board_GPIO_Init();
-	Board_LED_Init();
 	Board_Headroom_Init();
-	Board_Switch_Init();
 	Board_CAN_Init(CAN_BAUD);
 	Board_UART_Init(UART_BAUD);
 
@@ -223,7 +237,7 @@ int main(void) {
 #endif
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
-    Board_Println_BLOCKING("Finished EEPROM init");
+	Board_Println_BLOCKING("Finished EEPROM init");
 	
 	Error_Init();
 	SSM_Init(&bms_input, &bms_state, &bms_output);
@@ -272,7 +286,8 @@ int main(void) {
 		//set bms_output
 		Process_Output(&bms_input, &bms_output, &bms_state);
 		Process_Keyboard();
-		if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {
+		if(bms_state.curr_mode == BMS_SSM_MODE_INIT && true) {
+			console_output.config_default = false;
 			Write_EEPROM_PackConfig_Defaults();
 			bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
 		}

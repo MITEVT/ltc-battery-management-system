@@ -14,7 +14,6 @@
 #define IOCON_CHRG_SW IOCON_PIO1_2
 #define DISCHRG_SW 1, 2
 #define IOCON_DISCHRG_SW IOCON_PIO1_2
-
 #define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
@@ -127,7 +126,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_GetModeRequest(&console_output, bms_input);
 		Board_CAN_ProcessInput(bms_input);	// CAN has precedence over console
-		Board_LTC6804_ProcessInputs(&pack_status);
+		//Board_LTC6804_ProcessInputs(&pack_status);
 	}
 	// [TODO] Board_LTC6804_ProcessInputs
 		// GetsVoltages, Does OWT, Temps
@@ -146,14 +145,14 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 		bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
-		Board_LTC6804_DeInit(); // [TODO] Think about this
+		//Board_LTC6804_DeInit(); // [TODO] Think about this
 
 	} else if (bms_output->check_packconfig_with_ltc) {
-		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
+		bms_input->ltc_packconfig_check_done = true; //Board_LTC6804_Init(&pack_config, cell_voltages);
 	} else {
 
 		// [TODO] Ensure this else is correct
-		Board_LTC6804_ProcessOutput(bms_output->balance_req);
+		//Board_LTC6804_ProcessOutput(bms_output->balance_req);
 		Board_CAN_ProcessOutput(bms_output, bms_state);
 	}
 

@@ -5,6 +5,7 @@ static void RunAllTests(void) {
   RUN_TEST_GROUP(SSM_Test);
   RUN_TEST_GROUP(Discharge_Test);
   RUN_TEST_GROUP(ERROR_Test);
+  RUN_TEST_GROUP(BMS_CAN_Test);
 }
 
 int main(int argc, char * argv[]) {

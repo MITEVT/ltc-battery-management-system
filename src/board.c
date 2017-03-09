@@ -10,6 +10,8 @@ const uint32_t OscRateIn = 0;
 #define BMS_HEARTBEAT_PERIOD 1000
 #define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 
+//#define PRINT_MODE_REQUESTS
+
 #define FSAE_DRIVERS
 
 #ifndef TEST_HARDWARE
@@ -45,6 +47,8 @@ static BMS_SSM_MODE_T CAN_mode_request;
 static uint32_t last_bms_heartbeat_time = 0;
 
 static uint8_t received_discharge_request = 0;
+
+static uint32_t last_get_mode_request_debug_message = 0;
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
@@ -558,7 +562,6 @@ static bool brusa_clear_error;
 
 #ifndef TEST_HARDWARE
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
-
 	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
 	if (console_output -> valid_mode_request) {
             console_mode_request = console_output->mode_request;
@@ -574,9 +577,53 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 	} else if (console_mode_request == CAN_mode_request) {
 		bms_input->mode_request = console_mode_request;
 	} else {
-		DEBUG_Print("Error! Illegal combination of CAN mode request and console mode request");
+		Board_Println("Error! Illegal combination of CAN mode request and console mode request");
 		//TODO: go into error state
 	}
+
+#ifdef PRINT_MODE_REQUESTS
+	bool print_debug_message;
+	if ((msTicks - last_get_mode_request_debug_message) > 1000) {
+		Board_Print("console_mode_request: ");
+		switch(console_mode_request) {
+			case BMS_SSM_MODE_STANDBY:
+				Board_Print("standby    ");
+				break;
+			case BMS_SSM_MODE_DISCHARGE:
+				Board_Print("discharge    ");
+				break;
+			default:
+				Board_Print("other state");
+		}
+		Board_Print("CAN_mode_request: ");
+		switch (CAN_mode_request) {
+			case BMS_SSM_MODE_STANDBY:
+				Board_Print("standby    ");
+				break;
+			case BMS_SSM_MODE_DISCHARGE:
+				Board_Print("discharge    ");
+				break;
+			default:
+				Board_Print("other state");
+		}
+		Board_Print("bms_input->mode_request: ");
+		switch (bms_input->mode_request) {
+			case BMS_SSM_MODE_STANDBY:
+				Board_Println("standby    ");
+				break;
+			case BMS_SSM_MODE_DISCHARGE:
+				Board_Print("discharge\r\n");
+				break;
+			default:
+				Board_Println("other state");
+		}
+
+		print_debug_message = true;
+		last_get_mode_request_debug_message = msTicks;
+	} else {
+		print_debug_message = false;
+	}
+#endif //PRINT_MODE_REQUESTS
 
 }
 
@@ -593,6 +640,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 	CCAN_MSG_OBJ_T rx_msg;
 	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
+		latest_vcu_heartbeat_time = msTicks;
 		if (rx_msg.mode_id == NLG5_STATUS) { 
 			//TODO
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {
@@ -622,9 +670,18 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
 		} else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
 			//TODO: create helper function that parses VCU heartbeat
+#ifdef PRINT_CAN_MESSAGES
+			Board_Print("VCU Heartbeat    ");
+#endif //PRINT_CAN_MESSAGES
 			if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
+#ifdef PRINT_CAN_MESSAGES
+				Board_Println("state: discharge    ");
+#endif //PRINT_CAN_MESSAGES
 				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
 			} else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
+#ifdef PRINT_CAN_MESSAGES
+				Board_Println("state: standby    "); 
+#endif //PRINT_CAN_MESSAGES
 				CAN_mode_request = BMS_SSM_MODE_STANDBY;
 			} else {
 				DEBUG_Print("Unrecognized VCU heartbeat state. You should never reach here.");

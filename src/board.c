@@ -12,8 +12,6 @@ const uint32_t OscRateIn = 0;
 
 //#define PRINT_MODE_REQUESTS
 
-#define FSAE_DRIVERS
-
 #ifndef TEST_HARDWARE
 static RINGBUFF_T uart_rx_ring;
 static uint8_t _uart_rx_ring[UART_BUFFER_SIZE];

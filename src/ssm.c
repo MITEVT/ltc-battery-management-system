@@ -2,7 +2,11 @@
 
 #include "error_handler.h"
 #include "bms_utils.h"
+#include "board.h"
 
+static uint32_t latest_SSM_step_debug_message = 0;
+
+volatile uint32_t msTicks;
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	// Initialize BMS state variables
@@ -92,7 +96,8 @@ bool Is_State_Done(BMS_STATE_T *state) {
 		case BMS_SSM_MODE_BALANCE:
 			return state->charge_state == BMS_CHARGE_OFF;
 		case BMS_SSM_MODE_DISCHARGE:
-			return state->discharge_state == BMS_DISCHARGE_DONE;
+			return (state->discharge_state == BMS_DISCHARGE_DONE || 
+				state->discharge_state == BMS_DISCHARGE_OFF);
 		case BMS_SSM_MODE_INIT:
 			return state->init_state == BMS_INIT_DONE;
 		case BMS_SSM_MODE_STANDBY:
@@ -140,14 +145,39 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	//	 else dispatch step to appropriate SM step
 	Check_Error(input, state, output);
 
+#ifdef PRINT_SSM_STEP_MESSAGES
+	bool send_SSM_step_debug_message = false;
+	if ((msTicks - latest_SSM_step_debug_message) > 1000) {
+		send_SSM_step_debug_message = true;
+		latest_SSM_step_debug_message = msTicks;
+	}
+#endif //PRINT_SSM_STEP_MESSAGES
+
 	if((Is_Valid_Jump(state->curr_mode, input->mode_request)
 			&& Is_State_Done(state))
 			|| Is_Charge_Balance_Switch(state->curr_mode, input->mode_request)) {
+#ifdef PRINT_SSM_STEP_MESSAGES
+		Board_Println_BLOCKING("jump between states is valid    ");
+#endif //PRINT_SSM_STEP_MESSAGES
 		state->curr_mode = input->mode_request;
 		output->close_contactors = false;
 		output->charge_req->charger_on = false;
 		memset(output->balance_req, 0, sizeof(output->balance_req[0])*Get_Total_Cell_Count(state->pack_config));
 	}
+
+#ifdef PRINT_SSM_STEP_MESSAGES
+	if (Is_Valid_Jump(state->curr_mode, input->mode_request) && 
+			send_SSM_step_debug_message) {
+		Board_Println_BLOCKING("Is_Valid_Jump() returns true    ");
+	}
+	if (Is_State_Done(state) && send_SSM_step_debug_message) {
+		Board_Println_BLOCKING("Is_State_Done() returns true    ");
+	}
+	if (Is_Charge_Balance_Switch(state->curr_mode, input->mode_request) && 
+			send_SSM_step_debug_message) {
+		Board_Println_BLOCKING("Is_Charge_Balance() returns true");
+	}
+#endif PRINT_SSM_STEP_MESSAGES
 
 	switch(state->curr_mode) {
 		case BMS_SSM_MODE_STANDBY:

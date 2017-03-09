@@ -177,7 +177,7 @@ void SSM_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 			send_SSM_step_debug_message) {
 		Board_Println_BLOCKING("Is_Charge_Balance() returns true");
 	}
-#endif PRINT_SSM_STEP_MESSAGES
+#endif //PRINT_SSM_STEP_MESSAGES
 
 	switch(state->curr_mode) {
 		case BMS_SSM_MODE_STANDBY:

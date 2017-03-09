@@ -1,11 +1,16 @@
 #include "discharge.h"
 
+#include "board.h"
 
 static uint16_t total_num_cells;
 static uint32_t min_cell_voltage_mV;
 static uint32_t max_pack_current_mA;
 static uint16_t max_cell_temp_thres_C;
 // current, temperature, and voltage
+
+static uint32_t last_discharge_step_debug_message;
+
+volatile uint32_t msTicks;
 
 void Discharge_Init(BMS_STATE_T *state) {
 	state->discharge_state = BMS_DISCHARGE_OFF;
@@ -31,6 +36,16 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 }
 
 BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+#ifdef PRINT_DISCHARGE_STATE
+	if ((msTicks - last_discharge_step_debug_message) > 1000) {	
+		if (state->discharge_state == BMS_DISCHARGE_OFF) {
+			Board_Println("Discharge state: DISCHARGE_OFF");
+		}
+		last_discharge_step_debug_message = msTicks;
+	}
+#endif //PRINT_DISCHARGE_STATE
+
+
 	switch (input->mode_request) {
 		case BMS_SSM_MODE_INIT:
 			// Invalid, shouldn't be requestable

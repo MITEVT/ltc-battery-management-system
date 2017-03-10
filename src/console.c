@@ -339,7 +339,7 @@ void console_init(BMS_INPUT_T * input, BMS_STATE_T * state, CONSOLE_OUTPUT_T *co
 	console_output->config_default = false;
 }
 
-void executerl(uint32_t argc, const char * const * argv){
+void executerl(int32_t argc, const char * const * argv){
 	uint32_t command_i = 0;
 	bool found_command = false;
 	for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)

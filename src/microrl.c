@@ -10,6 +10,7 @@ BUGS and TODO:
 #include <stdlib.h>
 #include "microrl.h"
 #include <stdbool.h>
+#include <stdint.h>
 #ifdef _USE_LIBC_STDIO
 #include <stdio.h>
 #endif
@@ -188,9 +189,8 @@ static int hist_restore_line (ring_history_t * pThis, char * line, int dir)
 
 //*****************************************************************************
 // split cmdline to tkn array and return nmb of token
-static int split (microrl_t * pThis, int limit, char const ** tkn_arr)
-{
-	int i = 0;
+static int32_t split (microrl_t * pThis, int limit, char const ** tkn_arr) {
+	int32_t i = 0;
 	int ind = 0;
 	while (1) {
 		// go to the first whitespace (zerro for us)
@@ -213,14 +213,12 @@ static int split (microrl_t * pThis, int limit, char const ** tkn_arr)
 
 
 //*****************************************************************************
-inline static void print_prompt (microrl_t * pThis)
-{
+inline static void print_prompt (microrl_t * pThis) {
 	pThis->print (pThis->prompt_str);
 }
 
 //*****************************************************************************
-inline static void terminal_backspace (microrl_t * pThis)
-{
+inline static void terminal_backspace (microrl_t * pThis) {
 		pThis->print ("\033[D \033[D");
 }
 
@@ -317,8 +315,9 @@ static void terminal_print_line (microrl_t * pThis, int pos, int cursor)
 }
 
 //*****************************************************************************
-void microrl_init (microrl_t * pThis, void (*print) (const char *)) 
+void microrl_init (microrl_t * pThis, uint32_t (*print) (const char *)) 
 {
+	(void)hist_save_line;
 	memset(pThis->cmdline, 0, _COMMAND_LINE_LEN);
 #ifdef _USE_HISTORY
 	memset(pThis->ring_hist.ring_buf, 0, _RING_HISTORY_LEN);
@@ -347,7 +346,7 @@ void microrl_set_complete_callback (microrl_t * pThis, char ** (*get_completion)
 }
 
 //*****************************************************************************
-void microrl_set_execute_callback (microrl_t * pThis, int (*execute)(int, const char* const*))
+void microrl_set_execute_callback (microrl_t * pThis, void (*execute)(int32_t, const char* const*))
 {
 	pThis->execute = execute;
 }
@@ -536,9 +535,9 @@ static void microrl_get_complite (microrl_t * pThis)
 //*****************************************************************************
 void new_line_handler(microrl_t * pThis){
 	char const * tkn_arr [_COMMAND_TOKEN_NMB];
-	int status;
+	int32_t status;
 	terminal_newline (pThis);
-	status = split (pThis, pThis->cmdlen, tkn_arr);
+	status = split(pThis, pThis->cmdlen, tkn_arr);
 	if (status == -1){
 		//		  pThis->print ("ERROR: Max token amount exseed\n");
 		pThis->print ("ERROR:too many tokens");

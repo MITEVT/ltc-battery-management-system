@@ -46,8 +46,6 @@ static uint32_t last_bms_heartbeat_time = 0;
 
 static uint8_t received_discharge_request = 0;
 
-static uint32_t last_get_mode_request_debug_message = 0;
-
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
 uint32_t latest_vcu_heartbeat_time = 0;
@@ -55,6 +53,10 @@ uint32_t latest_vcu_heartbeat_time = 0;
 #endif
 
 volatile uint32_t msTicks;
+
+#ifdef PRINT_MODE_REQUESTS
+	static uint32_t last_get_mode_request_debug_message = 0;
+#endif
 
 #ifndef TEST_HARDWARE
 
@@ -157,6 +159,7 @@ uint32_t Board_Println(const char *str) {
 
 uint32_t Board_PrintNum(uint32_t a, uint8_t base) {
 #ifdef TEST_HARDWARE
+	UNUSED(base);
 	return printf("%d", a);
 #else
 	itoa(a, str, base);
@@ -226,18 +229,24 @@ void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
 	CAN_Init(baudRateHz);
 	CAN_mode_request = BMS_SSM_MODE_STANDBY;
+#else
+	UNUSED(baudRateHz);
 #endif
 }
 
 void Board_LED_On(uint8_t led_gpio, uint8_t led_pin) {
 #ifndef TEST_HARDWARE
 	Chip_GPIO_SetPinOutHigh(LPC_GPIO, led_gpio, led_pin);
+#else
+	UNUSED(led_gpio); UNUSED(led_pin);
 #endif
 }
 
 void Board_LED_Off(uint8_t led_gpio, uint8_t led_pin) {
 #ifndef TEST_HARDWARE
 	Chip_GPIO_SetPinOutLow(LPC_GPIO, led_gpio, led_pin);
+#else
+	UNUSED(led_gpio); UNUSED(led_pin);
 #endif
 }
 
@@ -245,12 +254,16 @@ void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin) {
 #ifndef TEST_HARDWARE
 	Chip_GPIO_SetPinState(LPC_GPIO, led_gpio, led_pin, 
 		1 - Chip_GPIO_GetPinState(LPC_GPIO, led_gpio, led_pin));
+#else
+	UNUSED(led_gpio); UNUSED(led_pin);
 #endif
 }
 
 void Board_Headroom_Init(void){
+#ifndef TEST_HARDWARE
 	Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_HEADROOM, IOCON_FUNC1);
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, HEADROOM);
+#endif
 }
 
 void Board_Headroom_Toggle(void){
@@ -260,7 +273,12 @@ void Board_Headroom_Toggle(void){
 }
 
 bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
+#ifndef TEST_HARDWARE
 	return Chip_GPIO_GetPinState(LPC_GPIO, gpio_port, pin);
+#else
+	UNUSED(gpio_port); UNUSED(pin);
+	return true; // Modifiy to simulate switch behavior
+#endif
 }
 
 void Board_Close_Contactors(bool close_contactors) {
@@ -317,8 +335,9 @@ void Board_GPIO_Init(void) {
 
 }
 
-bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV) {
+bool Board_LTC6804_Init(PACK_CONFIG_T *pack_config, uint32_t *cell_voltages_mV) {
 #ifdef TEST_HARDWARE
+	UNUSED(pack_config); UNUSED(cell_voltages_mV);
 	return true;
 #else
 	if (_ltc6804_initialized) return true;
@@ -403,6 +422,7 @@ void Board_LTC6804_ProcessOutput(bool *balance_req) {
 //[TODO] check saftey
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #ifdef TEST_HARDWARE
+	UNUSED(pack_status);
 	return;
 #else
 
@@ -482,6 +502,7 @@ bool Board_LTC6804_CVST(void) {
 //[TODO] add saftey
 void Board_LTC6804_UpdateBalanceStates(bool *balance_req) {
 #ifdef TEST_HARDWARE
+	UNUSED(balance_req);
 	return;
 #else
 	LTC6804_STATUS_T res;
@@ -509,6 +530,7 @@ bool Board_LTC6804_ValidateConfiguration(void) {
 
 bool Board_LTC6804_OpenWireTest(void) {
 #ifdef TEST_HARDWARE
+	return true; // Change to simulate during test
 #else
 
 	if (msTicks - _ltc6804_last_owt > _ltc6804_owt_tick_time) {
@@ -556,9 +578,10 @@ bool Board_LTC6804_OpenWireTest(void) {
 #endif
 }
 
+#ifndef TEST_HARDWARE
+
 static bool brusa_clear_error;
 
-#ifndef TEST_HARDWARE
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
 	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
 	if (console_output -> valid_mode_request) {

@@ -4,7 +4,9 @@
 #include "bms_utils.h"
 #include "board.h"
 
-static uint32_t latest_SSM_step_debug_message = 0;
+#ifdef PRINT_SSM_STEP_MESSAGES
+	static uint32_t latest_SSM_step_debug_message = 0;
+#endif
 
 volatile uint32_t msTicks;
 

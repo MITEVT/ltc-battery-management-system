@@ -8,6 +8,6 @@ static void RunAllTests(void) {
   RUN_TEST_GROUP(BMS_CAN_Test);
 }
 
-int main(int argc, char * argv[]) {
+int main(int argc, const char * argv[]) {
   return UnityMain(argc, argv, RunAllTests);
 }

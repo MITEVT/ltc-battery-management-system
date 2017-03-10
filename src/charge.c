@@ -68,7 +68,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			_set_output((input->mode_request == BMS_SSM_MODE_CHARGE), false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			
-			if (input->contactors_closed == output->close_contactors && input->charger_on == output->charge_req->charger_on) {
+			if (input->contactors_closed == output->close_contactors) {
 				if(input->mode_request == BMS_SSM_MODE_CHARGE) {
 					state->charge_state = 
 						(input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) ? BMS_CHARGE_CC : BMS_CHARGE_CV;
@@ -87,6 +87,7 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
+			// if(!input->contactors_closed || !input->charger_on) { // [TODO] Think about this
 			if(!input->contactors_closed) {
 				// [TODO] Consider setting outputs to zero
 				_set_output(true, false, 0, 0, output);

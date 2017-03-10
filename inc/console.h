@@ -106,7 +106,7 @@ typedef struct console_t {
 // static console_t console;
 
 void console_init(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, CONSOLE_OUTPUT_T *console_output);
-void executerl(uint32_t argc, const char * const * argv);  
+void executerl(int32_t argc, const char * const * argv);  
 
 
 #endif

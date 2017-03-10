@@ -8,7 +8,9 @@ static uint32_t max_pack_current_mA;
 static uint16_t max_cell_temp_thres_C;
 // current, temperature, and voltage
 
-static uint32_t last_discharge_step_debug_message;
+#ifdef PRINT_DISCHARGE_STATE
+	static uint32_t last_discharge_step_debug_message;
+#endif
 
 volatile uint32_t msTicks;
 

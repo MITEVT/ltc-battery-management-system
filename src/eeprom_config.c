@@ -75,13 +75,13 @@ void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin
 	eeprom_data_addr_cc[0] = EEPROM_DATA_START_CC >> 16;
 	eeprom_data_addr_cc[1] = (EEPROM_DATA_START_CC & 0xFF00) >> 8;
 	eeprom_data_addr_cc[2] = (EEPROM_DATA_START_CC & 0xFF);
-	Board_Println_BLOCKING("CC address: ");
-	Board_PrintNum(eeprom_data_addr_cc[0], 10);
-	Board_Println_BLOCKING(" ");
-	Board_PrintNum(eeprom_data_addr_cc[1], 10);
-	Board_Println_BLOCKING(" ");
-	Board_PrintNum(eeprom_data_addr_cc[2], 10);
-	Board_Println_BLOCKING("");
+	// Board_Println_BLOCKING("CC address: ");
+	// Board_PrintNum(eeprom_data_addr_cc[0], 10);
+	// Board_Println_BLOCKING(" ");
+	// Board_PrintNum(eeprom_data_addr_cc[1], 10);
+	// Board_Println_BLOCKING(" ");
+	// Board_PrintNum(eeprom_data_addr_cc[2], 10);
+	// Board_Println_BLOCKING("");
 
 	// Run_EEPROM_Test();
 

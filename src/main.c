@@ -134,8 +134,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 
 	if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
 		Board_GetModeRequest(&console_output, bms_input);
-		// Board_CAN_ProcessInput(bms_input, &bms_output);	// CAN has precedence over console
-		// Board_LTC6804_ProcessInputs(&pack_status);
+		Board_CAN_ProcessInput(bms_input, &bms_output);	// CAN has precedence over console
+		Board_LTC6804_ProcessInputs(&pack_status);
 	}
 	// [TODO] Board_LTC6804_ProcessInputs
 		// GetsVoltages, Does OWT, Temps
@@ -166,12 +166,12 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 		Board_LTC6804_DeInit(); // [TODO] Think about this
 
 	} else if (bms_output->check_packconfig_with_ltc) {
-		// bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
-		bms_input->ltc_packconfig_check_done = true;
+		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
+		// bms_input->ltc_packconfig_check_done = true;
 	} else {
 		// [TODO] Ensure this else is correct
-		// Board_LTC6804_ProcessOutput(bms_output->balance_req);
-		// Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
+		Board_LTC6804_ProcessOutput(bms_output->balance_req);
+		Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
 	}
 
 }
@@ -309,7 +309,7 @@ int hardware_test(void) {
 	Board_Println("HW Test Board Up"); 
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
-	// Board_LTC6804_Init(&pack_config, cell_voltages);
+	Board_LTC6804_Init(&pack_config, cell_voltages);
 
 	Board_Println("HW Test Drivers Up"); 
 

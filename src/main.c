@@ -192,31 +192,31 @@ void Process_Keyboard(void) {
 
 // BIG TODO LIST
 // ----------------
-// Add mode for continuous data stream
-// Undervoltage (create error handler)
-// SOC error (create error handler [CAN msg])
-// Reasonable way to change polling speeds (based on state)
-// Add current sense handling
-// Clean up macros
-// Remove LTC_SPI error
-// CAN error handling for different CAN errors
+// [TODO] Add mode for continuous data stream			WHO:Skanda
+// [TODO] Undervoltage (create error handler)			WHO:Erpo
+// [TODO] SOC error (create error handler [CAN msg])	WHO:Erpo
+// [TODO] Reasonable way to change polling speeds		WHO:ALL
+// [TODO] Add current sense handling					WHO:Jorge
+// [TODO] Clean up macros								WHO:Skanda
+// [TODO] Remove LTC_SPI error							WHO:Erpo
+// [TODO] CAN error handling for different CAN errors	WHO:Skanda/Rango
 
-// [TODO] Figure out output timing method/checkers 		WHO:Everyone
-// [TODO] Do heartbeats, see board.c todo 			WHO:Rango
-// [TODO] Cleanup board 							ALL
-// [TODO] Validate Brusa Error Handling ** 			WHO:Eric+Rango
-// [TODO] Add mod/cell to min/max and error 			WHO:Eric
-// [TODO] Refactor similiar functions in error handler
-// [TODO] Line 253, console.c						WHO:Rango!!
-// [TODO] Add console print handling **				WHO:Rango
-// [TODO] Validate packconfig values in EEPROM either needs to be moved 
+// [TODO] Do heartbeats, see board.c todo 				WHO:Rango
+// [TODO] Cleanup board 								ALL
+// [TODO] Print out mod/cell to min/max, error 			WHO:Eric
+// [TODO] Refactor similiar functions in error handler	WHO:Rango
+// [TODO] Line 253, console.c							WHO:Rango!!
+// [TODO] Validate packconfig values in EEPROM either 
+// 				needs to be moved 
 // 		  elsewhere and implement bounds checking
-// [TODO] EEPROM checksum!!!
-// [TODO] process input struct and output struct other signals
-// [TODO] Review/cleanup GetModeRequest in board.c:523
+// [TODO] EEPROM checksum!!!							WHO:Skanda
+// [TODO] process input struct,output other signals		WHO:Jorge
+// [TODO] Review/cleanup GetModeRequest in board.c:523 	WHO:ALL
+// [TODO] SPACES AND TABS ARE CONSISTENT				WHO:Skanda
 //
-// [TODO at the end] Add console history
-// [TODO at the end] BRUSA error handling
+// [TODO at the end] Add console print handling **		WHO:Rango
+// [TODO at the end] Add console history				WHO:Rango
+// [TODO at the end] BRUSA error handling				WHO:Erpo
 int main(void) {
 
 	Init_BMS_Structs();

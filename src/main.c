@@ -239,7 +239,7 @@ int main(void) {
 #endif
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
-    Board_SOC_Init();
+    SOC_Init();
     Board_Println_BLOCKING("Finished EEPROM init");
 	
 	Error_Init();
@@ -274,7 +274,7 @@ int main(void) {
 		if (msTicks - last_count > 1000) {
 			last_count = msTicks;
 			Board_LED_Toggle(LED1);	 
-            // Board_PrintNum(Board_SOC_Estimate(), 10);
+            // Board_PrintNum(SOC_Estimate(), 10);
 		}
 	}
 

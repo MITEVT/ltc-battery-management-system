@@ -86,9 +86,6 @@ bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin);
 
 void Board_CAN_Init(uint32_t baudRateHz);
 
-void Board_SOC_Init(void);
-uint16_t Board_SOC_Estimate(void);
-
 /**
  * @details Initialize the UART used for debugging
  * 

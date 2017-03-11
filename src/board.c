@@ -157,6 +157,14 @@ uint32_t Board_Println(const char *str) {
 #endif
 }
 
+void Board_SOC_Init(void) {
+    SOC_Init();
+}
+
+uint16_t Board_SOC_Estimate(void) {
+    return SOC_Estimate();
+}
+
 uint32_t Board_PrintNum(uint32_t a, uint8_t base) {
 #ifdef TEST_HARDWARE
 	UNUSED(base);

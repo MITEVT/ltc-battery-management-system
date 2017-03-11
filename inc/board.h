@@ -180,7 +180,7 @@ void Board_Close_Contactors(bool close_contactors);
  *
  * @return true if contactors are closed, false otherwise
  */
-bool Board_Are_Contactors_Closed(void);
+bool Board_Contactors_IsClosed(void);
 
 /******** Test Hardware Exemptions ***********/
 

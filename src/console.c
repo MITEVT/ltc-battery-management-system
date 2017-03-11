@@ -34,7 +34,7 @@ uint32_t my_atou(const char *str) {
 }
 
 static void get(const char * const * argv) {
-	rw_loc_lable_t rwloc;
+	rw_loc_label_t rwloc;
 	uint8_t i;
 
 	//loop over r/w entries
@@ -115,8 +115,8 @@ static void get(const char * const * argv) {
 	}
 	else {
 		//loop over r/o entries
-		ro_loc_lable_t roloc;
-		for (roloc = (ro_loc_lable_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+		ro_loc_label_t roloc;
+		for (roloc = (ro_loc_label_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
 			if (strcmp(argv[1],locstring[roloc]) == 0){
 				foundloc = true;
 				break; 
@@ -160,10 +160,6 @@ static void get(const char * const * argv) {
 					utoa(bms_input->pack_status->pack_voltage_mV, tempstr,10);
 					Board_Println(tempstr);
 					break;
-				case ROL_precharge_voltage:
-					utoa(bms_input->pack_status->precharge_voltage, tempstr,10);
-					Board_Println(tempstr);
-					break;
 				case ROL_max_cell_temp_C:
 					utoa(bms_input->pack_status->max_cell_temp_C, tempstr,10);
 					Board_Println(tempstr);
@@ -194,7 +190,7 @@ static void set(const char * const * argv) {
 		Board_Println("Set failed (not in standby mode)!");
 		return;
 	}
-	rw_loc_lable_t rwloc;
+	rw_loc_label_t rwloc;
 	//loop over r/w entries
 	bool foundloc = false;
 	for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
@@ -211,8 +207,8 @@ static void set(const char * const * argv) {
 		}
 	} else {
 		//loop over r/o entries
-		ro_loc_lable_t roloc;
-		for (roloc = (ro_loc_lable_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
+		ro_loc_label_t roloc;
+		for (roloc = (ro_loc_label_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
 			if (strcmp(argv[1],locstring[roloc]) == 0){
 				foundloc = true;
 				Board_Println("this location is read only");
@@ -237,14 +233,14 @@ static void help(const char * const * argv) {
 
 	if (command_i == C_GET || command_i == C_SET)
 	{
-		rw_loc_lable_t i;
+		rw_loc_label_t i;
 		Board_Println_BLOCKING("------r/w entries------");
 		for (i = 0; i < RWL_LENGTH; ++i){
 			Board_Println_BLOCKING(locstring[i]); //blocking print.
 		}
 
 		Board_Println_BLOCKING("------r/o entries------");
-		for (i = ROL_FIRST; i < (rw_loc_lable_t)(ROL_LENGTH); ++i){
+		for (i = ROL_FIRST; i < (rw_loc_label_t)(ROL_LENGTH); ++i){
 			Board_Println_BLOCKING(locstring[i]); //blocking print.
 		}
 	}

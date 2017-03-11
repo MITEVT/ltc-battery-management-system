@@ -2,8 +2,6 @@
 #include "board.h"
 
 
-// TODO update eeprom driver to handle pages
-// local buf copies of packconfig
 #define DATA_BLOCK_SIZE sizeof(PACK_CONFIG_T) + CHECKSUM_BYTESIZE + VERSION_BYTESIZE + MAX_NUM_MODULES
 #define CC_PAGE_SZ 64
 static uint8_t eeprom_data_buf[DATA_BLOCK_SIZE];
@@ -223,7 +221,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE, so only need to run checks
-uint8_t EEPROM_ChangeConfig(rw_loc_lable_t rw_loc, uint32_t val) {
+uint8_t EEPROM_ChangeConfig(rw_loc_label_t rw_loc, uint32_t val) {
 	switch (rw_loc) {
 		case RWL_cell_min_mV:
 			eeprom_packconf_buf.cell_min_mV = val;
@@ -269,7 +267,6 @@ uint8_t EEPROM_ChangeConfig(rw_loc_lable_t rw_loc, uint32_t val) {
 			eeprom_packconf_buf.max_cell_temp_C = val;
 			break;
 		case RWL_LENGTH:
-			//wat TODO error
 			break;
 	}
 
@@ -295,13 +292,13 @@ static void Write_PackConfig_EEPROM(void) {
 
 
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config) {
-	// TODO
+	// TODO checksum
 	UNUSED(pack_config);
 	return 1;
 }
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum) {
-	// TODO
+	// TODO validate the packconfig
 	UNUSED(pack_config);
 	UNUSED(checksum);
 	return version == STORAGE_VERSION;

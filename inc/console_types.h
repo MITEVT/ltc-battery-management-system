@@ -29,7 +29,7 @@ typedef enum {
     RWL_cell_discharge_c_rating_cC,
     RWL_max_cell_temp_C,
     RWL_LENGTH
-} rw_loc_lable_t; // [TODO] Spell "label" correctly
+} rw_loc_label_t;
 
 #define ROL_FIRST RWL_LENGTH
 
@@ -40,10 +40,9 @@ typedef enum {
     ROL_pack_cell_min_mV,
     ROL_pack_current_mA,
     ROL_pack_voltage_mV,
-    ROL_precharge_voltage,
     ROL_max_cell_temp_C,
     ROL_error,
     ROL_LENGTH
-} ro_loc_lable_t;
+} ro_loc_label_t;
 
 #endif

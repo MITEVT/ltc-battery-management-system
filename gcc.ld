@@ -177,9 +177,7 @@ SECTIONS
 	__StackLimit = __StackTop - SIZEOF(.stack_dummy);
 	PROVIDE(__stack = __StackTop);
 	
-	/* Check if data + heap + stack exceeds RAM limit */
-	/* [TODO] Figure out alternative to this? Maybe check against RAM size */
-
+	/* Check if data + heap + stack exceeds RAM limit? Maybe? */
 	/*ASSERT(__StackLimit >= __HeapLimit, "region RAM overflowed with stack")*/
 	ASSERT(__StackLimit >= ORIGIN(RAM), "region RAM overflowed with stack")
 	ASSERT(__StackLimit >= __bss_end__, "stack may overflow into BSS")

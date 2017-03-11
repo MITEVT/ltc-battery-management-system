@@ -42,9 +42,10 @@ static char str[10];
 
 static BMS_SSM_MODE_T CAN_mode_request;
 
+#ifdef FSAE_DRIVERS
 static uint32_t last_bms_heartbeat_time = 0;
-
 static uint8_t received_discharge_request = 0;
+#endif
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
@@ -281,12 +282,12 @@ bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
 #endif
 }
 
-void Board_Close_Contactors(bool close_contactors) {
+void Board_Contactors_Close(bool close_contactors) {
 	//TODO: implement function
 	(void)(close_contactors);
 }
 
-bool Board_Are_Contactors_Closed(void) {
+bool Board_Contactors_IsClosed(void) {
 	//TODO: implement function
 	return false;
 }
@@ -297,8 +298,6 @@ void Board_Init_EEPROM(void) {
 
 void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE
-	// [TODO] verify that pins don't collide
-	//  move pin selections to preprocesser defines
 	Chip_GPIO_Init(LPC_GPIO);
 
 	Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
@@ -377,7 +376,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T *pack_config, uint32_t *cell_voltages_mV) 
 		LTC6804_Init(&ltc6804_config, &ltc6804_state, msTicks);
 
 		_ltc6804_init_state = LTC6804_INIT_CFG;
-	} else if (_ltc6804_init_state == LTC6804_INIT_CFG) { // [TODO] Make function pointer vector
+	} else if (_ltc6804_init_state == LTC6804_INIT_CFG) { 
 		bool res = Board_LTC6804_CVST();
 		if (res) {
 			_ltc6804_init_state = LTC6804_INIT_CVST;
@@ -420,7 +419,6 @@ void Board_LTC6804_ProcessOutput(bool *balance_req) {
 	Board_LTC6804_UpdateBalanceStates(balance_req);
 }
 
-//[TODO] check saftey
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #ifdef TEST_HARDWARE
 	UNUSED(pack_status);
@@ -431,7 +429,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 		_ltc6804_gcv = true;
 	}
 
-	// [TODO] Think about this
 	if (!_ltc6804_gcv) {
 		return;
 	}
@@ -500,7 +497,7 @@ bool Board_LTC6804_CVST(void) {
 #endif
 }
 
-//[TODO] add saftey
+//[TODO] add error handling
 void Board_LTC6804_UpdateBalanceStates(bool *balance_req) {
 #ifdef TEST_HARDWARE
 	UNUSED(balance_req);
@@ -581,8 +578,6 @@ bool Board_LTC6804_OpenWireTest(void) {
 
 #ifndef TEST_HARDWARE
 
-static bool brusa_clear_error;
-
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
 	BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
 	if (console_output -> valid_mode_request) {
@@ -655,16 +650,13 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  * 
  * @param bms_input data strcuture representing BMS inputs
  */
-// [TODO] Encapsulate all board state intoa struct
-	// Reduce static variables
 // [TODO] Refactor to case
-// [TODO] Add heartbeat checking (new file like error_handler)
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 	CCAN_MSG_OBJ_T rx_msg;
 	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
 		latest_vcu_heartbeat_time = msTicks;
 		if (rx_msg.mode_id == NLG5_STATUS) { 
-			//TODO
+			// [TODO] use info from brusa message
 		} else if (rx_msg.mode_id == NLG5_ACT_I) {
 			NLG5_ACT_I_T act_i;
 			Brusa_DecodeActI(&act_i, &rx_msg);
@@ -677,16 +669,14 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 		} else if (rx_msg.mode_id == NLG5_TEMP) {
 
 		} else if (rx_msg.mode_id == NLG5_ERR && bms_output->charge_req->charger_on) {
-			// [TODO] Distinguish errors
+			// [TODO] distinguish errors
 			if (!Brusa_CheckErr(&rx_msg)) { // We've recevied a Brusa Error Message
 				// if (output->charge_req->charger_on) {
 					Error_Assert(ERROR_BRUSA, msTicks);
-					brusa_clear_error = true; // [TODO] This might be bad because we have to adust error count for timing
 				// }
 				// We should try to clear but also assert error for count
-					// Timing idea: Brusa error msg happens as often as ctrl message
+				// Timing idea: Brusa error msg happens as often as ctrl message
 			} else {
-				brusa_clear_error = false;
 				Error_Pass(ERROR_BRUSA);
 			}
 #ifdef FSAE_DRIVERS
@@ -743,9 +733,8 @@ static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
 #endif
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
-
+	UNUSED(bms_state);
 	
-	// [TODO] Consider adding checks that in right mode just in case
 	// Easy way to turn off charger in case of accident
 	if (bms_output->charge_req->charger_on && msTicks - _last_brusa_ctrl >= NLG5_CTL_DLY_mS) {
         NLG5_CTL_T brusa_control;

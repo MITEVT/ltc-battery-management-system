@@ -47,12 +47,6 @@ static CONSOLE_OUTPUT_T console_output;
  *		  HELPERS
  ****************************/
 
-// [TODO] Remove
-static void delay(uint32_t dlyTicks) {
-	uint32_t curTicks = msTicks;
-	while ((msTicks - curTicks) < dlyTicks);
-}
-
 /****************************
  *	   INITIALIZERS
  ****************************/
@@ -110,10 +104,9 @@ void Init_BMS_Structs(void) {
 	memset(cell_voltages, 0, sizeof(cell_voltages));
 	pack_status.cell_voltages_mV = cell_voltages;
 	pack_status.pack_cell_max_mV = 0;
-	pack_status.pack_cell_min_mV = 0xFFFFFFFF; // [TODO] this is a bodge fix
+	pack_status.pack_cell_min_mV = 0xFFFFFFFF;
 	pack_status.pack_current_mA = 0;
 	pack_status.pack_voltage_mV = 0;
-	pack_status.precharge_voltage = 0;
 	pack_status.max_cell_temp_C = 0;
 
 }
@@ -137,11 +130,6 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 		Board_CAN_ProcessInput(bms_input, &bms_output);	// CAN has precedence over console
 		Board_LTC6804_ProcessInputs(&pack_status);
 	}
-	// [TODO] Board_LTC6804_ProcessInputs
-		// GetsVoltages, Does OWT, Temps
-	// if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-	// 	Board_LTC6804_GetCellVoltages(&pack_status);
-	// }s
 
 	bms_input->msTicks = msTicks;
 }
@@ -163,21 +151,19 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 		bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
 		Charge_Config(&pack_config);
 		Discharge_Config(&pack_config);
-		Board_LTC6804_DeInit(); // [TODO] Think about this
+		Board_LTC6804_DeInit(); 
 
 	} else if (bms_output->check_packconfig_with_ltc) {
 		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
 		// bms_input->ltc_packconfig_check_done = true;
+		
 	} else {
-		// [TODO] Ensure this else is correct
 		Board_LTC6804_ProcessOutput(bms_output->balance_req);
 		Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
 	}
 
 }
 
-// [TODO] Turn off and move command prompt when others are typing....bitch
-//	  Board Print should tell microrl to gtfo
 void Process_Keyboard(void) {
 	uint32_t readln = Board_Read(str,50);
 	uint32_t i;
@@ -204,25 +190,34 @@ void Process_Keyboard(void) {
 	// Cause Error
 	// Restart
 
-// [TODO] Figure out output timing method/checkers 		WHO:Everyone
-// [TODO] Write simple contactor Drivers 			WHO:Jorge
-// [TODO] Do heartbeats, see board.c todo 			WHO:Rango
-// [TODO] Move all board state to struct 			WHO:Rango
-// [TODO] Finish Brusa Implementation 				WHO:Eric
-// [TODO] Validate Brusa Error Handling ** 			WHO:Eric+Rango
-// [TODO] Finish console config (unimplemented stuff) 		WHO:RANGO
-// [TODO] PEC error fails as undervoltage			WHO:RANGO
-// [TODO] Add mod/cell to min/max and error 			WHO:Eric
-//----------------------------
-// After demo
-//
-// [TODO] Add console print handling **				WHO:Rango
-// [TODO] Make Default configuration conservative		WHO:All
-// [TODO] Hardware implement reinit (SPI)
-// [TODO at the end] Add console history			WHO:Rango
-int main(void) {
+// BIG TODO LIST
+// ----------------
+// Add mode for continuous data stream
+// Undervoltage (create error handler)
+// SOC error (create error handler [CAN msg])
+// Reasonable way to change polling speeds (based on state)
+// Add current sense handling
+// Clean up macros
+// Remove LTC_SPI error
+// CAN error handling for different CAN errors
 
-	UNUSED(delay);
+// [TODO] Figure out output timing method/checkers 		WHO:Everyone
+// [TODO] Do heartbeats, see board.c todo 			WHO:Rango
+// [TODO] Cleanup board 							ALL
+// [TODO] Validate Brusa Error Handling ** 			WHO:Eric+Rango
+// [TODO] Add mod/cell to min/max and error 			WHO:Eric
+// [TODO] Refactor similiar functions in error handler
+// [TODO] Line 253, console.c						WHO:Rango!!
+// [TODO] Add console print handling **				WHO:Rango
+// [TODO] Validate packconfig values in EEPROM either needs to be moved 
+// 		  elsewhere and implement bounds checking
+// [TODO] EEPROM checksum!!!
+// [TODO] process input struct and output struct other signals
+// [TODO] Review/cleanup GetModeRequest in board.c:523
+//
+// [TODO at the end] Add console history
+// [TODO at the end] BRUSA error handling
+int main(void) {
 
 	Init_BMS_Structs();
 

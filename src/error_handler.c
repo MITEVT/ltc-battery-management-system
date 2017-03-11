@@ -16,9 +16,7 @@ static ERROR_STATUS_T error_vector[ERROR_NUM_ERRORS];
 static ERROR_HANDLER_STATUS_T handle_LTC6804_PEC(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_LTC6804_CVST(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_LTC6804_OWT(ERROR_STATUS_T* er_stat, uint32_t msTicks);
-static ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks);
-static ERROR_HANDLER_STATUS_T handle_INVALID_SSM_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
-static ERROR_HANDLER_STATUS_T handle_CONTACTORS_ERRONEOUS_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
+static ERROR_HANDLER_STATUS_T handle_EEPROM(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_CELL_UNDER_VOLTAGE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_CELL_OVER_VOLTAGE(ERROR_STATUS_T* er_stat, uint32_t msTicks);
 static ERROR_HANDLER_STATUS_T handle_CELL_OVER_TEMP(ERROR_STATUS_T* er_stat, uint32_t msTicks);
@@ -30,9 +28,7 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
 														handle_LTC6804_PEC,
 														handle_LTC6804_CVST,
 														handle_LTC6804_OWT,
-														handle_ERROR,
-														handle_INVALID_SSM_STATE,
-														handle_CONTACTORS_ERRONEOUS_STATE,
+														handle_EEPROM,
 														handle_CELL_UNDER_VOLTAGE,
 														handle_CELL_OVER_VOLTAGE,
 														handle_CELL_OVER_TEMP,
@@ -149,21 +145,12 @@ static ERROR_HANDLER_STATUS_T handle_LTC6804_OWT(ERROR_STATUS_T* er_stat, uint32
 	}
 }
 
-static ERROR_HANDLER_STATUS_T handle_ERROR(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
+static ERROR_HANDLER_STATUS_T handle_EEPROM(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
 	(void)(er_stat);
 	(void)(msTicks);
 	return HANDLER_HALT;
 }
-static ERROR_HANDLER_STATUS_T handle_INVALID_SSM_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	(void)(er_stat);
-	(void)(msTicks);
-	return HANDLER_HALT;
-}
-static ERROR_HANDLER_STATUS_T handle_CONTACTORS_ERRONEOUS_STATE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
-	(void)(er_stat);
-	(void)(msTicks);
-	return HANDLER_HALT;
-}
+
 static ERROR_HANDLER_STATUS_T handle_CELL_UNDER_VOLTAGE(ERROR_STATUS_T* er_stat, uint32_t msTicks) {
 	if (er_stat->error == false) {
 		er_stat->handling = false;

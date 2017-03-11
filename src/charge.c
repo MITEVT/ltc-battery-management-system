@@ -26,12 +26,8 @@ void Charge_Config(PACK_CONFIG_T *pack_config) {
 	cv_charge_current_mA = cc_charge_current_mA;
 }
 
-BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
-		case BMS_SSM_MODE_INIT:
-			// Invalid, shouldn't be called from init
-			return BMS_INVALID_SSM_STATE_ERROR;
-			
 		case BMS_SSM_MODE_CHARGE:
 			if (state->charge_state == BMS_CHARGE_OFF 
 					|| state->charge_state == BMS_CHARGE_BAL) {
@@ -58,12 +54,10 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 	}
 
 	switch (state->charge_state) {
-
 		case BMS_CHARGE_OFF:
 			_set_output(false, false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
 			break;
-
 		case BMS_CHARGE_INIT:
 			_set_output((input->mode_request == BMS_SSM_MODE_CHARGE), false, 0, 0, output);
 			memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
@@ -89,12 +83,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 
 			// if(!input->contactors_closed || !input->charger_on) { // [TODO] Think about this
 			if(!input->contactors_closed) {
-				// [TODO] Consider setting outputs to zero
 				_set_output(true, false, 0, 0, output);
 				state->charge_state = BMS_CHARGE_INIT;
-				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
-
 			break;
 		case BMS_CHARGE_CV:
 
@@ -104,13 +95,10 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			} else {
 				_set_output(true, true, cv_charge_voltage_mV, cv_charge_current_mA, output);
 
-				// [TODO] change to cv_min_current times num p
 				if (input->pack_status->pack_current_mA < state->pack_config->cv_min_current_mA*state->pack_config->pack_cells_p) {
 					if ((input->msTicks - last_time_above_cv_min_curr) >= state->pack_config->cv_min_current_ms) {
-						// output->charge_req->charger_on = false;
 						_set_output(false, false, 0, 0, output);
 						memset(output->balance_req, 0, sizeof(output->balance_req[0])*total_num_cells);
-
 						state->charge_state = BMS_CHARGE_DONE;
 						break;
 					}
@@ -122,12 +110,9 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			_calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
 
 			if(!input->contactors_closed) {
-				// [TODO] Consider setting outputs to zero
 				_set_output(true, false, 0, 0, output);
 				state->charge_state = BMS_CHARGE_INIT;
-				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
-
 			break;
 
 		case BMS_CHARGE_BAL:
@@ -140,13 +125,10 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 			}
 
 			if(input->contactors_closed) {
-				// [TODO] Consider setting outputs to zero
 				_set_output(false, false, 0, 0, output);
 				state->charge_state = BMS_CHARGE_INIT;
-				// return BMS_CONTACTORS_ERRONEOUS_STATE;
 			}
 
-			// [TODO] add errors such as contactors opening
 			break;
 		case BMS_CHARGE_DONE:
 			_set_output(false, false, 0, 0, output);
@@ -174,7 +156,6 @@ BMS_ERROR_T Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
 				}
 			}
 	}
-	return BMS_NO_ERROR;
 }
 
 

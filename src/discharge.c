@@ -8,10 +8,6 @@ static uint32_t max_pack_current_mA;
 static uint16_t max_cell_temp_thres_C;
 // current, temperature, and voltage
 
-#ifdef PRINT_DISCHARGE_STATE
-	static uint32_t last_discharge_step_debug_message;
-#endif
-
 volatile uint32_t msTicks;
 
 void Discharge_Init(BMS_STATE_T *state) {
@@ -37,28 +33,13 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 							max_cell_temp_thres_C); // approx. initialization pt
 }
 
-BMS_ERROR_T Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-#ifdef PRINT_DISCHARGE_STATE
-	if ((msTicks - last_discharge_step_debug_message) > 1000) {	
-		if (state->discharge_state == BMS_DISCHARGE_OFF) {
-			Board_Println("Discharge state: DISCHARGE_OFF");
-		}
-		last_discharge_step_debug_message = msTicks;
-	}
-#endif //PRINT_DISCHARGE_STATE
-
-
+void Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 	switch (input->mode_request) {
-		case BMS_SSM_MODE_INIT:
-			// Invalid, shouldn't be requestable
-			return BMS_INVALID_SSM_STATE_ERROR;
-
 		case BMS_SSM_MODE_DISCHARGE:
 			if (state->discharge_state == BMS_DISCHARGE_OFF) {
 				state->discharge_state = BMS_DISCHARGE_INIT;
 			}
 			break;
-
 		// we want to switch states (either to STANDBY/CHARGE/ERROR)
 		default: 
 			if(state->discharge_state != BMS_DISCHARGE_OFF) {
@@ -77,20 +58,12 @@ handler:
 			output->close_contactors = true;
 
 			if (input->contactors_closed == output->close_contactors) {
-				if(input->mode_request == BMS_SSM_MODE_DISCHARGE) {
-					state->discharge_state = BMS_DISCHARGE_RUN;
-				} 
+				state->discharge_state = BMS_DISCHARGE_RUN;
 				goto handler;
 			}
 			break;
-
 		case BMS_DISCHARGE_RUN:
-			// error: if contactors are open when we ordered them close
-			// error: if temperature gets too high shut off
-			
-			if(!input->contactors_closed) {
-				return BMS_CONTACTORS_ERRONEOUS_STATE;
-			}
+			output->close_contactors = true;
 
 			// recalculate max current with new temperature
 			max_pack_current_mA = Calculate_Max_Current(
@@ -99,12 +72,13 @@ handler:
 									state->pack_config->pack_cells_p,
 									input->pack_status->max_cell_temp_C);
 			if(input->pack_status->pack_current_mA > max_pack_current_mA) {
-				return BMS_OVER_CURRENT;
+				Error_Assert(ERROR_OVER_CURRENT, input->msTicks);
 			}
 
-			output->close_contactors = true;
+			if(!input->contactors_closed) {
+				state->charge_state = BMS_CHARGE_INIT;
+			}
 			break;
-
 		case BMS_DISCHARGE_DONE:
 			output->close_contactors = false;
 			// if contactors open, then we can turn discharge off
@@ -113,8 +87,6 @@ handler:
 			}
 			break;
 	}
-
-	return BMS_NO_ERROR;
 }
 
 uint32_t Read_Max_Current(void) {

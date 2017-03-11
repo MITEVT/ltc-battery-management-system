@@ -8,7 +8,8 @@
 static uint8_t eeprom_data_buf[DATA_BLOCK_SIZE];
 static PACK_CONFIG_T eeprom_packconf_buf;
 static uint8_t mcc[MAX_NUM_MODULES];
-static uint8_t eeprom_data_addr[3]; // LC1024 eeprom address length is 3 bytes
+static uint8_t eeprom_data_addr_pckcfg[3]; // LC1024 eeprom address length is 3 bytes
+static uint8_t eeprom_data_addr_cc[3];
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum);
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config);
@@ -67,9 +68,20 @@ static void Zero_EEPROM_DataBuffer(void) {
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin){
 	LC1024_Init(pSSP, baud, cs_gpio, cs_pin);
 
-	eeprom_data_addr[0] = EEPROM_DATA_START >> 16;
-	eeprom_data_addr[1] = (EEPROM_DATA_START & 0xFF00) >> 8;
-	eeprom_data_addr[2] = (EEPROM_DATA_START & 0xFF);
+	eeprom_data_addr_pckcfg[0] = EEPROM_DATA_START_PCKCFG >> 16;
+	eeprom_data_addr_pckcfg[1] = (EEPROM_DATA_START_PCKCFG & 0xFF00) >> 8;
+	eeprom_data_addr_pckcfg[2] = (EEPROM_DATA_START_PCKCFG & 0xFF);
+
+	eeprom_data_addr_cc[0] = EEPROM_DATA_START_CC >> 16;
+	eeprom_data_addr_cc[1] = (EEPROM_DATA_START_CC & 0xFF00) >> 8;
+	eeprom_data_addr_cc[2] = (EEPROM_DATA_START_CC & 0xFF);
+	// Board_Println_BLOCKING("CC address: ");
+	// Board_PrintNum(eeprom_data_addr_cc[0], 10);
+	// Board_Println_BLOCKING(" ");
+	// Board_PrintNum(eeprom_data_addr_cc[1], 10);
+	// Board_Println_BLOCKING(" ");
+	// Board_PrintNum(eeprom_data_addr_cc[2], 10);
+	// Board_Println_BLOCKING("");
 
 	// Run_EEPROM_Test();
 
@@ -80,13 +92,33 @@ void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin
 	Board_BlockingDelay(200);
 }
 
+void EEPROM_WriteCC(uint16_t cc) {
+	Board_Println_BLOCKING("Writing CC to EEPROM...");
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	eeprom_data_buf[0] = cc >> 8;
+	eeprom_data_buf[1] = cc & 0xFF;
+	LC1024_WriteMem(eeprom_data_addr_cc, eeprom_data_buf, 2);
+	Board_BlockingDelay(20);
+	Board_Println_BLOCKING("Done writing CC to EEPROM...");
+}
+
+uint16_t EEPROM_LoadCC(void) {
+	Board_Println_BLOCKING("Loading CC from EEPROM...");
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_ReadMem(eeprom_data_addr_cc, eeprom_data_buf, 2);
+	Board_BlockingDelay(20);
+	return (eeprom_data_buf[0] << 8) + (eeprom_data_buf[1]);
+}
+
 // entry from Process_Output(..) in main.c, executed during start
 bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
 
 	Board_Println_BLOCKING("Loading PackConfig from EEPROM...");
     LC1024_WriteEnable();
     LC1024_WriteEnable();
-	LC1024_ReadMem(eeprom_data_addr, eeprom_data_buf, DATA_BLOCK_SIZE);
+	LC1024_ReadMem(eeprom_data_addr_pckcfg, eeprom_data_buf, DATA_BLOCK_SIZE);
 	Board_BlockingDelay(200);
 
 	// offset in the below line: we do not copy module cell count ptr (1 byte)
@@ -218,7 +250,7 @@ static void Write_PackConfig_EEPROM(void) {
 	LC1024_WriteEnable();
 	LC1024_WriteEnable();
 
-	LC1024_WriteMem(eeprom_data_addr, eeprom_data_buf, DATA_BLOCK_SIZE);
+	LC1024_WriteMem(eeprom_data_addr_pckcfg, eeprom_data_buf, DATA_BLOCK_SIZE);
 	Board_BlockingDelay(200);
 	Board_Println_BLOCKING("Finished writing pack config to EEPROM.");
 }

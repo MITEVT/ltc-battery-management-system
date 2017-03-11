@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "ssm.h"
+#include "soc.h"
 #include "console.h"
 #include "eeprom_config.h"
 #include "config.h"
@@ -166,11 +167,11 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 
 	} else if (bms_output->check_packconfig_with_ltc) {
 		bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
+		// bms_input->ltc_packconfig_check_done = true;
 	} else {
 		// [TODO] Ensure this else is correct
 		Board_LTC6804_ProcessOutput(bms_output->balance_req);
 		Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
-
 	}
 
 }
@@ -238,6 +239,7 @@ int main(void) {
 #endif
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
+    SOC_Init();
     Board_Println_BLOCKING("Finished EEPROM init");
 	
 	Error_Init();
@@ -272,6 +274,7 @@ int main(void) {
 		if (msTicks - last_count > 1000) {
 			last_count = msTicks;
 			Board_LED_Toggle(LED1);	 
+            // Board_PrintNum(SOC_Estimate(), 10);
 		}
 
 		
@@ -308,7 +311,7 @@ int hardware_test(void) {
 	Board_Println("HW Test Board Up"); 
 
 	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
-	// Board_LTC6804_Init(&pack_config, cell_voltages);
+	Board_LTC6804_Init(&pack_config, cell_voltages);
 
 	Board_Println("HW Test Drivers Up"); 
 

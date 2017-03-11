@@ -4,10 +4,6 @@
 #include "bms_utils.h"
 #include "board.h"
 
-#ifdef PRINT_SSM_STEP_MESSAGES
-	static uint32_t latest_SSM_step_debug_message = 0;
-#endif
-
 volatile uint32_t msTicks;
 
 void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {

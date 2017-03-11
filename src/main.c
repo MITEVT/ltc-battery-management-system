@@ -273,6 +273,8 @@ int main(void) {
 			last_count = msTicks;
 			Board_LED_Toggle(LED1);	 
 		}
+
+		
 	}
 
 	Board_Println("FORCED HANG");

@@ -74,6 +74,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 		case BMS_CHARGE_CC:
 			if (input->pack_status->pack_cell_max_mV >= state->pack_config->cell_max_mV) {
 				state->charge_state = BMS_CHARGE_CV; // Need to go to CV Mode
+				_set_output(true, true, cv_charge_voltage_mV, cv_charge_current_mA, output);
 			} else {
 				// Charge in CC Mode
 				_set_output(true, true, cc_charge_voltage_mV, cc_charge_current_mA, output);
@@ -92,6 +93,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 			if (input->pack_status->pack_cell_max_mV < state->pack_config->cell_max_mV) {
 				// Need to go back to CC Mode
 				state->charge_state = BMS_CHARGE_CC;
+				_set_output(true, true, cc_charge_voltage_mV, cc_charge_current_mA, output);
 			} else {
 				_set_output(true, true, cv_charge_voltage_mV, cv_charge_current_mA, output);
 

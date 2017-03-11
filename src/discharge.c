@@ -8,7 +8,6 @@ static uint32_t max_pack_current_mA;
 static uint16_t max_cell_temp_thres_C;
 // current, temperature, and voltage
 
-volatile uint32_t msTicks;
 
 void Discharge_Init(BMS_STATE_T *state) {
 	state->discharge_state = BMS_DISCHARGE_OFF;

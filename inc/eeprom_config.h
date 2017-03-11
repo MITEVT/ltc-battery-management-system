@@ -20,7 +20,9 @@ uint8_t EEPROM_ChangeConfig(rw_loc_lable_t rw_loc, uint32_t val);
 bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config);
 void Write_EEPROM_PackConfig_Defaults(void);
 
-void EEPROM_WriteCC(uint16_t cc);
-uint16_t EEPROM_LoadCC(void);
 
+uint32_t EEPROM_LoadCCPage_Num(uint8_t idx);
+void EEPROM_WriteCCPage_Num(uint8_t idx, uint32_t val);
+void EEPROM_LoadCCPage(uint32_t *cc);
+void EEPROM_WriteCCPage(uint32_t *cc);
 #endif

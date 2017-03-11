@@ -5,11 +5,13 @@
 // TODO update eeprom driver to handle pages
 // local buf copies of packconfig
 #define DATA_BLOCK_SIZE sizeof(PACK_CONFIG_T) + CHECKSUM_BYTESIZE + VERSION_BYTESIZE + MAX_NUM_MODULES
+#define CC_PAGE_SZ 64
 static uint8_t eeprom_data_buf[DATA_BLOCK_SIZE];
 static PACK_CONFIG_T eeprom_packconf_buf;
 static uint8_t mcc[MAX_NUM_MODULES];
 static uint8_t eeprom_data_addr_pckcfg[3]; // LC1024 eeprom address length is 3 bytes
 static uint8_t eeprom_data_addr_cc[3];
+
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum);
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config);
@@ -92,24 +94,60 @@ void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin
 	Board_BlockingDelay(200);
 }
 
-void EEPROM_WriteCC(uint16_t cc) {
-	Board_Println_BLOCKING("Writing CC to EEPROM...");
+void EEPROM_WriteCCPage(uint32_t *cc) {
+	Board_Println_BLOCKING("Writing CC Page to EEPROM...");
+	memcpy(eeprom_data_buf, cc, CC_PAGE_SZ);
     LC1024_WriteEnable();
     LC1024_WriteEnable();
-	eeprom_data_buf[0] = cc >> 8;
-	eeprom_data_buf[1] = cc & 0xFF;
-	LC1024_WriteMem(eeprom_data_addr_cc, eeprom_data_buf, 2);
-	Board_BlockingDelay(20);
-	Board_Println_BLOCKING("Done writing CC to EEPROM...");
+	LC1024_WriteMem(eeprom_data_addr_cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_BlockingDelay(150);
+	Board_Println_BLOCKING("Done writing CC Page to EEPROM...");
 }
 
-uint16_t EEPROM_LoadCC(void) {
-	Board_Println_BLOCKING("Loading CC from EEPROM...");
+void EEPROM_LoadCCPage(uint32_t *cc) {
+	Board_Println_BLOCKING("Loading CC Page from EEPROM...");
     LC1024_WriteEnable();
     LC1024_WriteEnable();
-	LC1024_ReadMem(eeprom_data_addr_cc, eeprom_data_buf, 2);
-	Board_BlockingDelay(20);
-	return (eeprom_data_buf[0] << 8) + (eeprom_data_buf[1]);
+	LC1024_ReadMem(eeprom_data_addr_cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_BlockingDelay(150);
+	memcpy(cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_Println_BLOCKING("Done loading CC Page from EEPROM...");
+}
+
+// idx should be from 0-63 inclusive
+void EEPROM_WriteCCPage_Num(uint8_t idx, uint32_t val) {
+	Board_Println_BLOCKING("Writing CC Num to EEPROM...");
+
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_ReadMem(eeprom_data_addr_cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_BlockingDelay(150);
+
+	eeprom_data_buf[idx<<2] = val >> 24;
+	eeprom_data_buf[(idx<<2)+1] = (val & 0x00FF0000) >> 16;
+	eeprom_data_buf[(idx<<2)+2] = (val & 0x0000FF00) >> 8;
+	eeprom_data_buf[(idx<<2)+3] = (val & 0x000000FF);
+
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_WriteMem(eeprom_data_addr_cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_BlockingDelay(150);
+
+	Board_Println_BLOCKING("Done writing CC Num to EEPROM...");
+}
+
+// idx should be from 0-63 inclusive
+uint32_t EEPROM_LoadCCPage_Num(uint8_t idx) {
+	Board_Println_BLOCKING("Loading CC Num from EEPROM...");
+    LC1024_WriteEnable();
+    LC1024_WriteEnable();
+	LC1024_ReadMem(eeprom_data_addr_cc, eeprom_data_buf, CC_PAGE_SZ);
+	Board_BlockingDelay(150);
+	Board_Println_BLOCKING("Done loading CC Num from EEPROM...");
+	return ((eeprom_data_buf[idx<<2] << 24) 
+			+ (eeprom_data_buf[(idx<<2)+1] << 16)
+			+ (eeprom_data_buf[(idx<<2)+2] << 8)
+			+ eeprom_data_buf[(idx<<2)+3]);
 }
 
 // entry from Process_Output(..) in main.c, executed during start

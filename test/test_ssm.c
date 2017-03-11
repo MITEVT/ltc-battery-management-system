@@ -184,7 +184,7 @@ TEST(SSM_Test, is_state_done) {
 	TEST_ASSERT(Is_State_Done(&bms_state));
     
     bms_state.curr_mode = BMS_SSM_MODE_DISCHARGE;
-    bms_state.discharge_state = BMS_DISCHARGE_DONE;
+    bms_state.discharge_state = BMS_DISCHARGE_OFF;
 	TEST_ASSERT(Is_State_Done(&bms_state));
 
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;

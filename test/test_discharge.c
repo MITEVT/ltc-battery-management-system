@@ -127,6 +127,8 @@ TEST(Discharge_Test, discharge_step_to_standby) {
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
     TEST_ASSERT_EQUAL(0, Discharge_Step(&bms_input, &bms_state, &bms_output));
     TEST_ASSERT_EQUAL(bms_state.discharge_state, BMS_DISCHARGE_OFF);
+    SSM_Step(&bms_input, &bms_state, &bms_output);
+    TEST_ASSERT_EQUAL(BMS_SSM_MODE_STANDBY, bms_state.curr_mode);
 }
 
 TEST(Discharge_Test, discharge_step_to_run) {

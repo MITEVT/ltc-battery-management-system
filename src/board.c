@@ -410,6 +410,7 @@ void Board_Init_Drivers(void) {
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
 	Board_LTC6804_GetCellVoltages(pack_status);
 	Board_LTC6804_OpenWireTest();
+	Board_LTC6804_GetCellTemperatures(pack_status);
 }
 
 void Board_LTC6804_ProcessOutput(bool *balance_req) {
@@ -456,6 +457,11 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 			Board_Println("WTF");
 	}
 #endif
+}
+
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+	UNUSED(pack_status);
+	//TODO
 }
 
 //[TODO] check saftey 

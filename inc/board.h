@@ -140,6 +140,12 @@ void Board_LTC6804_ProcessOutput(bool *balance_req);
  */
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
 
+/**
+ * @details get cell temperatures
+ *
+ * @param pack_status datatype containing a mutable array of cell temperatures
+ */
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

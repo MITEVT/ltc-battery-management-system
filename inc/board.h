@@ -49,6 +49,8 @@
 #define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
+#define TIME_PER_THERMISTOR_MS 400
+
 
 typedef enum {
 	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
@@ -139,6 +141,18 @@ void Board_LTC6804_ProcessOutput(bool *balance_req);
  * @param mutable array of cell voltages
  */
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
+
+/**
+ * @details get cell temperatures
+ *
+ * @param pack_status mutable datatype containing array of cell temperatures
+ * @param lastThermistorShitTime_ms last time selected thermistor was changed, measured in
+ *        ms
+ * @param timePerThermistor_ms amount of time each thermistor is selected, measured in ms
+ */
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
+		uint32_t * lastThermistorShiftTime_ms,
+		const uint32_t timePerThermistor_ms);
 
 /**
  * @details does a CVST

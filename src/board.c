@@ -59,6 +59,9 @@ uint32_t latest_vcu_heartbeat_time = 0;
 
 #endif
 
+//Cell temperature sensing stuff
+static uint32_t board_lastThermistorShiftTime_ms = 0;
+
 volatile uint32_t msTicks;
 
 #ifdef PRINT_MODE_REQUESTS
@@ -415,7 +418,8 @@ void Board_Init_Drivers(void) {
 
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
 	Board_LTC6804_GetCellVoltages(pack_status);
-	CellTemperatures_Step(pack_status);
+	Board_LTC6804_GetCellTemperatures(pack_status, 
+			&board_lastThermistorShiftTime_ms, TIME_PER_THERMISTOR_MS);
 	Board_LTC6804_OpenWireTest();
 }
 
@@ -463,6 +467,22 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 			Board_Println("WTF");
 	}
 #endif
+}
+
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
+		uint32_t * lastThermistorShiftTime_ms, 
+		const uint32_t timePerThermistor_ms) {
+#ifdef TEST_HARDWARE
+	UNUSED(pack_status);
+	UNUSED(lastThermistorShiftTime_ms);
+	UNUSED(timePerThermistor_ms);
+	return;
+#else
+	if ((msTicks - *lastThermistorShiftTime_ms) > timePerThermistor_ms) {
+		CellTemperatures_Step(pack_status);
+		*lastThermistorShiftTime_ms += timePerThermistor_ms;
+	}
+#endif //TEST_HARDWARE
 }
 
 //[TODO] check saftey 

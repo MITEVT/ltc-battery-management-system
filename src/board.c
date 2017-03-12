@@ -410,9 +410,6 @@ void Board_Init_Drivers(void) {
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
 	Board_LTC6804_GetCellVoltages(pack_status);
 	Board_LTC6804_OpenWireTest();
-
-	// Get Temps
-	LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 5, 0, msTicks);
 }
 
 void Board_LTC6804_ProcessOutput(bool *balance_req) {

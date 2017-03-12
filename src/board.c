@@ -1,8 +1,14 @@
-#include <string.h>
+// ltc-battery-controller
 #include "board.h"
-#include "brusa.h"
 #include "can_constants.h"
 #include "bms_can.h"
+#include "cell_temperatures.h"
+
+// C libraries
+#include <string.h>
+
+// lpc11cx4-library
+#include "brusa.h"
 
 const uint32_t OscRateIn = 0;
 
@@ -409,8 +415,8 @@ void Board_Init_Drivers(void) {
 
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
 	Board_LTC6804_GetCellVoltages(pack_status);
+	CellTemperatures_Step(pack_status);
 	Board_LTC6804_OpenWireTest();
-	Board_LTC6804_GetCellTemperatures(pack_status);
 }
 
 void Board_LTC6804_ProcessOutput(bool *balance_req) {
@@ -457,15 +463,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 			Board_Println("WTF");
 	}
 #endif
-}
-
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
-	// cycle through 24 thermistors on each slave board every 10s
-	// on each cycle:
-	//   set multiplexer address
-	//   read thermistor voltage
-	UNUSED(pack_status);
-	//TODO
 }
 
 //[TODO] check saftey 

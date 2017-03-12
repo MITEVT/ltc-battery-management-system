@@ -460,6 +460,10 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 }
 
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+	// cycle through 24 thermistors on each slave board every 10s
+	// on each cycle:
+	//   set multiplexer address
+	//   read thermistor voltage
 	UNUSED(pack_status);
 	//TODO
 }

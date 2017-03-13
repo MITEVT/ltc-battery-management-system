@@ -1,7 +1,7 @@
 #ifndef CELL_TEMPERATURES_H
 #define CELL_TEMPERATURES_H
 
-// ltc-battery-controller
+// ltc-battery-management-system
 #include "state_types.h"
 
 // constants

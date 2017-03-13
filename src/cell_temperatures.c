@@ -1,4 +1,4 @@
-// ltc-battery-controller
+// ltc-battery-management-system
 #include "cell_temperatures.h"
 #include "state_types.h"
 #include "config.h"

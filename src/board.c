@@ -1,4 +1,4 @@
-// ltc-battery-controller
+// ltc-battery-management-system
 #include "board.h"
 #include "can_constants.h"
 #include "bms_can.h"

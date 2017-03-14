@@ -31,6 +31,6 @@ TEST_TEAR_DOWN(Cell_Temperatures_Test) {
  * TODO
  */
 
-TEST_GROUP_RUNNER(BMS_CAN_Test) {
+TEST_GROUP_RUNNER(Cell_Temperatures_Test) {
 	// TODO
 }

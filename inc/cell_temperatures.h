@@ -3,24 +3,37 @@
 
 // ltc-battery-management-system
 #include "state_types.h"
+#include "config.h"
 
 // constants
 #define NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS 5
+static const uint8_t thermistorAddresses[MAX_THERMISTORS_PER_MODULE][NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS] = {
+	{0, 0, 0, 0, 0},
+	{0, 0, 0, 0, 1},
+	{0, 0, 0, 1, 0},
+	{0, 0, 0, 1, 1},
+	{0, 0, 1, 0, 0},
+	{0, 0, 1, 0, 1},
+	{0, 0, 1, 1, 0},
+	{0, 0, 1, 1, 1},
+	{0, 1, 0, 0, 0},
+	{0, 1, 0, 0, 1},
+	{0, 1, 0, 1, 0},
+	{0, 1, 0, 1, 1},
+	{0, 1, 1, 0, 0},
 
-
-/****************************************************************************************
- * Private Functions
- * *************************************************************************************/
-
-/**
- * @details get address of current thermistor
- *
- * @param currentThermistor value of current thermistor
- * @param pack_status datatype containing mutable array representing current thermistor
- *                    address
- */
-void CellTemperatures_GetThermistorAddress(uint8_t currentThermistor, 
-		BMS_PACK_STATUS_T * pack_status);
+	{1, 0, 0, 0, 0},
+	{1, 0, 0, 0, 1},
+	{1, 0, 0, 1, 0},
+	{1, 0, 0, 1, 1},
+	{1, 0, 1, 0, 0},
+	{1, 0, 1, 0, 1},
+	{1, 0, 1, 1, 0},
+	{1, 0, 1, 1, 1},
+	{1, 1, 0, 0, 0},
+	{1, 1, 0, 0, 1},
+	{1, 1, 0, 1, 0}
+};
 
 /****************************************************************************************
  * Public Functions
@@ -29,8 +42,9 @@ void CellTemperatures_GetThermistorAddress(uint8_t currentThermistor,
 /**
  * @details get cell temperature of next thermistor
  *
- * @param pack_status datatype containing a mutable array of cell temperatures
+ * @param bms_state datatype that contains a variable representing the current thermistor
+ *                  selected
  */
-void CellTemperatures_Step(BMS_PACK_STATUS_T * pack_status);
+void CellTemperatures_Step(BMS_STATE_T * bms_state);
 
 #endif //CELL_TEMPERATURES

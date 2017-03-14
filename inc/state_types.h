@@ -126,11 +126,12 @@ static const char * const BMS_ERROR_NAMES[] = {
 };
 
 typedef struct BMS_STATE {
-    BMS_CHARGER_STATUS_T *charger_status;
-    PACK_CONFIG_T *pack_config;
+	BMS_CHARGER_STATUS_T *charger_status;
+	PACK_CONFIG_T *pack_config;
 	BMS_SSM_MODE_T curr_mode;
+	uint8_t currentThermistor;
 
-    // sub state machine state
+	// sub state machine state
 	BMS_INIT_MODE_T init_state;
 	BMS_CHARGE_MODE_T charge_state;
 	BMS_DISCHARGE_MODE_T discharge_state;

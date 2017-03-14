@@ -416,10 +416,9 @@ void Board_Init_Drivers(void) {
 
 }
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T * bms_state) {
 	Board_LTC6804_GetCellVoltages(pack_status);
-	Board_LTC6804_GetCellTemperatures(pack_status, 
-			&board_lastThermistorShiftTime_ms, TIME_PER_THERMISTOR_MS);
+	Board_LTC6804_GetCellTemperatures(pack_status, bms_state);
 	Board_LTC6804_OpenWireTest();
 }
 
@@ -470,11 +469,10 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 }
 
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
-		uint32_t * lastThermistorShiftTime_ms, 
-		const uint32_t timePerThermistor_ms) {
-	if ((msTicks - *lastThermistorShiftTime_ms) > timePerThermistor_ms) {
-		*lastThermistorShiftTime_ms += timePerThermistor_ms;
-		CellTemperatures_Step(pack_status);
+		BMS_STATE_T * bms_state) {
+	if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
+		board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
+		CellTemperatures_Step(bms_state);
 
 #ifndef TEST_HARDWARE
 		// set the multiplxer address, read the thermistor voltage, and save the

@@ -143,7 +143,7 @@ void Board_LTC6804_ProcessOutput(bool *balance_req);
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
 
 /**
- * @details get cell temperatures
+ * @details iterates through thermistors and saves cell temperatures in pack_status
  *
  * @param pack_status mutable datatype containing array of cell temperatures
  * @param lastThermistorShitTime_ms last time selected thermistor was changed, measured in
@@ -153,6 +153,19 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
 		uint32_t * lastThermistorShiftTime_ms,
 		const uint32_t timePerThermistor_ms);
+
+/**
+ * @details sets the address of the multiplexer by controlling the shift register
+ *
+ * @param pack_status datatype containing an array representing the current multiplexer 
+ *                    address
+ */
+void Board_LTC6804_SetMultiplexerAddress(BMS_PACK_STATUS_T * pack_status);
+
+/**
+ * @details gets the temperature of the currently selected thermistor 
+ */
+void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

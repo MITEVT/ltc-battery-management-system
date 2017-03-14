@@ -472,17 +472,28 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
 		uint32_t * lastThermistorShiftTime_ms, 
 		const uint32_t timePerThermistor_ms) {
-#ifdef TEST_HARDWARE
-	UNUSED(pack_status);
-	UNUSED(lastThermistorShiftTime_ms);
-	UNUSED(timePerThermistor_ms);
-	return;
-#else
 	if ((msTicks - *lastThermistorShiftTime_ms) > timePerThermistor_ms) {
-		CellTemperatures_Step(pack_status);
 		*lastThermistorShiftTime_ms += timePerThermistor_ms;
-	}
+		CellTemperatures_Step(pack_status);
+
+#ifndef TEST_HARDWARE
+		// set the multiplxer address, read the thermistor voltage, and save the
+		// temperature in pack_status
+		Board_LTC6804_GetThermistorTemperature(pack_status);
 #endif //TEST_HARDWARE
+	}
+}
+
+void Board_LTC6804_SetMultiplexerAddress(BMS_PACK_STATUS_T * pack_status) {
+	UNUSED(pack_status);
+	// TODO
+}
+
+void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status) {
+	// set multiplexer address
+	Board_LTC6804_SetMultiplexerAddress(pack_status);
+	// TODO: get thermistor voltage reading
+	// TODO: save temperature in pack_status
 }
 
 //[TODO] check saftey 

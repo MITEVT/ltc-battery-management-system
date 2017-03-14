@@ -16,25 +16,11 @@
  * @details get address of current thermistor
  *
  * @param currentThermistor value of current thermistor
- * @param thermistorAddress array of bits representing the address of currentThermistor
+ * @param pack_status datatype containing mutable array representing current thermistor
+ *                    address
  */
-void getThermistorAddress(uint8_t currentThermistor, uint8_t * thermistorAddress);
-
-/**
- * @details sets address of multiplexer by controlling shit register
- *
- * @param thermistorAddress array of bits representing the address of a thermistor
- */
-void setMultiplexerAddress(uint8_t * thermistorAddress);
-
-/**
- * @details get voltage of currentThermistor
- *
- * @param currentThermistor value of current thermistor
- * @param pack_status datatype containing mutable array of cell temperatures
- */
-void getThermistorVoltage(uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status);
-
+void CellTemperatures_GetThermistorAddress(uint8_t currentThermistor, 
+		BMS_PACK_STATUS_T * pack_status);
 
 /****************************************************************************************
  * Public Functions

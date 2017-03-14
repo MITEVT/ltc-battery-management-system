@@ -6,6 +6,7 @@ static void RunAllTests(void) {
   RUN_TEST_GROUP(Discharge_Test);
   RUN_TEST_GROUP(ERROR_Test);
   RUN_TEST_GROUP(BMS_CAN_Test);
+  RUN_TEST_GROUP(Cell_Temperatures_Test);
 }
 
 int main(int argc, const char * argv[]) {

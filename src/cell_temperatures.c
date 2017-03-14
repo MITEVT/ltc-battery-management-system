@@ -6,9 +6,6 @@
 //lpc11cx4-library
 #include "lpc_types.h"
 
-// state
-static uint8_t currentThermistor = 0;
-
 /**************************************************************************************
  * Public Functions
  * ***********************************************************************************/
@@ -16,11 +13,10 @@ static uint8_t currentThermistor = 0;
 void CellTemperatures_Step(BMS_STATE_T * bms_state) {
 
 	// move to next thermistor
-	if (currentThermistor < MAX_THERMISTORS_PER_MODULE) {
-		currentThermistor += 1;
+	if (bms_state->currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
+		bms_state->currentThermistor += 1;
 	} else {
-		currentThermistor = 0;
+		bms_state->currentThermistor = 0;
 	}
 
-	bms_state->currentThermistor = currentThermistor;
 }

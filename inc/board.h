@@ -51,6 +51,11 @@
 
 #define TIME_PER_THERMISTOR_MS 400
 
+// ltc6804 constants
+#define LTC6804_SHIFT_REGISTER_DATA_IN 4
+#define LTC6804_SHIFT_REGISTER_CLOCK 3
+#define LTC6804_SHIFT_REGISTER_LATCH 2
+
 
 typedef enum {
 	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
@@ -155,15 +160,20 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
 /**
  * @details sets the address of the multiplexer by controlling the shift register
  *
- * @param pack_status datatype containing an array representing the current multiplexer 
- *                    address
+ * @param bms_state dataype containing a varibale representing the current thermistor
+ *                  selected
  */
-void Board_LTC6804_SetMultiplexerAddress(BMS_PACK_STATUS_T * pack_status);
+void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state);
 
 /**
  * @details gets the temperature of the currently selected thermistor 
+ *
+ * @param pack_status mutable datatype containing an array of cell temperatures
+ * @param bms_state datatype containing a variable representing the current thermistor
+ *                  selected
  */
-void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
+void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
+		BMS_STATE_T * bms_state);
 
 /**
  * @details does a CVST

@@ -20,3 +20,12 @@ void CellTemperatures_Step(BMS_STATE_T * bms_state) {
 	}
 
 }
+
+uint8_t CellTemperatures_GetThermistorAddressBit(uint8_t currentThermistor, 
+		uint8_t bit) {
+	const uint8_t currentThermistorAddress = thermistorAddresses[currentThermistor];
+	const uint8_t bitMask = 0b00000001;
+	const uint8_t thermistorAddressBit = (currentThermistorAddress >> bit) 
+		& bitMask;
+	return thermistorAddressBit;	
+}

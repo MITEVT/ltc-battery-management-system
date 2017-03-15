@@ -49,4 +49,13 @@ static const uint8_t thermistorAddresses[MAX_THERMISTORS_PER_MODULE] = {
  */
 void CellTemperatures_Step(BMS_STATE_T * bms_state);
 
+/**
+ * @details gets bit bit of current thermistor address 
+ *
+ * @param currentThermistor number of thermistor currently selected
+ * @param bit bit of current thermistor address we want to obtain
+ * @return bit of current thermistor address
+ */
+uint8_t CellTemperatures_GetThermistorAddressBit(uint8_t currentThermistor, uint8_t bit);
+
 #endif //CELL_TEMPERATURES

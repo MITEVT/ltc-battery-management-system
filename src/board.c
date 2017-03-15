@@ -477,21 +477,55 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
 #ifndef TEST_HARDWARE
 		// set the multiplxer address, read the thermistor voltage, and save the
 		// temperature in pack_status
-		Board_LTC6804_GetThermistorTemperature(pack_status);
+		Board_LTC6804_GetThermistorTemperature(pack_status, bms_state);
 #endif //TEST_HARDWARE
 	}
-}
-
-void Board_LTC6804_SetMultiplexerAddress(BMS_PACK_STATUS_T * pack_status) {
+#ifdef TEST_HARDWARE
 	UNUSED(pack_status);
-	// TODO
+#endif //TEST_HARDWARE
 }
 
-void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status) {
+void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state) {
+#ifndef TEST_HARDWARE
+	// Shift in 3 zeroes
+	const uint8_t unusedShiftRegisterOutputs = 3;
+	int8_t i;
+	for (i=0; i<unusedShiftRegisterOutputs; i++) {
+		//TODO: check return value of SetGPIOState
+		LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
+				LTC6804_SHIFT_REGISTER_DATA_IN, 0, msTicks);
+		LTC6804_GPIORiseFall(&ltc6804_config, &ltc6804_state, 
+				LTC6804_SHIFT_REGISTER_CLOCK, msTicks);
+	}
+
+	// Shift in multiplexer logic control bits
+	for (i=(NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS-1); i>=0; i--) {
+		uint8_t thermistorAddressBit = 
+			CellTemperatures_GetThermistorAddressBit(
+					bms_state->currentThermistor, i);
+		//TODO: check return value of SetGPIOState
+		LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+				LTC6804_SHIFT_REGISTER_DATA_IN, thermistorAddressBit, 
+				msTicks);
+		LTC6804_GPIORiseFall(&ltc6804_config, &ltc6804_state, 
+				LTC6804_SHIFT_REGISTER_CLOCK, msTicks);
+	}
+
+	// Latch the outputs
+	LTC6804_GPIORiseFall(&ltc6804_config, &ltc6804_state, 
+			LTC6804_SHIFT_REGISTER_LATCH, msTicks);
+#else
+	UNUSED(bms_state);
+#endif //TEST_HARDWARE
+}
+
+void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status, 
+		BMS_STATE_T * bms_state) {
 	// set multiplexer address
-	Board_LTC6804_SetMultiplexerAddress(pack_status);
+	Board_LTC6804_SetMultiplexerAddress(bms_state);
 	// TODO: get thermistor voltage reading
 	// TODO: save temperature in pack_status
+	UNUSED(pack_status);
 }
 
 //[TODO] check saftey 

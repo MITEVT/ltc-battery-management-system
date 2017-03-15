@@ -487,6 +487,12 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
 
 void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state) {
 #ifndef TEST_HARDWARE
+	// initalize CLOCK and LATCH input to the shift register
+	LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+			LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+	LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+			LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
+
 	// Shift in 3 zeroes
 	const uint8_t unusedShiftRegisterOutputs = 3;
 	int8_t i;

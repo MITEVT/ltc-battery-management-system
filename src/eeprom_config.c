@@ -200,7 +200,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->cell_min_mV = 2800;
 	pack_config->cell_max_mV = 4200;
 	pack_config->cell_capacity_cAh = 250;
-	pack_config->num_modules = 2;
+	pack_config->num_modules = 1;
 	// pack_config->cell_charge_c_rating_cC = 50;
 	pack_config->cell_charge_c_rating_cC = 05;
 	pack_config->bal_on_thresh_mV = 4;
@@ -292,14 +292,35 @@ static void Write_PackConfig_EEPROM(void) {
 
 
 static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config) {
-	// TODO checksum
-	UNUSED(pack_config);
-	return 1;
+	uint8_t checksum = 0;
+	char *data = (char *) pack_config;
+	uint8_t i;
+	for (i=0; i < sizeof(PACK_CONFIG_T); i++) {
+		checksum += *data++;
+		checksum = checksum % 256;
+	}
+	return checksum;
 }
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum) {
-	// TODO validate the packconfig
-	UNUSED(pack_config);
-	UNUSED(checksum);
-	return version == STORAGE_VERSION;
+	uint8_t calc_checksum = Calculate_Checksum(pack_config);
+	if(version != STORAGE_VERSION) {
+		Board_Print_BLOCKING("Storage version check failed!");
+		return false;
+	} else if(calc_checksum != checksum) {
+		Board_Print_BLOCKING("Checksum check failed!");
+		return false;
+	}
+	bool check = pack_config->cell_discharge_c_rating_cC < 50;
+	check &= pack_config->cell_charge_c_rating_cC < 50;
+	check &= pack_config->cell_min_mV < 10000;
+	check &= pack_config->cell_max_mV > 1000;
+	check &= pack_config->num_modules < 30;
+	check &= pack_config->bal_on_thresh_mV < 1000;
+	check &= pack_config->bal_off_thresh_mV < 1000;
+	if(!check) {
+		Board_Print_BLOCKING("Pack validation failed!");
+		return false;
+	}
+	return true;
 }

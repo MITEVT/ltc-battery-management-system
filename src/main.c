@@ -231,7 +231,7 @@ int main(void) {
 	Board_UART_Init(UART_BAUD);
 
 #ifdef DEBUG_ENABLE
-    Board_Println("Board Up (DEBUG)");
+	Board_Println("Board Up (DEBUG)");
 #else
 	Board_Println("Board Up");   
 #endif

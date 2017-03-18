@@ -71,11 +71,11 @@ TEST_SETUP(Discharge_Test) {
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 
 
-	printf("\r(Discharge_Test)Setup...");
+    printf("\r(Discharge_Test)Setup...");
 }
 
 TEST_TEAR_DOWN(Discharge_Test) {
-	printf("Teardown\r\n");
+    printf("Teardown\r\n");
 }
 
 TEST(Discharge_Test, calculate_max_current) {
@@ -104,7 +104,7 @@ void Set_PackConfig(
 
 TEST(Discharge_Test, config) {
     printf("config...");
-	Discharge_Config(bms_state.pack_config);
+    Discharge_Config(bms_state.pack_config);
     TEST_ASSERT_EQUAL(100, Read_Max_Current());
 }
 
@@ -131,7 +131,7 @@ TEST(Discharge_Test, discharge_step_to_standby) {
 }
 
 TEST(Discharge_Test, discharge_step_to_run) {
-	printf("discharge_step_to_run...");
+    printf("discharge_step_to_run...");
     // from test init, input request is already in discharge
     Discharge_Step(&bms_input, &bms_state, &bms_output);
 
@@ -149,7 +149,7 @@ TEST(Discharge_Test, discharge_step_to_run) {
 }
 
 TEST(Discharge_Test, discharge_step_undervoltage_error) {
-	printf("discharge_step_undervoltage_error...");
+    printf("discharge_step_undervoltage_error...");
     // from test init, input request is already in discharge
     Discharge_Step(&bms_input, &bms_state, &bms_output);
     
@@ -165,7 +165,7 @@ TEST(Discharge_Test, discharge_step_undervoltage_error) {
 }
 
 TEST(Discharge_Test, discharge_step_overcurrent_error) {
-	printf("discharge_step_overcurrent_error...");
+    printf("discharge_step_overcurrent_error...");
     // from test init, input request is already in discharge
     Discharge_Step(&bms_input, &bms_state, &bms_output);
 
@@ -182,12 +182,12 @@ TEST(Discharge_Test, discharge_step_overcurrent_error) {
 
 
 TEST_GROUP_RUNNER(Discharge_Test) {
-	RUN_TEST_CASE(Discharge_Test, calculate_max_current);
-	RUN_TEST_CASE(Discharge_Test, config);
-	RUN_TEST_CASE(Discharge_Test, discharge_step_invalid_mode_req);
-	RUN_TEST_CASE(Discharge_Test, discharge_step_to_standby);
-	RUN_TEST_CASE(Discharge_Test, discharge_step_to_run);
-	// RUN_TEST_CASE(Discharge_Test, discharge_step_undervoltage_error);
-	// RUN_TEST_CASE(Discharge_Test, discharge_step_overcurrent_error);
+    RUN_TEST_CASE(Discharge_Test, calculate_max_current);
+    RUN_TEST_CASE(Discharge_Test, config);
+    RUN_TEST_CASE(Discharge_Test, discharge_step_invalid_mode_req);
+    RUN_TEST_CASE(Discharge_Test, discharge_step_to_standby);
+    RUN_TEST_CASE(Discharge_Test, discharge_step_to_run);
+    // RUN_TEST_CASE(Discharge_Test, discharge_step_undervoltage_error);
+    // RUN_TEST_CASE(Discharge_Test, discharge_step_overcurrent_error);
 }
 

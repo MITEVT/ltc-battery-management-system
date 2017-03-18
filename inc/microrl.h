@@ -55,34 +55,34 @@
 // history struct, contain internal variable
 // history store in static ring buffer for memory saving
 typedef struct {
-	char ring_buf [_RING_HISTORY_LEN];
-	int begin;
-	int end;
-	int cur;
+    char ring_buf [_RING_HISTORY_LEN];
+    int begin;
+    int end;
+    int cur;
 } ring_history_t;
 #endif
 
 // microrl struct, contain internal library data
 typedef struct {
 #ifdef _USE_ESC_SEQ
-	char escape_seq;
-	char escape;
+    char escape_seq;
+    char escape;
 #endif
 #if (defined(_ENDL_CRLF) || defined(_ENDL_LFCR))
-	char tmpch;
+    char tmpch;
 #endif
 #ifdef _USE_HISTORY
-	ring_history_t ring_hist;          // history object
+    ring_history_t ring_hist;          // history object
 #endif
-	char * prompt_str;                 // pointer to prompt string
-	char cmdline [_COMMAND_LINE_LEN];  // cmdline buffer
-	int cmdlen;                        // last position in command line
-	int cursor;                        // input cursor
-	void (*execute) (int32_t argc, const char * const * argv );            // ptr to 'execute' callback
-	char ** (*get_completion) (int argc, const char * const * argv ); // ptr to 'completion' callback
-	uint32_t (*print) (const char *);                                     // ptr to 'print' callback
+    char * prompt_str;                 // pointer to prompt string
+    char cmdline [_COMMAND_LINE_LEN];  // cmdline buffer
+    int cmdlen;                        // last position in command line
+    int cursor;                        // input cursor
+    void (*execute) (int32_t argc, const char * const * argv );            // ptr to 'execute' callback
+    char ** (*get_completion) (int argc, const char * const * argv ); // ptr to 'completion' callback
+    uint32_t (*print) (const char *);                                     // ptr to 'print' callback
 #ifdef _USE_CTLR_C
-	void (*sigint) (void);
+    void (*sigint) (void);
 #endif
 } microrl_t;
 

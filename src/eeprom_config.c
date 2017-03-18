@@ -299,16 +299,19 @@ static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config) {
 		checksum += *data++;
 		checksum = checksum % 256;
 	}
+	Board_Println_BLOCKING("Checksum: ");
+	Board_PrintNum(checksum, 10);
+	Board_Println_BLOCKING("");
 	return checksum;
 }
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum) {
 	uint8_t calc_checksum = Calculate_Checksum(pack_config);
 	if(version != STORAGE_VERSION) {
-		Board_Print_BLOCKING("Storage version check failed!");
+		Board_Println_BLOCKING("Storage version check failed!");
 		return false;
 	} else if(calc_checksum != checksum) {
-		Board_Print_BLOCKING("Checksum check failed!");
+		Board_Println_BLOCKING("Checksum check failed!");
 		return false;
 	}
 	bool check = pack_config->cell_discharge_c_rating_cC < 50;
@@ -319,7 +322,7 @@ static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, ui
 	check &= pack_config->bal_on_thresh_mV < 1000;
 	check &= pack_config->bal_off_thresh_mV < 1000;
 	if(!check) {
-		Board_Print_BLOCKING("Pack validation failed!");
+		Board_Println_BLOCKING("Pack validation failed!");
 		return false;
 	}
 	return true;

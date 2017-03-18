@@ -88,7 +88,7 @@ void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin
 	Zero_EEPROM_DataBuffer();
 	eeprom_packconf_buf.module_cell_count = mcc;
 
-	Board_Println_BLOCKING("Finished init...");
+	Board_Println_BLOCKING("Finished EPROM init...");
 	Board_BlockingDelay(200);
 }
 
@@ -200,7 +200,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->cell_min_mV = 2800;
 	pack_config->cell_max_mV = 4200;
 	pack_config->cell_capacity_cAh = 250;
-	pack_config->num_modules = 2;
+	pack_config->num_modules = 1;
 	// pack_config->cell_charge_c_rating_cC = 50;
 	pack_config->cell_charge_c_rating_cC = 05;
 	pack_config->bal_on_thresh_mV = 4;
@@ -216,7 +216,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 	pack_config->module_cell_count[1] = 12;
 	uint8_t i;
 	for(i = pack_config->num_modules; i < MAX_NUM_MODULES; i++) {
-		pack_config->module_cell_count[i] = 0;
+		pack_config->module_cell_count[i] = 12;
 	}
 }
 

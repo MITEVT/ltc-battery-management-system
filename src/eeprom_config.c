@@ -299,9 +299,6 @@ static uint8_t Calculate_Checksum(PACK_CONFIG_T *pack_config) {
 		checksum += *data++;
 		checksum = checksum % 256;
 	}
-	Board_Println_BLOCKING("Checksum: ");
-	Board_PrintNum(checksum, 10);
-	Board_Println_BLOCKING("");
 	return checksum;
 }
 
@@ -314,15 +311,15 @@ static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, ui
 		Board_Println_BLOCKING("Checksum check failed!");
 		return false;
 	}
-	bool check = pack_config->cell_discharge_c_rating_cC < 50;
-	check &= pack_config->cell_charge_c_rating_cC < 50;
+	bool check = pack_config->cell_discharge_c_rating_cC < 500;
+	check &= pack_config->cell_charge_c_rating_cC < 500;
 	check &= pack_config->cell_min_mV < 10000;
 	check &= pack_config->cell_max_mV > 1000;
 	check &= pack_config->num_modules < 30;
 	check &= pack_config->bal_on_thresh_mV < 1000;
 	check &= pack_config->bal_off_thresh_mV < 1000;
 	if(!check) {
-		Board_Println_BLOCKING("Pack validation failed!");
+		Board_Println_BLOCKING("Values in PACK_CONFIG are nonsensical! Pack validation failed!");
 		return false;
 	}
 	return true;

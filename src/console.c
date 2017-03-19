@@ -256,6 +256,26 @@ static void config(const char * const * argv) {
     }
 }
 
+static void measure(const char * const * argv) {
+    UNUSED(argv);
+    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY) { 
+        if (strcmp(argv[1],"on") == 0) {
+            console_output->valid_mode_request = false;
+            console_output->balance_mV = UINT32_MAX;
+            Board_Println("bal off");
+        } else if () {
+            console_output->valid_mode_request = true;
+            console_output->mode_request = BMS_SSM_MODE_BALANCE;
+            console_output->balance_mV = my_atou(argv[1]);
+            Board_Println("bal on");
+        } else {
+        }
+    } else {
+        Board_Println("Must be in standby");
+    }
+}   
+
+
 static void bal(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||

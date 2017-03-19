@@ -18,7 +18,9 @@ static const char * const commands[] = { "get",
                             "bal",
                             "chrg",
                             "dis",
-                            "config_def"};
+                            "config_def"
+                            "measure"
+                                    };
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         2 ,
@@ -27,7 +29,8 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         1 ,
                         0 ,
                         0 ,
-                        0 };
+                        0 ,
+                        0};
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
                             "Set a value. Possible options:", "This", 
@@ -93,6 +96,12 @@ typedef struct {
     bool config_default;
     BMS_SSM_MODE_T mode_request;
     uint32_t balance_mV;
+    bool measure_on;
+    bool measure_temp;
+    bool measure_voltage;
+    bool measure_packcurrent;
+    bool measure_packvoltage;
+    bool measurement_mode;
 } CONSOLE_OUTPUT_T;
 
 typedef struct console_t {

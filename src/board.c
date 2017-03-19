@@ -445,9 +445,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
         case LTC6804_FAIL:
             Board_Println("Get Vol FAIL");
             break;
-        case LTC6804_SPI_ERROR:
-            Board_Println("Get Vol SPI_ERROR");
-            break;
         case LTC6804_PEC_ERROR:
             Board_Println("Get Vol PEC_ERROR");
             Error_Assert(ERROR_LTC6804_PEC,msTicks);
@@ -530,6 +527,8 @@ void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
     // set multiplexer address
     Board_LTC6804_SetMultiplexerAddress(bms_state);
     // TODO: get thermistor voltage reading
+    	// When using LTC6804_GetGPIOVoltages, you shoudl hand in a uint32_t array of size 5*MAX_NUM_MODULES
+    	// Note untested code so pelase be careful
     // TODO: save temperature in pack_status
     UNUSED(pack_status);
 }
@@ -546,9 +545,6 @@ bool Board_LTC6804_CVST(void) {
         case LTC6804_FAIL:
             Board_Println("CVST FAIL");
             Error_Assert(ERROR_LTC6804_CVST, msTicks);
-            return false;
-        case LTC6804_SPI_ERROR:
-            Board_Println("CVST SPI_ERROR");
             return false;
         case LTC6804_PEC_ERROR:
             Board_Println("CVST PEC_ERROR");
@@ -576,11 +572,7 @@ void Board_LTC6804_UpdateBalanceStates(bool *balance_req) {
     UNUSED(balance_req);
     return;
 #else
-    LTC6804_STATUS_T res;
-    res = LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
-    if (res == LTC6804_SPI_ERROR) {
-        Board_Println("SetBalanceStates SPI_ERROR");
-    }
+    LTC6804_UpdateBalanceStates(&ltc6804_config, &ltc6804_state, balance_req, msTicks);
 #endif
 }
 
@@ -624,9 +616,6 @@ bool Board_LTC6804_OpenWireTest(void) {
             itoa(ltc6804_owt_res.failed_wire, str, 10);
             Board_Println(str);
             Error_Assert(ERROR_LTC6804_OWT, msTicks);
-            return false;
-        case LTC6804_SPI_ERROR:
-            Board_Println("OWT SPI_ERROR");
             return false;
         case LTC6804_PEC_ERROR:
             Board_Println("OWT PEC_ERROR");

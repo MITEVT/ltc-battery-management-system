@@ -34,7 +34,7 @@ static BMS_INPUT_T bms_input;
 // memory allocation for BMS_STATE_T
 static BMS_CHARGER_STATUS_T charger_status;
 static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
-static uint32_t cell_temperatures[MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE];
+static uint8_t cell_temperatures[MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE];
 static uint8_t module_cell_count[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
@@ -231,7 +231,7 @@ int main(void) {
     Board_UART_Init(UART_BAUD);
 
 #ifdef DEBUG_ENABLE
-    Board_Println("Board Up (DEBUG)");
+	Board_Println("Board Up (DEBUG)");
 #else
     Board_Println("Board Up");   
 #endif

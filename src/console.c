@@ -260,15 +260,23 @@ static void measure(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY) { 
         if (strcmp(argv[1],"on") == 0) {
-            console_output->valid_mode_request = false;
-            console_output->balance_mV = UINT32_MAX;
-            Board_Println("bal off");
-        } else if () {
-            console_output->valid_mode_request = true;
-            console_output->mode_request = BMS_SSM_MODE_BALANCE;
-            console_output->balance_mV = my_atou(argv[1]);
-            Board_Println("bal on");
+            console_output->measure_on = true;
+            Board_Println("Measure On!");
+        } else if (strcmp(argv[1],"off") == 0) {
+            console_output->measure_on = false;
+            Board_Println("Measure Off!");
+        } else if (strcmp(argv[1],"temp") == 0) {
+            console_output->measure_temp = !console_output->measure_temp;
+        } else if (strcmp(argv[1],"voltage") == 0) {
+            console_output->measure_temp = !console_output->measure_temp;
+        } else if (strcmp(argv[1],"pcurrent") == 0) {
+            // TODO 
+            Board_Println("Not implemented yet!");
+        } else if (strcmp(argv[1],"pvoltage") == 0) {
+            // TODO 
+            Board_Println("Not implemented yet!");
         } else {
+            Board_Println("Unrecognized command!");
         }
     } else {
         Board_Println("Must be in standby");
@@ -340,7 +348,7 @@ static void config_def(const char * const * argv) {
     }
 }              
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def};
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def, measure};
 
 /***************************************
         Public Functions
@@ -353,6 +361,12 @@ void console_init(BMS_INPUT_T * input, BMS_STATE_T * state, CONSOLE_OUTPUT_T *co
     console_output->valid_mode_request = false;
     console_output->mode_request = BMS_SSM_MODE_STANDBY;
     console_output->config_default = false;
+
+    console_output->measure_on = false;
+    console_output->measure_temp = false;
+    console_output->measure_voltage = false;
+    console_output->measure_packcurrent = false;
+    console_output->measure_packvoltage = false;
 }
 
 void executerl(int32_t argc, const char * const * argv){

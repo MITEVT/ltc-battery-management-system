@@ -18,7 +18,7 @@ static const char * const commands[] = { "get",
                             "bal",
                             "chrg",
                             "dis",
-                            "config_def"
+                            "config_def",
                             "measure"
                                     };
 
@@ -101,7 +101,6 @@ typedef struct {
     bool measure_voltage;
     bool measure_packcurrent;
     bool measure_packvoltage;
-    bool measurement_mode;
 } CONSOLE_OUTPUT_T;
 
 typedef struct console_t {

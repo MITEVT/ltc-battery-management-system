@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "ssm.h"
+#include "measure.h"
 #include "soc.h"
 #include "console.h"
 #include "eeprom_config.h"
@@ -200,6 +201,9 @@ void Process_Keyboard(void) {
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
+//        Make sure to add it in the 'measure' command
+// [TODO] Add thermistor array handling                 WHO:Jorge
+//        Make sure to add it in the 'measure' command
 // [TODO] Clean up macros                               WHO:Skanda
 // [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
@@ -216,6 +220,7 @@ void Process_Keyboard(void) {
 // [TODO] process input struct,output other signals     WHO:Jorge
 // [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
+// [TODO] Add print out leveling                        WHO:Erpo/Skanda
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango
@@ -260,6 +265,7 @@ int main(void) {
         Process_Input(&bms_input); // Process Inputs to board for bms
         SSM_Step(&bms_input, &bms_state, &bms_output);
         Process_Output(&bms_input, &bms_output, &bms_state);
+        Output_Measurements(&console_output, &bms_input, &bms_state);
 
         if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
             break; // Handler requested a Halt
@@ -274,8 +280,6 @@ int main(void) {
             Board_LED_Toggle(LED1);  
             // Board_PrintNum(SOC_Estimate(), 10);
         }
-
-        
     }
 
     Board_Println("FORCED HANG");
@@ -290,7 +294,7 @@ int main(void) {
         //set bms_output
         Process_Output(&bms_input, &bms_output, &bms_state);
         Process_Keyboard();
-        if(bms_state.curr_mode == BMS_SSM_MODE_INIT && true) {
+        if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {
             console_output.config_default = false;
             Write_EEPROM_PackConfig_Defaults();
             bms_state.curr_mode = BMS_SSM_MODE_STANDBY;

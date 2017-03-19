@@ -265,7 +265,7 @@ int main(void) {
         Process_Input(&bms_input); // Process Inputs to board for bms
         SSM_Step(&bms_input, &bms_state, &bms_output);
         Process_Output(&bms_input, &bms_output, &bms_state);
-        Output_Measurements(&console_output, &bms_input, &bms_state);
+        Output_Measurements(&console_output, &bms_input, &bms_state, msTicks);
 
         if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
             break; // Handler requested a Halt

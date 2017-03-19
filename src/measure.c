@@ -1,20 +1,24 @@
 #include "console.h"
 #include "board.h"
 
+static uint32_t lastVoltagesPrintTime = 0;
+static uint32_t voltagesPrintPeriod_ms = 200;
+
 void Output_Measurements(
         CONSOLE_OUTPUT_T *console_output, 
         BMS_INPUT_T* bms_input, 
-        BMS_STATE_T* bms_state
+        BMS_STATE_T* bms_state,
+        uint32_t msTicks
 ) {
 
     char tempstr[20];
 
-    if(console_output->measure_on) {
+    if(console_output->measure_on ) {
         if(console_output->measure_temp) {
             Board_Println("Not implemented yet!");
         }
 
-        if(console_output->measure_voltage) {
+        if(console_output->measure_voltage && (msTicks - lastVoltagesPrintTime) > voltagesPrintPeriod_ms) {
             uint32_t i, j, idx;
             idx = 0;
             for (i = 0; i < bms_state->pack_config->num_modules; i++) {

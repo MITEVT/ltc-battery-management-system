@@ -9,13 +9,13 @@
 #define _BOARD_H_
 
 #ifdef TEST_HARDWARE
-	#include <stdbool.h>
-	#include <stdio.h>
+    #include <stdbool.h>
+    #include <stdio.h>
 #else
-	#include "chip.h"
-  	#include "can.h"
-	#include "ltc6804.h"
-	#include "console.h"
+    #include "chip.h"
+    #include "can.h"
+    #include "ltc6804.h"
+    #include "console.h"
 #endif
  
 #include "error_handler.h"
@@ -58,7 +58,7 @@
 
 
 typedef enum {
-	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
+    LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
 } LTC6804_INIT_STATE_T;
 
 
@@ -155,7 +155,7 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  *                  selected
  */
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
-		BMS_STATE_T * bms_state);
+        BMS_STATE_T * bms_state);
 
 /**
  * @details sets the address of the multiplexer by controlling the shift register
@@ -173,7 +173,7 @@ void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state);
  *                  selected
  */
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
-		BMS_STATE_T * bms_state);
+        BMS_STATE_T * bms_state);
 
 /**
  * @details does a CVST

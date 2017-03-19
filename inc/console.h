@@ -30,9 +30,9 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         0 };
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
-							"Set a value. Possible options:", "This", 
-							"flash that sucker", 
-							"set balance current"};
+                            "Set a value. Possible options:", "This", 
+                            "flash that sucker", 
+                            "set balance current"};
 
 static const char * const locstring[] =  {
                             "cell_min_mV",

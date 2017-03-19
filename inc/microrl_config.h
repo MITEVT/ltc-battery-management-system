@@ -13,7 +13,7 @@ Command line length, define cmdline buffer size. Set max number of chars + 1,
 because last byte of buffer need to contain '\0' - NULL terminator, and 
 not use for storing inputed char.
 If user input chars more then it parametrs-1, chars not added to command line.*/
-#define _COMMAND_LINE_LEN (1+50)									// for 32 chars
+#define _COMMAND_LINE_LEN (1+50)                                    // for 32 chars
 
 /*
 Command token number, define max token it command line, if number of token 
@@ -26,8 +26,8 @@ Token is word separate by white space, for example 3 token line:
 /*
 Define you prompt string here. You can use colors escape code, for highlight you prompt,
 for example this prompt will green color (if you terminal supports color)*/
-//#define _PROMPT_DEFAULT "\033[32mIRin >\033[0m "	// green color
-// #define _PROMPT_DEFAULT "\033[32mIRin >\033[0m "	// green color
+//#define _PROMPT_DEFAULT "\033[32mIRin >\033[0m "  // green color
+// #define _PROMPT_DEFAULT "\033[32mIRin >\033[0m " // green color
 #define _PROMPT_DEFAULT "> "
 
 /*

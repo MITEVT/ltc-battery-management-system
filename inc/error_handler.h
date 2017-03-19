@@ -33,15 +33,15 @@ static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
 };
 
 typedef enum error_handler_status {
-	HANDLER_FINE,
-	HANDLER_HALT
+    HANDLER_FINE,
+    HANDLER_HALT
 } ERROR_HANDLER_STATUS_T;
 
 typedef struct error_status {
-	bool 		handling;
-	bool		error;
-	uint16_t 	count;
-	uint32_t 	time_stamp;
+    bool        handling;
+    bool        error;
+    uint16_t    count;
+    uint32_t    time_stamp;
 } ERROR_STATUS_T;
 
 typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER)(ERROR_STATUS_T* , const uint32_t );

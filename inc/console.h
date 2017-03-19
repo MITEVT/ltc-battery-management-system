@@ -39,7 +39,7 @@ static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible opti
                             "go into charge mode: chrg [on|off]",
                             "go into discharge mode: dis [on|off]",
                             "configure pack config defaults",
-                            "start measurement printout mode, four flags (pcurrent/pvoltage/cell temps/voltages): measure [print_flags|temps|voltages|pcurrent|pvoltage|on|off]"};
+                            "start measurement printout mode, four flags (pcurrent/pvoltage/cell temps/voltages): measure [print_flags|temps|voltages|packcurrent|packvoltage|on|off]"};
 
 static const char * const locstring[] =  {
                             "cell_min_mV",

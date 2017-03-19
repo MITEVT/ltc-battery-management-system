@@ -257,27 +257,59 @@ static void config(const char * const * argv) {
 }
 
 static void measure(const char * const * argv) {
-    UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY) { 
         if (strcmp(argv[1],"on") == 0) {
             console_output->measure_on = true;
             Board_Println("Measure On!");
+
         } else if (strcmp(argv[1],"off") == 0) {
             console_output->measure_on = false;
             Board_Println("Measure Off!");
-        } else if (strcmp(argv[1],"temp") == 0) {
+
+        } else if (strcmp(argv[1],"print_flags") == 0) {
+
+            if(console_output->measure_voltage) {
+                Board_Println("Cell Voltages: On");
+            } else {
+                Board_Println("Cell Voltages: Off");
+            }
+
+            if(console_output->measure_temp) {
+                Board_Println("Cell Temps: On");
+            } else {
+                Board_Println("Cell Temps: Off");
+            }
+
+            if(console_output->measure_packcurrent) {
+                Board_Println("Pack Current: On");
+            } else {
+                Board_Println("Pack Current: Off");
+            }
+
+            if(console_output->measure_packvoltage) {
+                Board_Println("Pack Current: On");
+            } else {
+                Board_Println("Pack Current: Off");
+            }
+
+        } else if (strcmp(argv[1],"temps") == 0) {
             console_output->measure_temp = !console_output->measure_temp;
-        } else if (strcmp(argv[1],"voltage") == 0) {
-            console_output->measure_temp = !console_output->measure_temp;
-        } else if (strcmp(argv[1],"pcurrent") == 0) {
-            // TODO 
+
+        } else if (strcmp(argv[1],"voltages") == 0) {
+            console_output->measure_temp = !console_output->measure_voltage;
+
+        } else if (strcmp(argv[1],"packcurrent") == 0) {
+            console_output->measure_packcurrent = !console_output->measure_packcurrent;
             Board_Println("Not implemented yet!");
-        } else if (strcmp(argv[1],"pvoltage") == 0) {
-            // TODO 
+
+        } else if (strcmp(argv[1],"packvoltage") == 0) {
+            console_output->measure_packvoltage = !console_output->measure_packvoltage;
             Board_Println("Not implemented yet!");
+
         } else {
             Board_Println("Unrecognized command!");
         }
+
     } else {
         Board_Println("Must be in standby");
     }

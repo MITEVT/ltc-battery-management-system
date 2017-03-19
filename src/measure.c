@@ -1,8 +1,9 @@
 #include "console.h"
 #include "board.h"
+#include "measure.h"
 
+#define VOLTAGES_PRINT_PERIOD_ms 200
 static uint32_t lastVoltagesPrintTime = 0;
-static uint32_t voltagesPrintPeriod_ms = 200;
 
 void Output_Measurements(
         CONSOLE_OUTPUT_T *console_output, 
@@ -18,7 +19,7 @@ void Output_Measurements(
             Board_Println("Not implemented yet!");
         }
 
-        if(console_output->measure_voltage && (msTicks - lastVoltagesPrintTime) > voltagesPrintPeriod_ms) {
+        if(console_output->measure_voltage && (msTicks - lastVoltagesPrintTime) > VOLTAGES_PRINT_PERIOD_ms) {
             uint32_t i, j, idx;
             idx = 0;
             for (i = 0; i < bms_state->pack_config->num_modules; i++) {
@@ -28,8 +29,9 @@ void Output_Measurements(
                     Board_Print_BLOCKING(",");
                     idx++;
                 }
-                Board_Println_BLOCKING("\n----");
+                Board_Print_BLOCKING("\n");
             }
+            lastVoltagesPrintTime = msTicks;
         }
 
         if(console_output->measure_packcurrent) {

@@ -10,13 +10,13 @@
  * Public Functions
  * ***********************************************************************************/
 
-void CellTemperatures_Step(BMS_STATE_T * bms_state) {
+void CellTemperatures_Step(uint8_t * currentThermistor) {
 
     // move to next thermistor
-    if (bms_state->currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
-        bms_state->currentThermistor += 1;
+    if (*currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
+        *currentThermistor += 1;
     } else {
-        bms_state->currentThermistor = 0;
+        *currentThermistor = 0;
     }
 
 }

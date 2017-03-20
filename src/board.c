@@ -61,6 +61,7 @@ uint32_t latest_vcu_heartbeat_time = 0;
 
 //Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
+uint8_t currentThermistor = 0;
 
 volatile uint32_t msTicks;
 
@@ -424,9 +425,9 @@ void Board_Init_Drivers(void) {
 
 }
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T * bms_state) {
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
     Board_LTC6804_GetCellVoltages(pack_status);
-    Board_LTC6804_GetCellTemperatures(pack_status, bms_state);
+    Board_LTC6804_GetCellTemperatures(pack_status);
     Board_LTC6804_OpenWireTest();
 }
 
@@ -473,16 +474,15 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #endif
 }
 
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
-        BMS_STATE_T * bms_state) {
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
         board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
-        CellTemperatures_Step(bms_state);
+        CellTemperatures_Step(&currentThermistor);
 
 #ifndef TEST_HARDWARE
         // set the multiplexer address, read the thermistor voltage, and save the
         // temperature in pack_status
-        Board_LTC6804_GetThermistorTemperature(pack_status, bms_state);
+        Board_LTC6804_GetThermistorTemperature(pack_status, currentThermistor);
 #endif //TEST_HARDWARE
     }
 #ifdef TEST_HARDWARE
@@ -491,9 +491,9 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status,
 }
 
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status, 
-        BMS_STATE_T * bms_state) {
+        uint8_t currentThermistor) {
     // set multiplexer address
-    Board_LTC6804_SetMultiplexerAddress(bms_state);
+    Board_LTC6804_SetMultiplexerAddress(currentThermistor);
     // TODO: get thermistor voltage reading
     // When using LTC6804_GetGPIOVoltages, you shoudl hand in a uint32_t array of size 5*MAX_NUM_MODULES
     // Note untested code so pelase be careful
@@ -501,7 +501,7 @@ void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
     UNUSED(pack_status);
 }
 
-void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state) {
+void Board_LTC6804_SetMultiplexerAddress(uint8_t currentThermistor) {
 #ifndef TEST_HARDWARE
     // initalize CLOCK and LATCH input to the shift register
     LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
@@ -525,7 +525,7 @@ void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state) {
     // Shift in multiplexer logic control bits
     for (i=(NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS-1); i>=0; i--) {
         uint8_t thermistorAddressBit = CellTemperatures_GetThermistorAddressBit(
-						bms_state->currentThermistor, i);
+                        currentThermistor, i);
         //TODO: check return value of SetGPIOState
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
 						LTC6804_SHIFT_REGISTER_DATA_IN, thermistorAddressBit, msTicks);

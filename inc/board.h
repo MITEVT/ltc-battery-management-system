@@ -141,7 +141,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 void Board_LTC6804_DeInit(void);
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T * bms_state);
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status);
 
 void Board_LTC6804_ProcessOutput(bool *balance_req);
 
@@ -159,26 +159,23 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  * @param bms_state datatype containing a variable representing the current thermistor
  *                  selected
  */
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, 
-        BMS_STATE_T * bms_state);
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details sets the address of the multiplexer by controlling the shift register
  *
- * @param bms_state dataype containing a varibale representing the current thermistor
- *                  selected
+ * @param currentThermistor number of thermistor currently selected
  */
-void Board_LTC6804_SetMultiplexerAddress(BMS_STATE_T * bms_state);
+void Board_LTC6804_SetMultiplexerAddress(uint8_t currentThermistor);
 
 /**
  * @details gets the temperature of the currently selected thermistor 
  *
  * @param pack_status mutable datatype containing an array of cell temperatures
- * @param bms_state datatype containing a variable representing the current thermistor
- *                  selected
+ * @param currentThermistor number of thermistor currently selected
  */
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
-        BMS_STATE_T * bms_state);
+        uint8_t currentThermistor);
 
 /**
  * @details does a CVST

@@ -197,26 +197,25 @@ void Write_EEPROM_PackConfig_Defaults(void) {
 }
 
 static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
-    pack_config->cell_min_mV = 2800;
-    pack_config->cell_max_mV = 4200;
-    pack_config->cell_capacity_cAh = 250;
-    pack_config->num_modules = 1;
-    // pack_config->cell_charge_c_rating_cC = 50;
-    pack_config->cell_charge_c_rating_cC = 05;
-    pack_config->bal_on_thresh_mV = 4;
-    pack_config->bal_off_thresh_mV = 1;
-    pack_config->pack_cells_p = 12;
-    pack_config->cv_min_current_mA = 100;
-    pack_config->cv_min_current_ms = 60000;
-    pack_config->cc_cell_voltage_mV = 4300;
-    pack_config->cell_discharge_c_rating_cC = 200; // at 27 degrees C
-    pack_config->max_cell_temp_C = 50;
+    pack_config->cell_min_mV = CELL_MIN_mV;
+    pack_config->cell_max_mV = CELL_MAX_mV;
+    pack_config->cell_capacity_cAh = CELL_CAPACITY_cAh;
+    pack_config->num_modules = NUM_MODULES;
+    pack_config->cell_charge_c_rating_cC = CELL_CHARGE_C_RATING_cC;
+    pack_config->bal_on_thresh_mV = BALANCE_ON_THRESHOLD_mV;
+    pack_config->bal_off_thresh_mV = BALANCE_OFF_THRESHOLD_mV;
+    pack_config->pack_cells_p = PACK_CELLS_PARALLEL;
+    pack_config->cv_min_current_mA = CV_MIN_CURRENT_mA;
+    pack_config->cv_min_current_ms = CV_MIN_CURRENT_ms;
+    pack_config->cc_cell_voltage_mV = CC_CELL_VOLTAGE_mV;
+    pack_config->cell_discharge_c_rating_cC = CELL_DISCHARGE_C_RATING_cC;
+    pack_config->max_cell_temp_C = MAX_CELL_TEMP_C;
 
-    pack_config->module_cell_count[0] = 12;
-    pack_config->module_cell_count[1] = 12;
+    pack_config->module_cell_count[0] = MODULE_CELL_COUNT;
+    pack_config->module_cell_count[1] = MODULE_CELL_COUNT;
     uint8_t i;
     for(i = pack_config->num_modules; i < MAX_NUM_MODULES; i++) {
-        pack_config->module_cell_count[i] = 12;
+        pack_config->module_cell_count[i] = MODULE_CELL_COUNT;
     }
 }
 

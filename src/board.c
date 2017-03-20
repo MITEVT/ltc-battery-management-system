@@ -493,12 +493,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status) {
     // set multiplexer address
     Board_LTC6804_SetMultiplexerAddress();
-
-    // TODO: get thermistor voltage reading
-    // When using LTC6804_GetGPIOVoltages, you shoudl hand in a uint32_t array of size 5*MAX_NUM_MODULES
-    // Note untested code so pelase be careful
-    // TODO: save temperature in pack_status
-    UNUSED(pack_status);
+    Board_LTC6804_GetThermistorVoltages(pack_status);
 }
 
 void Board_LTC6804_SetMultiplexerAddress(void) {
@@ -542,6 +537,17 @@ void Board_LTC6804_SetMultiplexerAddress(void) {
 					0, msTicks);
 #else
     UNUSED(currentThermistor);
+#endif //TEST_HARDWARE
+}
+
+void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_status) {
+#ifndef TEST_HARDWARE
+    uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
+    LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, msTicks);
+    CellTemperatures_UpdateCellTemperaturesArray(gpioVoltages, currentThermistor, 
+            pack_status);
+#else
+    UNUSED(pack_status);
 #endif //TEST_HARDWARE
 }
 

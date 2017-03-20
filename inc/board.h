@@ -60,6 +60,7 @@
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4
 #define LTC6804_SHIFT_REGISTER_CLOCK 3
 #define LTC6804_SHIFT_REGISTER_LATCH 2
+#define LTC6804_GPIO_COUNT 5
 
 
 typedef enum {
@@ -172,6 +173,13 @@ void Board_LTC6804_SetMultiplexerAddress(void);
  * @param pack_status mutable datatype containing an array of cell temperatures
  */
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
+
+/**
+ * @details stores the voltages of current thermistors selected in pack_status
+ *
+ * @param pack_status mutable datatype containing an array of cell temperatures
+ */
+void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_state);
 
 /**
  * @details does a CVST

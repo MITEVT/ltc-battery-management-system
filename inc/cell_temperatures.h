@@ -57,4 +57,17 @@ void CellTemperatures_Step(uint8_t * currentThermistor);
  */
 uint8_t CellTemperatures_GetThermistorAddressBit(uint8_t currentThermistor, uint8_t bit);
 
+/**
+ * @details updates array of cell temperatures in pack_status with values stored in 
+ *          gpioVoltages
+ *
+ * @param gpioVoltages array of voltages measured on each GPIO of the LTC6804 chips
+ *                     gpioVoltages is structured as follows {GPIO1_module1, ..., 
+ *                     GPIO5_module1, GPIO1_module2, ..., GPIO5_module2, ...}
+ * @param currentThermistor number of thermistor currently selected
+ * @param pack_status mutable datatype containing array of cell temperatures
+ */
+void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
+        uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status);
+
 #endif //CELL_TEMPERATURES

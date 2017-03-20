@@ -163,19 +163,15 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details sets the address of the multiplexer by controlling the shift register
- *
- * @param currentThermistor number of thermistor currently selected
  */
-void Board_LTC6804_SetMultiplexerAddress(uint8_t currentThermistor);
+void Board_LTC6804_SetMultiplexerAddress(void);
 
 /**
  * @details gets the temperature of the currently selected thermistor 
  *
  * @param pack_status mutable datatype containing an array of cell temperatures
- * @param currentThermistor number of thermistor currently selected
  */
-void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status,
-        uint8_t currentThermistor);
+void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

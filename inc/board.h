@@ -32,6 +32,11 @@
 #define CTR_SWTCH 1, 4 // pin 40 on lpc24, used as input 
 #define IOCON_CTR_SWTCH IOCON_PIO1_4
 
+#ifdef FSAE_DRIVERS
+#define FSAE_FAULT_GPIO 3, 0
+#define IOCON_FSAE_FAULT_GPIO IOCON_PIO3_0
+#endif //FSAE_DRIVERS
+
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
 #define CHRG_SW 1, 2

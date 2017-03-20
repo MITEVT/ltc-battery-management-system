@@ -312,12 +312,20 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);   /* MISO1 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	/* Select function PIO1_3 */ 
     Chip_GPIO_SetPinDIRInput(LPC_GPIO, CTR_SWTCH);
+#ifdef FSAE_DRIVERS
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
+    /* Select function PIO3_0 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAULT_GPIO, IOCON_FUNC0); 
+#endif //FSAE_DRIVERS
 
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
+#ifdef FSAE_DRIVERS
+    Chip_GPIO_WriteDirBit(LPC_GPIO, FSAE_FAULT_GPIO, false);
+#endif // FSAE_DRIVERS
     Board_Headroom_Init();
 
     // Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CTR_SWTCH, IOCON_MODE_PULLUP);

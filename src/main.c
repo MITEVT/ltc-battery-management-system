@@ -131,7 +131,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         Board_GetModeRequest(&console_output, bms_input);
         Board_CAN_ProcessInput(bms_input, &bms_output); // CAN has precedence over console
-        Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
+        Board_LTC6804_ProcessInputs(&pack_status);
     }
 
     bms_input->msTicks = msTicks;

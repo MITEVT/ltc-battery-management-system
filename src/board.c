@@ -541,7 +541,7 @@ void Board_LTC6804_SetMultiplexerAddress(uint8_t currentThermistor) {
 	LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, LTC6804_SHIFT_REGISTER_LATCH, 
 					0, msTicks);
 #else
-    UNUSED(bms_state);
+    UNUSED(currentThermistor);
 #endif //TEST_HARDWARE
 }
 

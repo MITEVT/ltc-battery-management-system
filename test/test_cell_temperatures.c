@@ -39,7 +39,7 @@
 // Global variables
 uint8_t currentThermistor;
 BMS_PACK_STATUS_T pack_status;
-uint8_t cell_temperatures_mV[MAX_NUM_MODULES * MAX_THERMISTORS_PER_MODULE];
+uint16_t cell_temperatures_mV[MAX_NUM_MODULES * MAX_THERMISTORS_PER_MODULE];
 BMS_STATE_T bms_state;
 uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
 

@@ -498,11 +498,19 @@ void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status) {
 
 void Board_LTC6804_SetMultiplexerAddress(void) {
 #ifndef TEST_HARDWARE
+    LTC6804_STATUS_T status;
+
     // initalize CLOCK and LATCH input to the shift register
-    LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+    status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
             LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+    if (status != LTC6804_PASS) {
+        Board_Println("Failed to initialize CLOCK");
+    }
     LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
             LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
+    if (status != LTC6804_PASS) {
+        Board_Println("Failed to initialize LATCH");
+    }
 
     // Shift in 3 zeroes
     const uint8_t unusedShiftRegisterOutputs = 3;
@@ -511,10 +519,19 @@ void Board_LTC6804_SetMultiplexerAddress(void) {
         //TODO: check return value of SetGPIOState
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
 						LTC6804_SHIFT_REGISTER_DATA_IN, 0, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to shift 0 into DATA_IN");
+        }
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
 						LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to set rising edge of CLOCK");
+        }
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
 						LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to lower CLOCK");
+        }
     }
 
     // Shift in multiplexer logic control bits
@@ -524,17 +541,32 @@ void Board_LTC6804_SetMultiplexerAddress(void) {
         //TODO: check return value of SetGPIOState
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
 						LTC6804_SHIFT_REGISTER_DATA_IN, thermistorAddressBit, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to shift bit into DATA_IN");
+        }
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
 						LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to set rising edge of CLOCK");
+        }
         LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
 						LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+        if (status != LTC6804_PASS) {
+            Board_Println("Failed to lower CLOCK");
+        }
     }
 
     // Latch the outputs
     LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, LTC6804_SHIFT_REGISTER_LATCH, 
 					1, msTicks);
+    if (status != LTC6804_PASS) {
+        Board_Println("Failed to set rising edge of LATCH");
+    }
 	LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, LTC6804_SHIFT_REGISTER_LATCH, 
 					0, msTicks);
+    if (status != LTC6804_PASS) {
+        Board_Println("Failed to lower LATCH");
+    }
 #else
     UNUSED(currentThermistor);
 #endif //TEST_HARDWARE
@@ -543,10 +575,54 @@ void Board_LTC6804_SetMultiplexerAddress(void) {
 void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_status) {
 #ifndef TEST_HARDWARE
     uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
-    LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, msTicks);
+    uint8_t i;
+    for (i=0; i<MAX_NUM_MODULES*LTC6804_GPIO_COUNT; i++) {
+        gpioVoltages[i] = 0;
+    }
+    LTC6804_STATUS_T status = 
+        LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, msTicks);
+    if (status == LTC6804_PASS) {
+        Board_Println("Succesfully obtained GPIO voltages");
+    }
+    else {
+        Board_Println("Failed to get GPIO voltages");
+    }
+
+    // print gpioVoltages
+/*    const uint8_t base10 = 10;
+    const uint8_t stringLength = 13;
+    char gpioVoltageString[stringLength];
+    for (i=0; i<MAX_NUM_MODULES*LTC6804_GPIO_COUNT; i++) {
+        itoa(gpioVoltages[i], gpioVoltageString, base10);
+        Board_Print_BLOCKING(gpioVoltageString);
+        Board_Print_BLOCKING(",");
+    }
+    Board_Print_BLOCKING("\r\n");
+    Board_Print_BLOCKING("\r\n");
+*/
+
     CellTemperatures_UpdateCellTemperaturesArray(gpioVoltages, currentThermistor, 
             pack_status);
 #else
+    UNUSED(pack_status);
+#endif //TEST_HARDWARE
+}
+
+void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status) {
+#ifndef TEST_HARDWARE
+    uint8_t i;
+    for (i=0; i<MAX_THERMISTORS_PER_MODULE; i++) {
+        const uint8_t stringLength = 8;
+        const uint8_t base10 = 10;
+        char temperatureString[stringLength];
+        itoa(pack_status->cell_temperatures_mV[module*MAX_THERMISTORS_PER_MODULE+i], 
+                temperatureString, base10);
+        Board_Print_BLOCKING(temperatureString);
+        Board_Print_BLOCKING(",");
+    }
+    Board_Print_BLOCKING("\r\n");
+#else
+    UNUSED(module);
     UNUSED(pack_status);
 #endif //TEST_HARDWARE
 }

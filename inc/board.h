@@ -54,7 +54,7 @@
 #define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
-#define TIME_PER_THERMISTOR_MS 400
+#define TIME_PER_THERMISTOR_MS 1000
 
 // ltc6804 constants
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4
@@ -180,6 +180,14 @@ void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
  * @param pack_status mutable datatype containing an array of cell temperatures
  */
 void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_state);
+
+/**
+ * @details prints thermistor voltages of module module
+ *
+ * @param module number of the module whose thermistor voltages will be printed
+ * @param pack_status datatype containing array of thermistor voltages
+ */
+void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

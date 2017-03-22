@@ -62,6 +62,8 @@ uint32_t latest_vcu_heartbeat_time = 0;
 //Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
 uint8_t currentThermistor = 0;
+static bool ltc6804_setMultiplexerAddressFlag = false;
+static bool ltc6804_getThermistorVoltagesFlag = false;
 
 volatile uint32_t msTicks;
 
@@ -479,16 +481,162 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
         CellTemperatures_Step(&currentThermistor);
 
-#ifndef TEST_HARDWARE
-        // set the multiplexer address, read the thermistor voltage, and save the
-        // temperature in pack_status
-        Board_LTC6804_GetThermistorTemperature(pack_status);
-#endif //TEST_HARDWARE
+        if (ltc6804_setMultiplexerAddressFlag || ltc6804_getThermistorVoltagesFlag) {
+            Board_Println("skipped a thermistor");
+        }
+
+        // set flags to true
+        ltc6804_setMultiplexerAddressFlag = true;
+        ltc6804_getThermistorVoltagesFlag = true;
     }
-#ifdef TEST_HARDWARE
+
+#ifndef TEST_HARDWARE
+     LTC6804_STATUS_T status;
+
+    // set multiplexer address 
+    // if flag is not true, skip this step
+    if (ltc6804_setMultiplexerAddressFlag) {
+        // initalize CLOCK and LATCH input to the shift register
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+        Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+        if (status != LTC6804_PASS) return;
+
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
+        Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+        if (status != LTC6804_PASS) return;
+
+        // Shift in 3 zeroes
+        const uint8_t unusedShiftRegisterOutputs = 3;
+        int8_t i;
+        for (i=0; i<unusedShiftRegisterOutputs; i++) {
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_DATA_IN, 0, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+            
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+        }
+
+        // Shift in multiplexer logic control bits
+        for (i=(NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS-1); i>=0; i--) {
+            uint8_t thermistorAddressBit = CellTemperatures_GetThermistorAddressBit(
+                    currentThermistor, i);
+
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_DATA_IN, thermistorAddressBit, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
+                    LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+            if (status != LTC6804_PASS) return;
+        }
+
+        // Latch the outputs
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
+                LTC6804_SHIFT_REGISTER_LATCH, 1, msTicks);
+        Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+        if (status != LTC6804_PASS) return;
+
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
+                LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
+        Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+        if (status != LTC6804_PASS) return;
+
+        // Finished setting multiplexer address. Reset flag
+        ltc6804_setMultiplexerAddressFlag = false;
+        
+    }
+
+
+    // Get thermistor voltages
+    // if flag is not true, return
+    if (!ltc6804_getThermistorVoltagesFlag) {
+        return;
+    }
+    
+    uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
+    uint16_t i;
+    for (i=0; i<MAX_NUM_MODULES*LTC6804_GPIO_COUNT; i++) {
+        gpioVoltages[i] = 0;
+    }
+    status = LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, 
+            msTicks);
+    Board_PrintLtc6804StatusMessagesGetGPIOVoltages(status);
+    if (status != LTC6804_PASS) return;
+
+    CellTemperatures_UpdateCellTemperaturesArray(gpioVoltages, currentThermistor, 
+            pack_status);
+
+    // Finished getting thermistor voltages. Reset flag
+    ltc6804_getThermistorVoltagesFlag = false;
+    
+#else 
     UNUSED(pack_status);
 #endif //TEST_HARDWARE
 }
+
+#ifndef TEST_HARDWARE
+void Board_PrintLtc6804StatusMessagesSetGPIOState(LTC6804_STATUS_T status) {
+    switch(status) {
+        case LTC6804_WAITING:
+            Board_Println("Waiting to set LTC6804 GPIO state");
+            break;
+        case LTC6804_PASS:
+            break;
+        case LTC6804_FAIL:
+            Board_Println("Failed to set LTC6804 GPIO state");
+            break;
+        case LTC6804_PEC_ERROR:
+            Board_Println("LTC6804_PEC_ERROR when trying to set GPIO state");
+            break;
+        case LTC6804_WAITING_REFUP:
+            Board_Println("LTC6804_WAITING_REFUP when trying to set GPIO state");
+            break;
+        default:
+            Board_Println("Entered default case in Board_PrintLtc6804StatusMessagesSetGPIOState(). You should never reach here");
+    }
+}
+#endif //TEST_HARDWARE
+
+#ifndef TEST_HARDWARE
+void Board_PrintLtc6804StatusMessagesGetGPIOVoltages(LTC6804_STATUS_T status) {
+    switch(status) {
+        case LTC6804_WAITING:
+            // Board_Println("Waiting to get LTC6804 GPIO voltages");
+            break;
+        case LTC6804_PASS:
+            break;
+        case LTC6804_FAIL:
+            Board_Println("Failed to get LTC6804 GPIO voltages");
+            break;
+        case LTC6804_PEC_ERROR:
+            Board_Println("LTC6804_PEC_ERROR when trying to get LTC6804 GPIO voltages");
+            break;
+        case LTC6804_WAITING_REFUP:
+            Board_Println("LTC6804_WAITING_REFUP when trying to get LTC6804 GPIO voltages");
+            break;
+        default:
+            Board_Println("Entered default case in Board_PrintLtc6804StatusMessagesGetGPIOVoltages(). You should never reach here");
+    }
+}
+#endif //TEST_HARDWARE
 
 void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status) {
     // set multiplexer address
@@ -585,7 +733,12 @@ void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_status) {
         Board_Println("Succesfully obtained GPIO voltages");
     }
     else {
-        Board_Println("Failed to get GPIO voltages");
+        Board_Print("Failed to get GPIO voltages ");
+        const uint8_t stringLength = 4;
+        const uint8_t base10 = 10;
+        char statusString[stringLength];
+        itoa(status, statusString, base10);
+        Board_Println(statusString);
     }
 
     // print gpioVoltages

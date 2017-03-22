@@ -284,7 +284,7 @@ int main(void) {
             // Board_PrintNum(SOC_Estimate(), 10);
         }
 
-        const uint16_t printThermistorVoltagesPeriod = 30000;
+        const uint16_t printThermistorVoltagesPeriod = 10000;
         if (msTicks - lastThermistorTemperaturePrint > printThermistorVoltagesPeriod) {
             lastThermistorTemperaturePrint = msTicks;
             Board_PrintThermistorVoltages(0, &pack_status);

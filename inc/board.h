@@ -54,7 +54,7 @@
 #define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
-#define TIME_PER_THERMISTOR_MS 1000
+#define TIME_PER_THERMISTOR_MS 400
 
 // ltc6804 constants
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4
@@ -161,6 +161,24 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  *                  selected
  */
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+
+#ifndef TEST_HARDWARE
+/**
+ * @details prints messages with details about status
+ *
+ * @param status status of LTC6804
+ */
+void Board_PrintLtc6804StatusMessagesSetGPIOState(LTC6804_STATUS_T status);
+#endif //TEST_HARDWARE
+
+#ifndef TEST_HARDWARE
+/**
+ * @details prints messages with details about status
+ *
+ * @param status status of LTC6804
+ */
+void Board_PrintLtc6804StatusMessagesGetGPIOVoltages(LTC6804_STATUS_T status);
+#endif //TEST_HARDWARE
 
 /**
  * @details sets the address of the multiplexer by controlling the shift register

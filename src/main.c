@@ -259,7 +259,6 @@ int main(void) {
     Board_Println("Applications Up");
 
     uint32_t last_count = msTicks;
-    uint32_t lastThermistorTemperaturePrint = msTicks;
 
     while(1) {
 
@@ -283,13 +282,7 @@ int main(void) {
             Board_LED_Toggle(LED1);  
             // Board_PrintNum(SOC_Estimate(), 10);
         }
-
-        const uint16_t printThermistorVoltagesPeriod = 10000;
-        if (msTicks - lastThermistorTemperaturePrint > printThermistorVoltagesPeriod) {
-            lastThermistorTemperaturePrint = msTicks;
-            Board_PrintThermistorVoltages(0, &pack_status);
-        }
-        
+ 
     }
 
     Board_Println("FORCED HANG");

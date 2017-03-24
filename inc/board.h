@@ -157,8 +157,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  * @details iterates through thermistors and saves cell temperatures in pack_status
  *
  * @param pack_status mutable datatype containing array of cell temperatures
- * @param bms_state datatype containing a variable representing the current thermistor
- *                  selected
  */
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
@@ -179,25 +177,6 @@ void Board_PrintLtc6804StatusMessagesSetGPIOState(LTC6804_STATUS_T status);
  */
 void Board_PrintLtc6804StatusMessagesGetGPIOVoltages(LTC6804_STATUS_T status);
 #endif //TEST_HARDWARE
-
-/**
- * @details sets the address of the multiplexer by controlling the shift register
- */
-void Board_LTC6804_SetMultiplexerAddress(void);
-
-/**
- * @details gets the temperature of the currently selected thermistor 
- *
- * @param pack_status mutable datatype containing an array of cell temperatures
- */
-void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
-
-/**
- * @details stores the voltages of current thermistors selected in pack_status
- *
- * @param pack_status mutable datatype containing an array of cell temperatures
- */
-void Board_LTC6804_GetThermistorVoltages(BMS_PACK_STATUS_T * pack_state);
 
 /**
  * @details prints thermistor voltages of module module

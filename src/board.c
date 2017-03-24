@@ -479,15 +479,16 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
         board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
-        CellTemperatures_Step(&currentThermistor);
 
-        if (ltc6804_setMultiplexerAddressFlag || ltc6804_getThermistorVoltagesFlag) {
-            Board_Println("skipped a thermistor");
+        // if we finished reading previous thermistor voltage, go to next thermistor
+        if (!ltc6804_setMultiplexerAddressFlag && !ltc6804_getThermistorVoltagesFlag) {
+            CellTemperatures_Step(&currentThermistor);
+            
+            // set flags to true
+            ltc6804_setMultiplexerAddressFlag = true;
+            ltc6804_getThermistorVoltagesFlag = true;
         }
 
-        // set flags to true
-        ltc6804_setMultiplexerAddressFlag = true;
-        ltc6804_getThermistorVoltagesFlag = true;
     }
 
 #ifndef TEST_HARDWARE

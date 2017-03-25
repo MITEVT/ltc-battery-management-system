@@ -588,6 +588,7 @@ void Board_HandleLtc6804Status(LTC6804_STATUS_T status) {
         case LTC6804_WAITING:
             break;
         case LTC6804_PASS:
+            Error_Pass(ERROR_LTC6804_PEC);
             break;
         case LTC6804_FAIL:
             Board_Println("LTC6804 fail"); 

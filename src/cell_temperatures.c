@@ -10,22 +10,22 @@
  * Public Functions
  * ***********************************************************************************/
 
-void CellTemperatures_Step(BMS_STATE_T * bms_state) {
+void CellTemperatures_Step(uint8_t * currentThermistor) {
 
-	// move to next thermistor
-	if (bms_state->currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
-		bms_state->currentThermistor += 1;
-	} else {
-		bms_state->currentThermistor = 0;
-	}
+    // move to next thermistor
+    if (*currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
+        *currentThermistor += 1;
+    } else {
+        *currentThermistor = 0;
+    }
 
 }
 
 uint8_t CellTemperatures_GetThermistorAddressBit(uint8_t currentThermistor, 
-		uint8_t bit) {
-	const uint8_t currentThermistorAddress = thermistorAddresses[currentThermistor];
-	const uint8_t bitMask = 0b00000001;
-	const uint8_t thermistorAddressBit = (currentThermistorAddress >> bit) 
-		& bitMask;
-	return thermistorAddressBit;	
+        uint8_t bit) {
+    const uint8_t currentThermistorAddress = thermistorAddresses[currentThermistor];
+    const uint8_t bitMask = 0b00000001;
+    const uint8_t thermistorAddressBit = (currentThermistorAddress >> bit) 
+        & bitMask;
+    return thermistorAddressBit;    
 }

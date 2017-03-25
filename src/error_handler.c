@@ -30,50 +30,48 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
 														{_Error_Handle_Count, 	CAN_timeout_count}};
 
 
-
 void Error_Init(void){
-	uint32_t i;
-	for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
-		error_vector[i].error = false;
-		error_vector[i].handling = false;
-		error_vector[i].time_stamp = 0;
-		error_vector[i].count = 0;
-	}
+    uint32_t i;
+    for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
+        error_vector[i].error = false;
+        error_vector[i].handling = false;
+        error_vector[i].time_stamp = 0;
+        error_vector[i].count = 0;
+    }
 }
 
 void Error_Assert(ERROR_T er_t, uint32_t msTicks) {
-	// switch (er_t) {
-	//  //LTC6804 errors that imply PEC fine should implicitly pass PEC
-	//  case ERROR_LTC6804_CVST:
-	//  case ERROR_LTC6804_OWT:
-	//	  Error_Pass(ERROR_LTC6804_PEC);
-	//	  break;
-	//  default:
-	//	  break;
-	// }
-	if (!error_vector[er_t].error) {
-		error_vector[er_t].error = true;
-		error_vector[er_t].time_stamp = msTicks;
-		error_vector[er_t].count = 1;
-	}
-	else {
-		error_vector[er_t].count+=1;
-	}
+    // switch (er_t) {
+    //  //LTC6804 errors that imply PEC fine should implicitly pass PEC
+    //  case ERROR_LTC6804_CVST:
+    //  case ERROR_LTC6804_OWT:
+    //    Error_Pass(ERROR_LTC6804_PEC);
+    //    break;
+    //  default:
+    //    break;
+    // }
+    if (!error_vector[er_t].error) {
+        error_vector[er_t].error = true;
+        error_vector[er_t].time_stamp = msTicks;
+        error_vector[er_t].count = 1;
+    }
+    else {
+        error_vector[er_t].count+=1;
+    }
 
 }
 void Error_Pass(ERROR_T er_t) {
-	error_vector[er_t].error = false;
-	//LTC6804 errors that imply PEC fine should implicitly pass PEC
-	// switch (er_t) {
-	//  case ERROR_LTC6804_CVST:
-	//  case ERROR_LTC6804_OWT:
-	//	  Error_Pass(ERROR_LTC6804_PEC);
-	//	  break;
-	//  default:
-	//	  break;
-	// }
+    error_vector[er_t].error = false;
+    //LTC6804 errors that imply PEC fine should implicitly pass PEC
+    // switch (er_t) {
+    //  case ERROR_LTC6804_CVST:
+    //  case ERROR_LTC6804_OWT:
+    //    Error_Pass(ERROR_LTC6804_PEC);
+    //    break;
+    //  default:
+    //    break;
+    // }
 }
-
 static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_ms) {
 	if (er_stat->error == false) {
 		er_stat->handling = false;

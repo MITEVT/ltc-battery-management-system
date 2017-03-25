@@ -25,7 +25,7 @@ BMS_STATE_T bms_state;
 TEST_GROUP(SSM_Test);
 
 TEST_SETUP(SSM_Test) {
-	printf("\r(SSM/Init/Error)Setup...");
+    printf("\r(SSM/Init/Error)Setup...");
     
     bms_output.charge_req = &charge_req;
     bms_output.close_contactors = false;
@@ -85,15 +85,15 @@ TEST_SETUP(SSM_Test) {
 }
 
 TEST_TEAR_DOWN(SSM_Test) {
-	printf("Teardown\r\n");
+    printf("Teardown\r\n");
 }
 
 TEST(SSM_Test, ssm_init) {
     printf("ssm_init...");
     
     SSM_Init(&bms_input, &bms_state, &bms_output);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_OFF);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_INIT);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_OFF);
 
     TEST_ASSERT_FALSE(bms_output.read_eeprom_packconfig);
     TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
@@ -105,26 +105,26 @@ TEST(SSM_Test, init_step_complete) {
 
     
     Init_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT(bms_output.read_eeprom_packconfig);
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
+    TEST_ASSERT(bms_output.read_eeprom_packconfig);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
 
     bms_input.eeprom_packconfig_read_done = true;
     bms_input.ltc_packconfig_check_done = false;
 
     Init_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_CHECK_PACKCONFIG);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_CHECK_PACKCONFIG);
     TEST_ASSERT(bms_output.check_packconfig_with_ltc);
     
     bms_input.ltc_packconfig_check_done = true;
 
     Init_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
     TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
 
     Init_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
     
 }
 
@@ -132,8 +132,8 @@ TEST(SSM_Test, init_step_blocked) {
     printf("init_step_blocked...");
     Init_Step(&bms_input, &bms_state, &bms_output); 
     Init_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT(bms_output.read_eeprom_packconfig);
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
+    TEST_ASSERT(bms_output.read_eeprom_packconfig);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
 }
 
 TEST(SSM_Test, is_valid_jump) {
@@ -176,18 +176,18 @@ TEST(SSM_Test, is_state_done) {
     printf("is_state_done...");
     
     // test init not done state
-	TEST_ASSERT_FALSE(Is_State_Done(&bms_state));
+    TEST_ASSERT_FALSE(Is_State_Done(&bms_state));
 
     bms_state.curr_mode = BMS_SSM_MODE_CHARGE;
     bms_state.charge_state = BMS_CHARGE_OFF;
-	TEST_ASSERT(Is_State_Done(&bms_state));
+    TEST_ASSERT(Is_State_Done(&bms_state));
     
     bms_state.curr_mode = BMS_SSM_MODE_DISCHARGE;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
-	TEST_ASSERT(Is_State_Done(&bms_state));
+    TEST_ASSERT(Is_State_Done(&bms_state));
 
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
-	TEST_ASSERT(Is_State_Done(&bms_state));
+    TEST_ASSERT(Is_State_Done(&bms_state));
     
 }
 
@@ -197,19 +197,19 @@ TEST(SSM_Test, ssm_step_start) {
     bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
-	SSM_Step(&bms_input, &bms_state, &bms_output);
+    SSM_Step(&bms_input, &bms_state, &bms_output);
     TEST_ASSERT_EQUAL(BMS_SSM_MODE_DISCHARGE, bms_state.curr_mode);
 
     bms_state.curr_mode = BMS_SSM_MODE_BALANCE;
     bms_state.charge_state = BMS_CHARGE_BAL;
     bms_input.mode_request = BMS_SSM_MODE_CHARGE;
-	SSM_Step(&bms_input, &bms_state, &bms_output);
+    SSM_Step(&bms_input, &bms_state, &bms_output);
     TEST_ASSERT_EQUAL(BMS_SSM_MODE_CHARGE, bms_state.curr_mode);
 
     bms_state.curr_mode = BMS_SSM_MODE_CHARGE;
     bms_state.charge_state = BMS_CHARGE_CC;
     bms_input.mode_request = BMS_SSM_MODE_BALANCE;
-	SSM_Step(&bms_input, &bms_state, &bms_output);
+    SSM_Step(&bms_input, &bms_state, &bms_output);
     TEST_ASSERT_EQUAL(BMS_SSM_MODE_BALANCE, bms_state.curr_mode);
 }
 
@@ -218,35 +218,35 @@ TEST(SSM_Test, ssm_step) {
 
     bms_input.mode_request = BMS_SSM_MODE_DISCHARGE;
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT(bms_output.read_eeprom_packconfig);
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
+    TEST_ASSERT(bms_output.read_eeprom_packconfig);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_READ_PACKCONFIG);
 
     bms_input.eeprom_packconfig_read_done = true;
     
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_CHECK_PACKCONFIG);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_CHECK_PACKCONFIG);
     TEST_ASSERT(bms_output.check_packconfig_with_ltc);
     
     bms_input.ltc_packconfig_check_done = true;
 
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_STANDBY);
     TEST_ASSERT_FALSE(bms_output.check_packconfig_with_ltc);
 
     SSM_Step(&bms_input, &bms_state, &bms_output); 
-	TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
-	TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
+    TEST_ASSERT_EQUAL(bms_state.init_state, BMS_INIT_DONE);
+    TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
 }
 
 
 TEST_GROUP_RUNNER(SSM_Test) {
-	RUN_TEST_CASE(SSM_Test, ssm_init);
-	RUN_TEST_CASE(SSM_Test, init_step_complete);
-	RUN_TEST_CASE(SSM_Test, init_step_blocked);
-	RUN_TEST_CASE(SSM_Test, is_valid_jump);
-	RUN_TEST_CASE(SSM_Test, is_state_done);
-	RUN_TEST_CASE(SSM_Test, ssm_step_start);
-	RUN_TEST_CASE(SSM_Test, ssm_step);
+    RUN_TEST_CASE(SSM_Test, ssm_init);
+    RUN_TEST_CASE(SSM_Test, init_step_complete);
+    RUN_TEST_CASE(SSM_Test, init_step_blocked);
+    RUN_TEST_CASE(SSM_Test, is_valid_jump);
+    RUN_TEST_CASE(SSM_Test, is_state_done);
+    RUN_TEST_CASE(SSM_Test, ssm_step_start);
+    RUN_TEST_CASE(SSM_Test, ssm_step);
 }
 

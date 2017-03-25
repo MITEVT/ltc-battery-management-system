@@ -15,13 +15,6 @@
  * *************************************************************************************/
 
 /**
- * @details get cell temperature of next thermistor
- *
- * @param currentThermistor number of thermistor currently selected
- */
-void CellTemperatures_Step(uint8_t * currentThermistor);
-
-/**
  * @details updates array of cell temperatures in pack_status with values stored in 
  *          gpioVoltages
  *

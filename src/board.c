@@ -482,7 +482,11 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
 
         // if we finished reading previous thermistor voltage, go to next thermistor
         if (!ltc6804_setMultiplexerAddressFlag && !ltc6804_getThermistorVoltagesFlag) {
-            CellTemperatures_Step(&currentThermistor);
+            if (currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
+                currentThermistor += 1;
+            } else {
+                currentThermistor = 0;
+            }
             
             // set flags to true
             ltc6804_setMultiplexerAddressFlag = true;

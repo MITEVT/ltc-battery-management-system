@@ -11,17 +11,6 @@
  * Public Functions
  * ***********************************************************************************/
 
-void CellTemperatures_Step(uint8_t * currentThermistor) {
-
-    // move to next thermistor
-    if (*currentThermistor < (MAX_THERMISTORS_PER_MODULE-1)) {
-        *currentThermistor += 1;
-    } else {
-        *currentThermistor = 0;
-    }
-
-}
-
 void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
         uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status) {
     uint8_t i;

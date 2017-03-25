@@ -203,20 +203,20 @@ void Process_Keyboard(void) {
 
 // BIG TODO LIST
 // ----------------
-// [TODO] Add mode for continuous data stream           WHO:Skanda
-// [TODO] Undervoltage (create error handler)           WHO:Erpo
+// [TODO] Add mode for continuous data stream           WHO:Skanda [IN PROGRESS]
+// [TODO] Undervoltage (create error handler)           WHO:Erpo [DONE]
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
 // [TODO] Clean up macros                               WHO:Skanda
-// [TODO] Remove LTC_SPI error                          WHO:Erpo
+// [TODO] Remove LTC_SPI error                          WHO:Erpo [DONE]
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
 
-// [TODO] Do heartbeats, see board.c todo               WHO:Rango
+// [TODO] Do heartbeats, see board.c todo               WHO:Rango [IN PROGRESS]
 // [TODO] Cleanup board                                 ALL
 // [TODO] Print out mod/cell to min/max, error          WHO:Eric
 // [TODO] Refactor similiar functions in error handler  WHO:Rango
-// [TODO] Line 253, console.c                           WHO:Rango!!
+// [TODO] Line 253, console.c                           WHO:Rango!! [DONE]
 // [TODO] Validate packconfig values in EEPROM either 
 //              needs to be moved 
 //        elsewhere and implement bounds checking

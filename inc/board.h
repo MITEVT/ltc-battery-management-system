@@ -162,20 +162,11 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
 #ifndef TEST_HARDWARE
 /**
- * @details prints messages with details about status
+ * @details handles status returned by an LTC6804 driver
  *
- * @param status status of LTC6804
+ * @param status status of the LTC6804
  */
-void Board_PrintLtc6804StatusMessagesSetGPIOState(LTC6804_STATUS_T status);
-#endif //TEST_HARDWARE
-
-#ifndef TEST_HARDWARE
-/**
- * @details prints messages with details about status
- *
- * @param status status of LTC6804
- */
-void Board_PrintLtc6804StatusMessagesGetGPIOVoltages(LTC6804_STATUS_T status);
+void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
 #endif //TEST_HARDWARE
 
 /**

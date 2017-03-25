@@ -497,6 +497,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     // set multiplexer address 
     // if flag is not true, skip this step
     if (ltc6804_setMultiplexerAddressFlag) {
+
         // initalize CLOCK and LATCH input to the shift register
         status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
                 LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
@@ -507,35 +508,22 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
                 LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
         Board_PrintLtc6804StatusMessagesSetGPIOState(status);
         if (status != LTC6804_PASS) return;
-
-        // Shift in 3 zeroes
-        const uint8_t unusedShiftRegisterOutputs = 3;
-        int8_t i;
-        for (i=0; i<unusedShiftRegisterOutputs; i++) {
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_DATA_IN, 0, msTicks);
-            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
-            if (status != LTC6804_PASS) return;
-            
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
-            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
-            if (status != LTC6804_PASS) return;
-
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
-            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
-            if (status != LTC6804_PASS) return;
+        
+        // Get thermistor address
+        uint8_t thermistorAddress;
+        if (currentThermistor < GROUP_ONE_THERMISTOR_COUNT) {
+            thermistorAddress = currentThermistor;
+        } else {
+            thermistorAddress = currentThermistor + GROUP_TWO_THERMISTOR_OFFSET;
         }
-
-        // Shift in multiplexer logic control bits
-        for (i=(NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS-1); i>=0; i--) {
-            uint8_t thermistorAddressBit = CellTemperatures_GetThermistorAddressBit(
-                    currentThermistor, i);
-
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_DATA_IN, thermistorAddressBit, msTicks);
-            Board_PrintLtc6804StatusMessagesSetGPIOState(status);
+        
+        // shift bits into shift resgister
+        int8_t i;
+        for (i=7; i>=0; i--) {
+            uint8_t addressBit = (thermistorAddress & (1<<i) ) >> i;
+            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
+                    LTC6804_SHIFT_REGISTER_DATA_IN, addressBit, msTicks);
+            Board_PrintLtc6804StatusMessagesSetGPIOState(status); 
             if (status != LTC6804_PASS) return;
 
             status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
@@ -547,6 +535,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
                     LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
             Board_PrintLtc6804StatusMessagesSetGPIOState(status);
             if (status != LTC6804_PASS) return;
+
         }
 
         // Latch the outputs

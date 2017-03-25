@@ -7,6 +7,8 @@
 
 // constants
 #define NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS 5
+#define GROUP_ONE_THERMISTOR_COUNT 13
+#define GROUP_TWO_THERMISTOR_OFFSET 3
 
 static const uint8_t thermistorAddresses[MAX_THERMISTORS_PER_MODULE] = {
     // First group of thermistors

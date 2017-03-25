@@ -566,10 +566,6 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     }
     
     uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
-    uint16_t i;
-    for (i=0; i<MAX_NUM_MODULES*LTC6804_GPIO_COUNT; i++) {
-        gpioVoltages[i] = 0;
-    }
     status = LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, 
             msTicks);
     Board_HandleLtc6804Status(status);

@@ -22,15 +22,6 @@ void CellTemperatures_Step(uint8_t * currentThermistor) {
 
 }
 
-uint8_t CellTemperatures_GetThermistorAddressBit(uint8_t currentThermistor, 
-        uint8_t bit) {
-    const uint8_t currentThermistorAddress = thermistorAddresses[currentThermistor];
-    const uint8_t bitMask = 0b00000001;
-    const uint8_t thermistorAddressBit = (currentThermistorAddress >> bit) 
-        & bitMask;
-    return thermistorAddressBit;    
-}
-
 void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
         uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status) {
     uint8_t i;

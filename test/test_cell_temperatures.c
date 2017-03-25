@@ -16,19 +16,6 @@
  * 
  * CellTemperatures_Step():
  * - iterate through all value of currentThermistor
- *
- * CellTemperatures_GetThermistorAddressBit()
- * - currentThermistor:
- *   - 0
- *   - 0 < currentThermistor < 23
- *   - 23
- * - bit:
- *   - 0
- *   - 0 < bit < 4
- *   - 4
- * - returns:
- *   - 0
- *   - 1
  * CellTemperatures_UpdateCellTemperatures()
  * - currentThermistor:
  *   - 0
@@ -133,144 +120,6 @@ TEST(Cell_Temperatures_Test, step) {
 
 }
 
-/**
- * CellTemperatures_GetThermistorAddressBit()
- * - currentThermistor:
- *   - 0
- * - bit:
- *   - 0
- *   - 0 < bit < 4
- *   - 4
- * - returns:
- *   - 0
- */
-TEST(Cell_Temperatures_Test, GetThermistorAddressBit_currentThermistorZero) {
-    printf("GetThermistorAddressBit_currentThermistorZero");
-
-    bms_state.currentThermistor = 0;
-    uint8_t bit;
-
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-}
-
-/**
- * CellTemperatures_GetThermistorAddressBit()
- * - currentThermistor:
- *   - 0 < currentThermistor < 23
- * - bit:
- *   - 0
- *   - 0 < bit < 4
- *   - 4
- * - returns:
- *   - 0
- *   - 1
- */
-TEST(Cell_Temperatures_Test, 
-        GetThermistorAddressBit_currentThermistorBetweeenZeroAndTwentyThree) {
-    printf("GetThermistorAddressBit_currentThermistorBetweenZeroAndTwentyThree");
-
-    uint8_t bit;
-
-    bms_state.currentThermistor = 12;
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-
-    bms_state.currentThermistor = 13;
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-
-    bms_state.currentThermistor = 16;
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-
-    bms_state.currentThermistor = 17;
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-}
-
-/**
- * CellTemperatures_GetThermistorAddressBit()
- * - currentThermistor:
- *   - 23
- * - bit:
- *   - 0
- *   - 0 < bit < 4
- *   - 4
- * - returns:
- *   - 0
- *   - 1
- */
-TEST(Cell_Temperatures_Test, GetThermistorAddressBit_currentThermistorTwentyThree) {
-    printf("GetThermistorAddressBit_currentThermistorTwentyThree");
-
-    bms_state.currentThermistor = 23;
-    uint8_t bit;
-
-    bit = 0;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 2;
-    TEST_ASSERT_EQUAL_INT(0, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-    bit = 4;
-    TEST_ASSERT_EQUAL_INT(1, 
-        CellTemperatures_GetThermistorAddressBit(bms_state.currentThermistor, bit)
-        );
-}
-
  /** 
   * CellTemperatures_UpdateCellTemperatures()
   * - currentThermistor:
@@ -356,12 +205,6 @@ TEST(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorTwentyThree
 
 TEST_GROUP_RUNNER(Cell_Temperatures_Test) {
     RUN_TEST_CASE(Cell_Temperatures_Test, step);
-    RUN_TEST_CASE(Cell_Temperatures_Test, 
-        GetThermistorAddressBit_currentThermistorZero);
-    RUN_TEST_CASE(Cell_Temperatures_Test, 
-        GetThermistorAddressBit_currentThermistorBetweeenZeroAndTwentyThree);
-    RUN_TEST_CASE(Cell_Temperatures_Test, 
-        GetThermistorAddressBit_currentThermistorTwentyThree);
     RUN_TEST_CASE(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorZero);
     RUN_TEST_CASE(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorTen);
     RUN_TEST_CASE(Cell_Temperatures_Test, 

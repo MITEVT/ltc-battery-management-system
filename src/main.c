@@ -225,6 +225,7 @@ void Process_Keyboard(void) {
 // [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
+// [TODO] Implement watchdow timer                      WHO:Eric
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

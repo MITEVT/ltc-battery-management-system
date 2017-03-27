@@ -207,7 +207,8 @@ void Process_Keyboard(void) {
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
-// [TODO] Add current sense handling                    WHO:Jorge
+// [TODO] Set fault pin to logic low if pack            WHO:Jorge
+//        current goes above maximum
 // [TODO] Clean up macros                               WHO:Skanda
 // [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
@@ -225,7 +226,17 @@ void Process_Keyboard(void) {
 // [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
-// [TODO] Implement watchdow timer                      WHO:Eric
+// [TODO] Implement watchdog timer                      WHO:Eric
+// [TODO] Convert thermistor voltages into cell         WHO:Jorge
+//        temperatures
+// [TODO] Get minimum, maximum, and average cell        WHO:Jorge
+//        temperature
+// [TODO] Control fans                                  WHO:Jorge
+// [TODO] Set fault pin to logic low if a cell goes     WHO:Jorge
+//        above the maximum allowed temperature
+// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
+// [TODO] implement logic that opens contactors if a    WHO:Jorge
+//        blown fuse is detected
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

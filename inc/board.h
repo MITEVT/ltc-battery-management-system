@@ -60,6 +60,7 @@
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4
 #define LTC6804_SHIFT_REGISTER_CLOCK 3
 #define LTC6804_SHIFT_REGISTER_LATCH 2
+#define LTC6804_GPIO_COUNT 5
 
 
 typedef enum {
@@ -156,22 +157,25 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  * @details iterates through thermistors and saves cell temperatures in pack_status
  *
  * @param pack_status mutable datatype containing array of cell temperatures
- * @param bms_state datatype containing a variable representing the current thermistor
- *                  selected
  */
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
 
+#ifndef TEST_HARDWARE
 /**
- * @details sets the address of the multiplexer by controlling the shift register
+ * @details handles status returned by an LTC6804 driver
+ *
+ * @param status status of the LTC6804
  */
-void Board_LTC6804_SetMultiplexerAddress(void);
+void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
+#endif //TEST_HARDWARE
 
 /**
- * @details gets the temperature of the currently selected thermistor 
+ * @details prints thermistor voltages of module module
  *
- * @param pack_status mutable datatype containing an array of cell temperatures
+ * @param module number of the module whose thermistor voltages will be printed
+ * @param pack_status datatype containing array of thermistor voltages
  */
-void Board_LTC6804_GetThermistorTemperature(BMS_PACK_STATUS_T * pack_status);
+void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

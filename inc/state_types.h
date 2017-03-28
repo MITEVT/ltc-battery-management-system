@@ -129,7 +129,6 @@ typedef struct BMS_STATE {
     BMS_CHARGER_STATUS_T *charger_status;
     PACK_CONFIG_T *pack_config;
     BMS_SSM_MODE_T curr_mode;
-    uint8_t currentThermistor;
 
     // sub state machine state
     BMS_INIT_MODE_T init_state;

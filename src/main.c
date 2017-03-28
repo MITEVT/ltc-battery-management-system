@@ -207,8 +207,6 @@ void Process_Keyboard(void) {
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
-// [TODO] Set fault pin to logic low if pack            WHO:Jorge
-//        current goes above maximum
 // [TODO] Clean up macros                               WHO:Skanda
 // [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
@@ -222,18 +220,27 @@ void Process_Keyboard(void) {
 //              needs to be moved 
 //        elsewhere and implement bounds checking
 // [TODO] EEPROM checksum!!!                            WHO:Skanda [DONE]
-// [TODO] process input struct,output other signals     WHO:Jorge
 // [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
-// [TODO] Implement watchdog timer                      WHO:Eric
+// [TODO] Implement watchdog timer                      WHO:Erpo
+// [TODO] Set fault pin to logic low if the BMS hangs   WHO:Jorge
+// [TODO] Set fault pin to logic low if pack            WHO:Jorge
+//        current goes above maximum and move to
+//        standby
+// [TODO] open the contactors if the charge current is  WHO:Jorge
+//        above the charge C rating and move to standby
+// [TODO] open contactors if a cell voltage goes below  WHO:Jorge
+//        or above the datasheet specification and go
+//        to standby
+// [TODO] Set fault pin to logic low if a cell goes     WHO:Jorge
+//        above the maximum allowed temperature and go
+//        to standby
 // [TODO] Convert thermistor voltages into cell         WHO:Jorge
 //        temperatures
 // [TODO] Get minimum, maximum, and average cell        WHO:Jorge
 //        temperature
 // [TODO] Control fans                                  WHO:Jorge
-// [TODO] Set fault pin to logic low if a cell goes     WHO:Jorge
-//        above the maximum allowed temperature
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] implement logic that opens contactors if a    WHO:Jorge
 //        blown fuse is detected
@@ -241,6 +248,10 @@ void Process_Keyboard(void) {
 //        mode request are different
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
+// [TODO] make the BMS go to standby if the contactors  WHO:Jorge
+//        open while it's in charge/discharge
+//        Look at Board_Contactors_Close()
+// [TODO] process input struct,output other signals     WHO:Jorge
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

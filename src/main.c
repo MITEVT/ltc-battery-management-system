@@ -224,16 +224,16 @@ void Process_Keyboard(void) {
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo
-// [TODO] Set fault pin to logic low if the BMS hangs   WHO:Jorge
-// [TODO] Set fault pin to logic low if pack            WHO:Jorge
+// [TODO] Open contactors if the BMS hangs              WHO:Jorge
+// [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
-// [TODO] open the contactors if the charge current is  WHO:Jorge
+// [TODO] open contactors if the charge current is      WHO:Jorge
 //        above the charge C rating and move to standby
 // [TODO] open contactors if a cell voltage goes below  WHO:Jorge
 //        or above the datasheet specification and go
 //        to standby
-// [TODO] Set fault pin to logic low if a cell goes     WHO:Jorge
+// [TODO] Open contactors if a cell goes                WHO:Jorge
 //        above the maximum allowed temperature and go
 //        to standby
 // [TODO] Convert thermistor voltages into cell         WHO:Jorge
@@ -251,7 +251,13 @@ void Process_Keyboard(void) {
 // [TODO] make the BMS go to standby if the contactors  WHO:Jorge
 //        open while it's in charge/discharge
 //        Look at Board_Contactors_Close()
+// [TODO] make the BMS hang if the pack current is high WHO:Jorge
+//        while the BMS is in standby, init, or balance
+// [TODO] make the BMS hang if the contactors are       WHO:Jorge
+//        closed when the BMS is in standby, init, or
+//        balance
 // [TODO] process input struct,output other signals     WHO:Jorge
+// [TODO] handle CAN errors correctly                   WHO:Jorge
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

@@ -240,8 +240,6 @@ void Process_Keyboard(void) {
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] implement logic that opens contactors if a    
 //        blown fuse is detected
-// [TODO] hang if the CAN mode request and console      WHO:Jorge
-//        mode request are different
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
 // [TODO] make the BMS go to standby if the contactors  

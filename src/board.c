@@ -747,8 +747,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
     } else if (console_mode_request == CAN_mode_request) {
         bms_input->mode_request = console_mode_request;
     } else {
-        Board_Println("Error! Illegal combination of CAN mode request and console mode request");
-        //TODO: go into error state
+        Error_Assert(ERROR_CONFLICTING_MODE_REQUESTS, msTicks);
     }
 
 #ifdef PRINT_MODE_REQUESTS

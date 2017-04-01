@@ -16,6 +16,7 @@ typedef enum error {
     ERROR_OVER_CURRENT,
     ERROR_BRUSA,
     ERROR_CAN,
+    ERROR_CONFLICTING_MODE_REQUESTS,
     ERROR_NUM_ERRORS
 } ERROR_T;
 
@@ -29,7 +30,8 @@ static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
     "ERROR_CELL_OVER_TEMP",
     "ERROR_OVER_CURRENT",
     "ERROR_BRUSA", // [TODO] Remove for FSAE
-    "ERROR_CAN"
+    "ERROR_CAN",
+    "ERROR_CONFLICTING_MODE_REQUESTS"
 };
 
 typedef enum hbeats {

@@ -238,13 +238,11 @@ void Process_Keyboard(void) {
 //        temperature
 // [TODO] Control fans                                  
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
+// [TODO] send CAN messages when BMS hangs as well      WHO:Jorge
 // [TODO] implement logic that opens contactors if a    
 //        blown fuse is detected
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
-// [TODO] make the BMS go to standby if the contactors  
-//        open while it's in charge/discharge
-//        Look at Board_Contactors_Close()
 // [TODO] make the BMS hang if the pack current is high 
 //        while the BMS is in standby, init, or balance
 // [TODO] make the BMS hang if the contactors are       

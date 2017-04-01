@@ -834,18 +834,9 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
         } else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
             //TODO: create helper function that parses VCU heartbeat
-#ifdef PRINT_CAN_MESSAGES
-            Board_Print("VCU Heartbeat    ");
-#endif //PRINT_CAN_MESSAGES
             if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
-#ifdef PRINT_CAN_MESSAGES
-                Board_Println("state: discharge    ");
-#endif //PRINT_CAN_MESSAGES
                 CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
             } else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
-#ifdef PRINT_CAN_MESSAGES
-                Board_Println("state: standby    "); 
-#endif //PRINT_CAN_MESSAGES
                 CAN_mode_request = BMS_SSM_MODE_STANDBY;
             } else {
                 DEBUG_Print("Unrecognized VCU heartbeat state. You should never reach here.");

@@ -9,13 +9,13 @@
 #define _BOARD_H_
 
 #ifdef TEST_HARDWARE
-	#include <stdbool.h>
-	#include <stdio.h>
+    #include <stdbool.h>
+    #include <stdio.h>
 #else
-	#include "chip.h"
-  	#include "can.h"
-	#include "ltc6804.h"
-	#include "console.h"
+    #include "chip.h"
+    #include "can.h"
+    #include "ltc6804.h"
+    #include "console.h"
 #endif
  
 #include "error_handler.h"
@@ -31,6 +31,11 @@
 #define IOCON_LED2 IOCON_PIO1_3
 #define CTR_SWTCH 1, 4 // pin 40 on lpc24, used as input 
 #define IOCON_CTR_SWTCH IOCON_PIO1_4
+
+#ifdef FSAE_DRIVERS
+#define FSAE_FAULT_GPIO 3, 0
+#define IOCON_FSAE_FAULT_GPIO IOCON_PIO3_0
+#endif //FSAE_DRIVERS
 
 #define BAL_SW 1, 2
 #define IOCON_BAL_SW IOCON_PIO1_2
@@ -49,9 +54,17 @@
 #define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
+#define TIME_PER_THERMISTOR_MS 400
+
+// ltc6804 constants
+#define LTC6804_SHIFT_REGISTER_DATA_IN 4
+#define LTC6804_SHIFT_REGISTER_CLOCK 3
+#define LTC6804_SHIFT_REGISTER_LATCH 2
+#define LTC6804_GPIO_COUNT 5
+
 
 typedef enum {
-	LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
+    LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
 } LTC6804_INIT_STATE_T;
 
 
@@ -140,6 +153,29 @@ void Board_LTC6804_ProcessOutput(bool *balance_req);
  */
 void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
 
+/**
+ * @details iterates through thermistors and saves cell temperatures in pack_status
+ *
+ * @param pack_status mutable datatype containing array of cell temperatures
+ */
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+
+#ifndef TEST_HARDWARE
+/**
+ * @details handles status returned by an LTC6804 driver
+ *
+ * @param status status of the LTC6804
+ */
+void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
+#endif //TEST_HARDWARE
+
+/**
+ * @details prints thermistor voltages of module module
+ *
+ * @param module number of the module whose thermistor voltages will be printed
+ * @param pack_status datatype containing array of thermistor voltages
+ */
+void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST
@@ -180,7 +216,7 @@ void Board_Close_Contactors(bool close_contactors);
  *
  * @return true if contactors are closed, false otherwise
  */
-bool Board_Are_Contactors_Closed(void);
+bool Board_Contactors_IsClosed(void);
 
 /******** Test Hardware Exemptions ***********/
 

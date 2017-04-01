@@ -110,7 +110,11 @@ INC_DIRS_TEST = $(INC_DIRS_CROSS) $(SRCS_DIRS) test $(UNITY_BASE)/src $(UNITY_BA
 TEST_SRCS_DIRS = test $(UNITY_BASE)/src $(UNITY_BASE)/extras/fixture/src
 
 # c files for testing
+<<<<<<< HEAD
 C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c src/discharge.c src/bms_utils.c src/board.c src/error_handler.c src/bms_can.c
+=======
+C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/charge.c src/ssm.c src/discharge.c src/bms_utils.c src/board.c src/error_handler.c src/bms_can.c src/cell_temperatures.c
+>>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 
 #=============================================================================#
 # Write Configuration

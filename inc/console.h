@@ -30,9 +30,9 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         0 };
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
-							"Set a value. Possible options:", "This", 
-							"flash that sucker", 
-							"set balance current"};
+                            "Set a value. Possible options:", "This", 
+                            "flash that sucker", 
+                            "set balance current"};
 
 static const char * const locstring[] =  {
                             "cell_min_mV",
@@ -56,12 +56,11 @@ static const char * const locstring[] =  {
                             "pack_cell_min_mV",
                             "pack_current_mA",
                             "pack_voltage_mV",
-                            "precharge_voltage",
                             "max_cell_temp_C",
                             "error"
 };
 
-static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { //[TODO] don't hardcode me!
+static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { 
                             {1, 0,UINT32_MAX},//"cell_min_mV",
                             {1, 0,UINT32_MAX},//"cell_max_mV",
                             {1, 0,UINT32_MAX},//"cell_capacity_cAh",
@@ -83,7 +82,6 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { //[TODO] don't hard
                             {0,0,0},//"pack_cell_min_mV",
                             {0,0,0},//"pack_current_mA",
                             {0,0,0},//"pack_voltage_mV",
-                            {0,0,0},//"precharge_voltage"
                             {0,0,0},//"max_cell_temp_C"
                             {0,0,0}//"error"
 };
@@ -106,7 +104,7 @@ typedef struct console_t {
 // static console_t console;
 
 void console_init(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, CONSOLE_OUTPUT_T *console_output);
-void executerl(uint32_t argc, const char * const * argv);  
+void executerl(int32_t argc, const char * const * argv);  
 
 
 #endif

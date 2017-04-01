@@ -327,7 +327,7 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
 #ifdef FSAE_DRIVERS
-    Chip_GPIO_WriteDirBit(LPC_GPIO, FSAE_FAULT_GPIO, true);
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
 #endif // FSAE_DRIVERS
     Board_Headroom_Init();
 

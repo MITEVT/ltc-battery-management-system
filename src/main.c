@@ -15,6 +15,7 @@
 #define IOCON_CHRG_SW IOCON_PIO1_2
 #define DISCHRG_SW 1, 2
 #define IOCON_DISCHRG_SW IOCON_PIO1_2
+
 #define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
@@ -274,65 +275,6 @@ int main(void) {
     Board_Println("Board Up");   
 #endif
 
-<<<<<<< HEAD
-	EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
-	Board_Println_BLOCKING("Finished EEPROM init");
-	
-	Error_Init();
-	SSM_Init(&bms_input, &bms_state, &bms_output);
-
-	//setup readline
-	microrl_init(&rl, Board_Print);
-	microrl_set_execute_callback(&rl, executerl);
-	console_init(&bms_input, &bms_state, &console_output);
-
-	Board_Println("Applications Up");
-
-	uint32_t last_count = msTicks;
-
-	while(1) {
-
-		Board_Headroom_Toggle(); // Used for measuring main-loop length
-
-		Process_Keyboard(); // Handle UART Input
-		Process_Input(&bms_input); // Process Inputs to board for bms
-		SSM_Step(&bms_input, &bms_state, &bms_output);
-		Process_Output(&bms_input, &bms_output, &bms_state);
-
-		if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
-			break; // Handler requested a Halt
-		}
-		
-		// Testing Code
-		bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
-
-		// LED Heartbeat
-		if (msTicks - last_count > 1000) {
-			last_count = msTicks;
-			Board_LED_Toggle(LED1);	 
-		}
-	}
-
-	Board_Println("FORCED HANG");
-
-	bms_output.close_contactors = false;
-	bms_output.charge_req->charger_on = false;
-	memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
-	bms_output.read_eeprom_packconfig = false;
-	bms_output.check_packconfig_with_ltc = false;
-
-	while(1) {
-		//set bms_output
-		Process_Output(&bms_input, &bms_output, &bms_state);
-		Process_Keyboard();
-		if(bms_state.curr_mode == BMS_SSM_MODE_INIT && true) {
-			console_output.config_default = false;
-			Write_EEPROM_PackConfig_Defaults();
-			bms_state.curr_mode = BMS_SSM_MODE_STANDBY;
-		}
-	}
-	return 0;
-=======
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
     SOC_Init();
     Board_Println_BLOCKING("Finished EEPROM init");
@@ -393,7 +335,6 @@ int main(void) {
         }
     }
     return 0;
->>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 }
 
 int hardware_test(void) {

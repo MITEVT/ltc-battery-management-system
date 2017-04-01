@@ -2,8 +2,6 @@
 #include "board.h"
 #include "can_constants.h"
 #include "bms_can.h"
-<<<<<<< HEAD
-=======
 #include "cell_temperatures.h"
 
 // C libraries
@@ -11,14 +9,12 @@
 
 // lpc11cx4-library
 #include "brusa.h"
->>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 
 const uint32_t OscRateIn = 0;
 
 #define UART_BUFFER_SIZE 100
 #define BMS_HEARTBEAT_PERIOD 1000
 #define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
-#define FSAE_DRIVERS
 
 //#define PRINT_MODE_REQUESTS
 
@@ -132,17 +128,6 @@ void Send_BMS_Discharge_Response(BMS_SSM_MODE_T current_state) {
  * @param bms_state current state of the BMS
  */
 void Send_BMS_Heartbeat(BMS_STATE_T * bms_state) {
-<<<<<<< HEAD
-	const uint8_t bms_heartbeat_bytes = 2; 
-	//TODO: don't hardcode bms_heartbeat_bytes
-       	uint16_t soc = 0; 
-	//TODO: compute soc in the state machine and save it in some datatype
-       	uint8_t bms_heartbeat_data[bms_heartbeat_bytes];
-	BMS_CAN_ConstructHeartbeatData(bms_state->curr_mode, soc, bms_heartbeat_data);
-       	CAN_Transmit(BMS_HEARTBEAT__id, bms_heartbeat_data, bms_heartbeat_bytes);
-
-	last_bms_heartbeat_time = msTicks;
-=======
     const uint8_t bms_heartbeat_bytes = 2; 
     //TODO: don't hardcode bms_heartbeat_bytes
     uint16_t soc = 0; 
@@ -150,7 +135,6 @@ void Send_BMS_Heartbeat(BMS_STATE_T * bms_state) {
         uint8_t bms_heartbeat_data[bms_heartbeat_bytes];
     BMS_CAN_ConstructHeartbeatData(bms_state->curr_mode, soc, bms_heartbeat_data);
         CAN_Transmit(BMS_HEARTBEAT__id, bms_heartbeat_data, bms_heartbeat_bytes);
->>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 }
 #endif
 
@@ -821,71 +805,6 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  */
 // [TODO] Refactor to case
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
-<<<<<<< HEAD
-	CCAN_MSG_OBJ_T rx_msg;
-	if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-		if (rx_msg.mode_id == NLG5_STATUS) { 
-		} else if (rx_msg.mode_id == NLG5_ACT_I) {
-			NLG5_ACT_I_T act_i;
-			Brusa_DecodeActI(&act_i, &rx_msg);
-			bms_input->pack_status->pack_current_mA = act_i.output_cAmps*10; // [TODO] Consider using current sense as well
-			bms_input->pack_status->pack_voltage_mV = act_i.output_mVolts;
-
-			// If current > requested current + thresh throw error
-		} else if (rx_msg.mode_id == NLG5_ACT_II) {
-
-		} else if (rx_msg.mode_id == NLG5_TEMP) {
-
-		} else if (rx_msg.mode_id == NLG5_ERR && bms_output->charge_req->charger_on) {
-			// [TODO] Distinguish errors
-			if (!Brusa_CheckErr(&rx_msg)) { // We've recevied a Brusa Error Message
-				// if (output->charge_req->charger_on) {
-					Error_Assert(ERROR_BRUSA, msTicks);
-					brusa_clear_error = true; // [TODO] This might be bad because we have to adust error count for timing
-				// }
-				// We should try to clear but also assert error for count
-					// Timing idea: Brusa error msg happens as often as ctrl message
-			} else {
-				brusa_clear_error = false;
-				Error_Pass(ERROR_BRUSA);
-			}
-#ifdef FSAE_DRIVERS
-		} else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
-			latest_vcu_heartbeat_time = msTicks;
-			Board_Print("Recieved VCU Heartbeat    ");
-			//TODO: create helper function that parses VCU heartbeat
-			if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {	
-				Board_Println("VCU State: Discharge");
-				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
-			} else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
-				Board_Println("VCU State: Standby");
-				CAN_mode_request = BMS_SSM_MODE_STANDBY;
-			} else {
-				Board_Println("Unrecognized VCU heartbeat state. You should never reach here.");
-			}
-		} else if (rx_msg.mode_id == VCU_DISCHARGE_REQUEST__id) {
-			Board_Print("Received VCU Discharge Request    ");
-			//TODO: create helper function that parses VCU discharge request message
-			if ((rx_msg.data[0]>>7) == ____VCU_DISCHARGE_REQUEST__DISCHARGE_REQUEST__ENTER_DISCHARGE) {
-				Board_Println("Request: Enter Discharge");
-				CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
-				//set flag that tells Board_CAN_ProcessOutputs() to send discharge response message
-				received_discharge_request = 1;
-			} else {
-				Board_Println("Invalid discharge request. You should never reach here");
-			}
-#endif //FSAE_DRIVERS
-		} else {
-			//TODO: handle other types of CAN messages
-			DEBUG_Print("Received unexpected CAN message");
-		}
-	}
-
-	const uint32_t vcu_heartbeat_timeout = 10000;
-	if ( (msTicks - latest_vcu_heartbeat_time) > vcu_heartbeat_timeout) {
-		CAN_mode_request = BMS_SSM_MODE_STANDBY;
-	}
-=======
     CCAN_MSG_OBJ_T rx_msg;
     if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
         latest_vcu_heartbeat_time = msTicks;
@@ -951,7 +870,6 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     if ( (msTicks - latest_vcu_heartbeat_time) > vcu_heartbeat_timeout) {
         CAN_mode_request = BMS_SSM_MODE_STANDBY;
     }
->>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 }
 
 static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
@@ -1002,34 +920,6 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
         // Board_Print("B_C: ");
         // Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
         // Board_Println("");
-<<<<<<< HEAD
-	}
-
-	if (!bms_output->charge_req->charger_on) {
-		bms_input->charger_on = false;
-	}
-
-#ifdef FSAE_DRIVERS
-	//Send BMS Heartbeat
-	if (msTicks - last_bms_heartbeat_time > BMS_HEARTBEAT_PERIOD) {
-		Send_BMS_Heartbeat(bms_state);
-		last_bms_heartbeat_time = msTicks;
-	}
-	
-	//Send BMS Discharge response
-	if (received_discharge_request) {
-		 Send_BMS_Discharge_Response(bms_state->curr_mode);
-		received_discharge_request = 0;
-	} 
-#endif //FSAE_DRIVERS
-
-	if (CAN_GetErrorStatus()) {
-		Board_Println("CAN Error");
-		Error_Assert(ERROR_CAN, msTicks);
-		CAN_ResetPeripheral();
-		Board_CAN_Init(CAN_BAUD);
-	}
-=======
     }
 
     if (!bms_output->charge_req->charger_on) {
@@ -1056,7 +946,6 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
         CAN_ResetPeripheral();
         Board_CAN_Init(CAN_BAUD);
     }
->>>>>>> 5683f1ae3d66e2287806c46cef596bc8fcfea39a
 }
 #endif
 

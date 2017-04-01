@@ -55,7 +55,9 @@ static uint8_t received_discharge_request = 0;
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
+#ifdef FSAE_DRIVERS
 uint32_t latest_vcu_heartbeat_time = 0;
+#endif //FSAE_DRIVERS
 
 #endif
 
@@ -806,7 +808,6 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     CCAN_MSG_OBJ_T rx_msg;
     if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-        latest_vcu_heartbeat_time = msTicks;
         if (rx_msg.mode_id == NLG5_STATUS) { 
             // [TODO] use info from brusa message
         } else if (rx_msg.mode_id == NLG5_ACT_I) {
@@ -833,6 +834,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             }
 #ifdef FSAE_DRIVERS
         } else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
+            latest_vcu_heartbeat_time = msTicks;
             //TODO: create helper function that parses VCU heartbeat
             if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
                 CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
@@ -855,11 +857,13 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             // [TODO] handle other types of CAN messages
         }
     }
-    
+   
+#ifdef FSAE_DRIVERS
     const uint32_t vcu_heartbeat_timeout = 10000;
     if ( (msTicks - latest_vcu_heartbeat_time) > vcu_heartbeat_timeout) {
         CAN_mode_request = BMS_SSM_MODE_STANDBY;
     }
+#endif //FSAE_DRIVERS
 }
 
 static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy

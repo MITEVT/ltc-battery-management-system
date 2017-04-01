@@ -249,7 +249,6 @@ void Process_Keyboard(void) {
 //        closed when the BMS is in standby, init, or
 //        balance
 // [TODO] process input struct,output other signals     
-// [TODO] handle CAN errors correctly                   
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

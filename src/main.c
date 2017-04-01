@@ -229,31 +229,34 @@ void Process_Keyboard(void) {
 //        standby
 // [TODO] open contactors if the charge current is      WHO:Jorge
 //        above the charge C rating and move to standby
-// [TODO] Open contactors if a cell goes                
+// [TODO] open contactors if a cell voltage goes below  WHO:Jorge
+//        or above the datasheet specification and go
+//        to standby
+// [TODO] Open contactors if a cell goes                WHO:Jorge
 //        above the maximum allowed temperature and go
 //        to standby
-// [TODO] Convert thermistor voltages into cell         
+// [TODO] Convert thermistor voltages into cell         WHO:Jorge
 //        temperatures
-// [TODO] Get minimum, maximum, and average cell        
+// [TODO] Get minimum, maximum, and average cell        WHO:Jorge
 //        temperature
-// [TODO] Control fans                                  
+// [TODO] Control fans                                  WHO:Jorge
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] implement logic that opens contactors if a    
+// [TODO] implement logic that opens contactors if a    WHO:Jorge
 //        blown fuse is detected
 // [TODO] hang if the CAN mode request and console      WHO:Jorge
 //        mode request are different
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
-// [TODO] make the BMS go to standby if the contactors  
+// [TODO] make the BMS go to standby if the contactors  WHO:Jorge
 //        open while it's in charge/discharge
 //        Look at Board_Contactors_Close()
-// [TODO] make the BMS hang if the pack current is high 
+// [TODO] make the BMS hang if the pack current is high WHO:Jorge
 //        while the BMS is in standby, init, or balance
-// [TODO] make the BMS hang if the contactors are       
+// [TODO] make the BMS hang if the contactors are       WHO:Jorge
 //        closed when the BMS is in standby, init, or
 //        balance
-// [TODO] process input struct,output other signals     
-// [TODO] handle CAN errors correctly                   
+// [TODO] process input struct,output other signals     WHO:Jorge
+// [TODO] handle CAN errors correctly                   WHO:Jorge
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango

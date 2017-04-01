@@ -224,7 +224,6 @@ void Process_Keyboard(void) {
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo
-// [TODO] Open contactors if the BMS hangs              WHO:Jorge
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby

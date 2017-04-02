@@ -607,14 +607,14 @@ void Board_HandleLtc6804Status(LTC6804_STATUS_T status) {
 }
 #endif //TEST_HARDWARE
 
-void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status) {
+void Board_PrintThermistorTemperatures(uint8_t module, BMS_PACK_STATUS_T * pack_status) {
 #ifndef TEST_HARDWARE
     uint8_t i;
     for (i=0; i<MAX_THERMISTORS_PER_MODULE; i++) {
         const uint8_t stringLength = 8;
         const uint8_t base10 = 10;
         char temperatureString[stringLength];
-        itoa(pack_status->cell_temperatures_mV[module*MAX_THERMISTORS_PER_MODULE+i], 
+        itoa(pack_status->cell_temperatures_dC[module*MAX_THERMISTORS_PER_MODULE+i], 
                 temperatureString, base10);
         Board_Print_BLOCKING(temperatureString);
         Board_Print_BLOCKING(",");

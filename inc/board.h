@@ -170,12 +170,12 @@ void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
 #endif //TEST_HARDWARE
 
 /**
- * @details prints thermistor voltages of module module
+ * @details prints thermistor temperatures of module module
  *
- * @param module number of the module whose thermistor voltages will be printed
- * @param pack_status datatype containing array of thermistor voltages
+ * @param module number of the module whose thermistor temperatures will be printed
+ * @param pack_status datatype containing array of thermistor temperatures
  */
-void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status);
+void Board_PrintThermistorTemperatures(uint8_t module, BMS_PACK_STATUS_T * pack_status);
 
 /**
  * @details does a CVST

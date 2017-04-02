@@ -312,7 +312,7 @@ int main(void) {
             Board_LED_Toggle(LED1);  
             // Board_PrintNum(SOC_Estimate(), 10);
         }
- 
+
     }
 
     Board_Println("FORCED HANG");

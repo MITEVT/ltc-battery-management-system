@@ -34,7 +34,7 @@ static BMS_INPUT_T bms_input;
 // memory allocation for BMS_STATE_T
 static BMS_CHARGER_STATUS_T charger_status;
 static uint32_t cell_voltages[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
-static uint16_t cell_temperatures[MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE];
+static int16_t cell_temperatures[MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE];
 static uint8_t module_cell_count[MAX_NUM_MODULES];
 static PACK_CONFIG_T pack_config;
 static BMS_STATE_T bms_state;
@@ -105,7 +105,7 @@ void Init_BMS_Structs(void) {
     memset(cell_voltages, 0, sizeof(cell_voltages));
     memset(cell_temperatures, 0, sizeof(cell_temperatures));
     pack_status.cell_voltages_mV = cell_voltages;
-    pack_status.cell_temperatures_mV = cell_temperatures;
+    pack_status.cell_temperatures_dC = cell_temperatures;
     pack_status.pack_cell_max_mV = 0;
     pack_status.pack_cell_min_mV = 0xFFFFFFFF;
     pack_status.pack_current_mA = 0;

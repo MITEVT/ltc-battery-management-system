@@ -248,11 +248,16 @@ void Process_Keyboard(void) {
 // [TODO] make the BMS hang if the contactors are       
 //        closed when the BMS is in standby, init, or
 //        balance
+// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
+// [TODO] Remove code for discharge requests            WHO:Jorge
 // [TODO] process input struct,output other signals     
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango
 // [TODO at the end] BRUSA error handling               WHO:Erpo
+//
+// [Not critical]
+// [TODO] Send warnings through CAN                     WHO:Jorge
 int main(void) {
 
     Init_BMS_Structs();

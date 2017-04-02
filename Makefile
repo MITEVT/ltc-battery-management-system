@@ -47,7 +47,7 @@ LD_SCRIPT = gcc.ld
 OUT_DIR = bin
 
 # C definitions
-C_DEFS = -DCORE_M0 -DDEBUG_ENABLE -DFSAE_DRIVERS
+C_DEFS = -DCORE_M0 -DDEBUG_ENABLE
 
 # ASM definitions
 AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main

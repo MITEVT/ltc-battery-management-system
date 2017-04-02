@@ -19,16 +19,16 @@ static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uin
 static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_num);
 
 static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
-														{_Error_Handle_Count, 	LTC6802_PEC_timeout_count},
-														{_Error_Handle_Count,	LTC6802_CVST_timeout_count},
-														{_Error_Handle_Count,	LTC6802_OWT_timeout_count},
-														{_Error_Handle_Count,	EEPROM_timeout_count},	
-														{_Error_Handle_Timeout, CELL_UNDER_VOLTAGE_timeout_ms},
-														{_Error_Handle_Timeout,	CELL_OVER_VOLTAGE_timeout_ms},
-														{_Error_Handle_Timeout, CELL_OVER_TEMP_timeout_ms},
-														{_Error_Handle_Timeout, OVER_CURRENT_timeout_ms},
-														{_Error_Handle_Count, 	BRUSA_timeout_count},
-														{_Error_Handle_Count, 	CAN_timeout_count},
+                            {_Error_Handle_Count, 	LTC6802_PEC_timeout_count},
+                            {_Error_Handle_Count,	LTC6802_CVST_timeout_count},
+                            {_Error_Handle_Count,	LTC6802_OWT_timeout_count},
+                            {_Error_Handle_Count,	EEPROM_timeout_count},	
+                            {_Error_Handle_Timeout, CELL_UNDER_VOLTAGE_timeout_ms},
+                            {_Error_Handle_Timeout,	CELL_OVER_VOLTAGE_timeout_ms},
+                            {_Error_Handle_Timeout, CELL_OVER_TEMP_timeout_ms},
+                            {_Error_Handle_Timeout, OVER_CURRENT_timeout_ms},
+                            {_Error_Handle_Count, 	BRUSA_timeout_count},
+                            {_Error_Handle_Count, 	CAN_timeout_count},
                             {_Error_Handle_Count,   CONFLICTING_MODE_REQUESTS_count}};
 
 

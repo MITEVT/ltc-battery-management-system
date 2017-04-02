@@ -55,7 +55,9 @@ static uint8_t received_discharge_request = 0;
 
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
+#ifdef FSAE_DRIVERS
 uint32_t latest_vcu_heartbeat_time = 0;
+#endif //FSAE_DRIVERS
 
 #endif
 
@@ -327,7 +329,7 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
 #ifdef FSAE_DRIVERS
-    Chip_GPIO_WriteDirBit(LPC_GPIO, FSAE_FAULT_GPIO, false);
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
 #endif // FSAE_DRIVERS
     Board_Headroom_Init();
 
@@ -605,14 +607,14 @@ void Board_HandleLtc6804Status(LTC6804_STATUS_T status) {
 }
 #endif //TEST_HARDWARE
 
-void Board_PrintThermistorVoltages(uint8_t module, BMS_PACK_STATUS_T * pack_status) {
+void Board_PrintThermistorTemperatures(uint8_t module, BMS_PACK_STATUS_T * pack_status) {
 #ifndef TEST_HARDWARE
     uint8_t i;
     for (i=0; i<MAX_THERMISTORS_PER_MODULE; i++) {
         const uint8_t stringLength = 8;
         const uint8_t base10 = 10;
         char temperatureString[stringLength];
-        itoa(pack_status->cell_temperatures_mV[module*MAX_THERMISTORS_PER_MODULE+i], 
+        itoa(pack_status->cell_temperatures_dC[module*MAX_THERMISTORS_PER_MODULE+i], 
                 temperatureString, base10);
         Board_Print_BLOCKING(temperatureString);
         Board_Print_BLOCKING(",");
@@ -747,8 +749,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
     } else if (console_mode_request == CAN_mode_request) {
         bms_input->mode_request = console_mode_request;
     } else {
-        Board_Println("Error! Illegal combination of CAN mode request and console mode request");
-        //TODO: go into error state
+        Error_Assert(ERROR_CONFLICTING_MODE_REQUESTS, msTicks);
     }
 
 #ifdef PRINT_MODE_REQUESTS
@@ -807,7 +808,6 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     CCAN_MSG_OBJ_T rx_msg;
     if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
-        latest_vcu_heartbeat_time = msTicks;
         if (rx_msg.mode_id == NLG5_STATUS) { 
             // [TODO] use info from brusa message
         } else if (rx_msg.mode_id == NLG5_ACT_I) {
@@ -834,19 +834,11 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             }
 #ifdef FSAE_DRIVERS
         } else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
+            latest_vcu_heartbeat_time = msTicks;
             //TODO: create helper function that parses VCU heartbeat
-#ifdef PRINT_CAN_MESSAGES
-            Board_Print("VCU Heartbeat    ");
-#endif //PRINT_CAN_MESSAGES
             if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
-#ifdef PRINT_CAN_MESSAGES
-                Board_Println("state: discharge    ");
-#endif //PRINT_CAN_MESSAGES
                 CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
             } else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
-#ifdef PRINT_CAN_MESSAGES
-                Board_Println("state: standby    "); 
-#endif //PRINT_CAN_MESSAGES
                 CAN_mode_request = BMS_SSM_MODE_STANDBY;
             } else {
                 DEBUG_Print("Unrecognized VCU heartbeat state. You should never reach here.");
@@ -865,11 +857,13 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             // [TODO] handle other types of CAN messages
         }
     }
-    
+   
+#ifdef FSAE_DRIVERS
     const uint32_t vcu_heartbeat_timeout = 10000;
     if ( (msTicks - latest_vcu_heartbeat_time) > vcu_heartbeat_timeout) {
         CAN_mode_request = BMS_SSM_MODE_STANDBY;
     }
+#endif //FSAE_DRIVERS
 }
 
 static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy

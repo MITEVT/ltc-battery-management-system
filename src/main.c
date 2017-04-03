@@ -226,6 +226,7 @@ void Process_Keyboard(void) {
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // 
 // In order of priority
+// [TODO] Clear conflicting mode request errors         WHO:Jorge
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
 // [TODO] Implement things in FSAE's BMS specification  WHO:Jorge

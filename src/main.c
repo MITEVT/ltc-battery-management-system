@@ -224,40 +224,37 @@ void Process_Keyboard(void) {
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo
+// 
+// In order of priority
+// [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
+//        is ready to charge
+// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
+// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
+// [TODO] send CAN messages when BMS hangs              WHO:Jorge
+// [TODO] Get minimum, maximum, and average cell        
+//        temperature
+// [TODO] Open contactors if a cell goes                
+//        outside a reasonable temperature range
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
 // [TODO] open contactors if the charge current is      WHO:Jorge
 //        above the charge C rating and move to standby
-// [TODO] Open contactors if a cell goes                
-//        above the maximum allowed temperature and go
-//        to standby
-// [TODO] Convert thermistor voltages into cell         
-//        temperatures
-// [TODO] Get minimum, maximum, and average cell        
-//        temperature
-// [TODO] Control fans                                  
-// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] send CAN messages when BMS hangs as well      WHO:Jorge
-// [TODO] implement logic that opens contactors if a    
-//        blown fuse is detected
-// [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
-//        is ready to charge
 // [TODO] make the BMS hang if the pack current is high 
 //        while the BMS is in standby, init, or balance
 // [TODO] make the BMS hang if the contactors are       
 //        closed when the BMS is in standby, init, or
 //        balance
-// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
-// [TODO] Remove code for discharge requests            WHO:Jorge
-// [TODO] process input struct,output other signals     
+// [TODO] Control fans                                  
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango
 // [TODO at the end] BRUSA error handling               WHO:Erpo
 //
-// [Not critical]
+// [Not urgent]
 // [TODO] Send warnings through CAN                     WHO:Jorge
+// [TODO] implement logic that opens contactors if a    
+//        blown fuse is detected
 int main(void) {
 
     Init_BMS_Structs();

@@ -75,7 +75,7 @@ handler:
             }
 
             if(!input->contactors_closed) {
-                state->charge_state = BMS_CHARGE_INIT;
+                state->discharge_state = BMS_DISCHARGE_INIT;
             }
             break;
         case BMS_DISCHARGE_DONE:

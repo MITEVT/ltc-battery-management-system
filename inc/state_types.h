@@ -26,7 +26,7 @@ typedef struct {
 
 typedef struct BMS_PACK_STATUS {
     uint32_t *cell_voltages_mV; // array size = #modules * cells/module
-    uint8_t * cell_temperatures_mV; // array size = #modules * thermistors/module
+    int16_t * cell_temperatures_dC; // array size = #modules * thermistors/module
     uint32_t pack_cell_max_mV;
     uint32_t pack_cell_min_mV;
     uint32_t pack_current_mA;
@@ -129,7 +129,6 @@ typedef struct BMS_STATE {
     BMS_CHARGER_STATUS_T *charger_status;
     PACK_CONFIG_T *pack_config;
     BMS_SSM_MODE_T curr_mode;
-    uint8_t currentThermistor;
 
     // sub state machine state
     BMS_INIT_MODE_T init_state;

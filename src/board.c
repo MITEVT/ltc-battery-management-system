@@ -516,9 +516,8 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         if (status != LTC6804_PASS) return;
         
         // Get thermistor address
-        uint8_t thermistorAddress;
-        if ((THERMISTOR_GROUP_ONE_START <= currentThermistor) && 
-                (currentThermistor <= THERMISTOR_GROUP_ONE_END)) {
+        uint8_t thermistorAddress = 0;
+        if (currentThermistor <= THERMISTOR_GROUP_ONE_END) {
             thermistorAddress = currentThermistor + THERMISTOR_GROUP_ONE_OFFSET;
         } else if ((THERMISTOR_GROUP_TWO_START <= currentThermistor) && 
                 (currentThermistor <= THERMISTOR_GROUP_TWO_END)) {
@@ -526,6 +525,8 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         } else if ((THERMISTOR_GROUP_THREE_START <= currentThermistor) && 
                 (currentThermistor <= THERMISTOR_GROUP_THREE_END)) {
             thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
+        } else {
+            Board_Println("Invalid value of currentThermistor. You should never reach here");
         }
 
         // shift bits into shift resgister

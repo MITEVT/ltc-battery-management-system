@@ -7,8 +7,15 @@
 
 // constants
 #define NUMBER_OF_MULTIPLEXER_LOGIC_CONTROL_INPUTS 5
-#define GROUP_ONE_THERMISTOR_COUNT 13
-#define GROUP_TWO_THERMISTOR_OFFSET 3
+#define THERMISTOR_GROUP_ONE_START    0
+#define THERMISTOR_GROUP_ONE_END      6
+#define THERMISTOR_GROUP_ONE_OFFSET   3
+#define THERMISTOR_GROUP_TWO_START    7
+#define THERMISTOR_GROUP_TWO_END      7
+#define THERMISTOR_GROUP_TWO_OFFSET   5
+#define THERMISTOR_GROUP_THREE_START  8
+#define THERMISTOR_GROUP_THREE_END    23
+#define THERMISTOR_GROUP_THREE_OFFSET 8
 
 // Contansts for linear curve fit relating thermistor voltages (in mV) to temperatures
 // (in dC)

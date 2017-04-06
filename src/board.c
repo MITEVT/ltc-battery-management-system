@@ -517,12 +517,17 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         
         // Get thermistor address
         uint8_t thermistorAddress;
-        if (currentThermistor < GROUP_ONE_THERMISTOR_COUNT) {
-            thermistorAddress = currentThermistor;
-        } else {
-            thermistorAddress = currentThermistor + GROUP_TWO_THERMISTOR_OFFSET;
+        if ((THERMISTOR_GROUP_ONE_START <= currentThermistor) && 
+                (currentThermistor <= THERMISTOR_GROUP_ONE_END)) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_ONE_OFFSET;
+        } else if ((THERMISTOR_GROUP_TWO_START <= currentThermistor) && 
+                (currentThermistor <= THERMISTOR_GROUP_TWO_END)) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_TWO_OFFSET;
+        } else if ((THERMISTOR_GROUP_THREE_START <= currentThermistor) && 
+                (currentThermistor <= THERMISTOR_GROUP_THREE_END)) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
         }
-        
+
         // shift bits into shift resgister
         int8_t i;
         for (i=7; i>=0; i--) {

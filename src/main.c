@@ -234,8 +234,6 @@ void Process_Keyboard(void) {
 // In order of priority
 // [TODO] Handle control flow errors. (e.g.             WHO:Jorge
 //        currentThermistor out of range)
-// [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
-//        is ready to charge
 // [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] send CAN messages when BMS hangs              WHO:Jorge

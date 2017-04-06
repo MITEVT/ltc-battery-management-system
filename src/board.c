@@ -326,7 +326,7 @@ void Board_GPIO_Init(void) {
     
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_CHARGE_ENABLE_GPIO);
     /* Select function PIO3_2 */
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAULT_GPIO, IOCON_FUNC0); 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_CHARGE_ENABLE_GPIO, IOCON_FUNC0); 
 #endif //FSAE_DRIVERS
 
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);

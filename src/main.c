@@ -146,6 +146,12 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
     } else {
         Board_LED_Off(FSAE_FAULT_GPIO);
     }
+
+    if (bms_output->charge_req->charger_on) {
+        Board_LED_On(FSAE_CHARGE_ENABLE_GPIO);
+    } else {
+        Board_LED_Off(FSAE_CHARGE_ENABLE_GPIO);
+    }
 #else
     if(bms_output->close_contactors) {
         Board_LED_On(LED2);

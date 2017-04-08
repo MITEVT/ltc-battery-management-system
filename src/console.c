@@ -296,7 +296,7 @@ static void measure(const char * const * argv) {
             console_output->measure_temp = !console_output->measure_temp;
 
         } else if (strcmp(argv[1],"voltages") == 0) {
-            console_output->measure_temp = !console_output->measure_voltage;
+            console_output->measure_voltage = !console_output->measure_voltage;
 
         } else if (strcmp(argv[1],"packcurrent") == 0) {
             console_output->measure_packcurrent = !console_output->measure_packcurrent;

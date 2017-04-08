@@ -14,9 +14,9 @@ void Output_Measurements(
 
     char tempstr[20];
 
-    if(console_output->measure_on ) {
+    if(console_output->measure_on) {
         if(console_output->measure_temp) {
-            Board_Println("Not implemented yet!");
+            Board_Println("Not 1 implemented yet!");
         }
 
         if(console_output->measure_voltage && (msTicks - lastVoltagesPrintTime) > VOLTAGES_PRINT_PERIOD_ms) {
@@ -35,11 +35,11 @@ void Output_Measurements(
         }
 
         if(console_output->measure_packcurrent) {
-            Board_Println("Not implemented yet!");
+            Board_Println("Not 2 implemented yet!");
         }
 
         if(console_output->measure_packvoltage) {
-            Board_Println("Not implemented yet!");
+            Board_Println("Not 3 implemented yet!");
         }
     }
 }

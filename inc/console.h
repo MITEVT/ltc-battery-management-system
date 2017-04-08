@@ -30,7 +30,7 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         0 ,
                         0 ,
                         0 ,
-                        0};
+                        1};
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
                             "Set a value. Possible options:", "Get help!", 

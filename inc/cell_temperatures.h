@@ -40,6 +40,15 @@
 void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
         uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status);
 
+/**
+ * @details updates maximum, minimum, and average cell temperatures in pack_status
+ *
+ * @param pack_status mutable datatype containing array of cell temperatures, maximum
+ *                    cell temperature, minimum cell temperature, and average cell 
+ *                    temperature
+ */
+void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+
 /****************************************************************************************
  * Private Functions
  * *************************************************************************************/

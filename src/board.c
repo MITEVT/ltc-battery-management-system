@@ -589,6 +589,10 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
 
     // Finished getting thermistor voltages. Reset flag
     ltc6804_getThermistorVoltagesFlag = false;
+
+    if (currentThermistor == THERMISTOR_GROUP_THREE_END) {
+        CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status);
+    }
     
 #else 
     UNUSED(pack_status);

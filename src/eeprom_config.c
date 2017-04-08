@@ -209,7 +209,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     pack_config->cv_min_current_ms = CV_MIN_CURRENT_ms;
     pack_config->cc_cell_voltage_mV = CC_CELL_VOLTAGE_mV;
     pack_config->cell_discharge_c_rating_cC = CELL_DISCHARGE_C_RATING_cC;
-    pack_config->max_cell_temp_C = MAX_CELL_TEMP_C;
+    pack_config->max_cell_temp_dC = MAX_CELL_TEMP_C;
 
     pack_config->module_cell_count[0] = MODULE_CELL_COUNT;
     pack_config->module_cell_count[1] = MODULE_CELL_COUNT;
@@ -262,8 +262,8 @@ uint8_t EEPROM_ChangeConfig(rw_loc_label_t rw_loc, uint32_t val) {
         case RWL_cell_discharge_c_rating_cC:
             eeprom_packconf_buf.cell_discharge_c_rating_cC = val;
             break;
-        case RWL_max_cell_temp_C:
-            eeprom_packconf_buf.max_cell_temp_C = val;
+        case RWL_max_cell_temp_dC:
+            eeprom_packconf_buf.max_cell_temp_dC = val;
             break;
         case RWL_LENGTH:
             break;

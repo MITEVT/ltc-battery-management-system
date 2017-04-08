@@ -27,7 +27,7 @@ typedef enum {
     RWL_cv_min_current_ms,
     RWL_cc_cell_voltage_mV,
     RWL_cell_discharge_c_rating_cC,
-    RWL_max_cell_temp_C,
+    RWL_max_cell_temp_dC,
     RWL_LENGTH
 } rw_loc_label_t;
 
@@ -40,7 +40,7 @@ typedef enum {
     ROL_pack_cell_min_mV,
     ROL_pack_current_mA,
     ROL_pack_voltage_mV,
-    ROL_max_cell_temp_C,
+    ROL_max_cell_temp_dC,
     ROL_error,
     ROL_LENGTH
 } ro_loc_label_t;

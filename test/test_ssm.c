@@ -59,7 +59,7 @@ TEST_SETUP(SSM_Test) {
     pack_config.cv_min_current_ms = 60000;
     pack_config.cc_cell_voltage_mV = 4300;
     pack_config.cell_discharge_c_rating_cC = 200; // at 27 degrees C
-    pack_config.max_cell_temp_C = 50;
+    pack_config.max_cell_temp_dC = 50;
     pack_config.module_cell_count = module_cell_count;
 
     bms_input.hard_reset_line = false;
@@ -79,7 +79,7 @@ TEST_SETUP(SSM_Test) {
     pack_status.pack_cell_min_mV = 0xFFFFFFFF;
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
-    pack_status.max_cell_temp_C = 0;
+    pack_status.max_cell_temp_dC = 0;
 
     SSM_Init(&bms_input, &bms_state, &bms_output);   
 }

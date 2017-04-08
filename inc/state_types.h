@@ -19,7 +19,7 @@ typedef struct {
     // Size = 4*11 = 44 bytes
     
     uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
-    uint32_t max_cell_temp_C;
+    uint32_t max_cell_temp_dC;
     uint8_t *module_cell_count;
     // Total Size = 44 + 4 + 4 + 1= 53 bytes
 } PACK_CONFIG_T;
@@ -31,7 +31,12 @@ typedef struct BMS_PACK_STATUS {
     uint32_t pack_cell_min_mV;
     uint32_t pack_current_mA;
     uint32_t pack_voltage_mV;
-    uint32_t max_cell_temp_C;
+    int16_t max_cell_temp_dC;
+    int16_t min_cell_temp_dC;
+    int16_t avg_cell_temp_dC;
+    uint16_t max_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
+    uint16_t min_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
+
 } BMS_PACK_STATUS_T;
 
 typedef struct BMS_CHARGER_STATUS {

@@ -104,8 +104,8 @@ static void get(const char * const * argv) {
                 utoa(bms_state->pack_config->cell_discharge_c_rating_cC, tempstr,10);
                 Board_Println(tempstr);
                 break;
-            case RWL_max_cell_temp_C:
-                utoa(bms_state->pack_config->max_cell_temp_C, tempstr,10);
+            case RWL_max_cell_temp_dC:
+                utoa(bms_state->pack_config->max_cell_temp_dC, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_LENGTH:
@@ -160,8 +160,8 @@ static void get(const char * const * argv) {
                     utoa(bms_input->pack_status->pack_voltage_mV, tempstr,10);
                     Board_Println(tempstr);
                     break;
-                case ROL_max_cell_temp_C:
-                    utoa(bms_input->pack_status->max_cell_temp_C, tempstr,10);
+                case ROL_max_cell_temp_dC:
+                    utoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:

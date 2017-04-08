@@ -23,6 +23,35 @@ void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages,
     }
 }
 
+void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+    int16_t maxCellTemperature = INT16_MIN;
+    int16_t minCellTemperature = INT16_MAX;
+    int16_t cellTemperaturesSum = 0;
+    uint16_t maxCellTempraturePosition = 0;
+    uint16_t minCellTemperaturePosition = 0;
+
+    uint16_t i;
+    for (i=0; i<MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE; i++) {
+        cellTemperaturesSum += pack_status->cell_temperatures_dC[i];
+        if (pack_status->cell_temperatures_dC[i] > maxCellTemperature) {
+            maxCellTemperature = pack_status->cell_temperatures_dC[i];
+            maxCellTempraturePosition = i;
+        }
+        if (pack_status->cell_temperatures_dC[i] <minCellTemperature) {
+            minCellTemperature = pack_status->cell_temperatures_dC[i];
+            minCellTemperaturePosition = i;
+        }
+    }
+
+    //update pack_status
+    pack_status->max_cell_temp_dC = maxCellTemperature;
+    pack_status->min_cell_temp_dC = minCellTemperature;
+    pack_status->avg_cell_temp_dC = 
+            cellTemperaturesSum/(MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE);
+    pack_status->max_cell_temp_position = maxCellTempraturePosition;
+    pack_status->min_cell_temp_position = minCellTemperaturePosition;
+}
+
 /**************************************************************************************
  * Private Functions
  * ***********************************************************************************/

@@ -56,7 +56,7 @@ static const char * const locstring[] =  {
                             "pack_cell_min_mV",
                             "pack_current_mA",
                             "pack_voltage_mV",
-                            "max_cell_temp_C",
+                            "max_cell_temp_dC",
                             "error"
 };
 
@@ -74,7 +74,7 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
                             {1, 0,UINT32_MAX},//"cv_min_current_ms",
                             {1, 0,UINT32_MAX},//"cc_cell_voltage_mV",
                             {1, 0,UINT32_MAX},//"cell_discharge_c_rating_cC",
-                            {1, 0,UINT32_MAX},//"max_cell_temp_C",
+                            {1, 0,UINT32_MAX},//"max_cell_temp_dC",
                             //can't write to the follwing
                             {0,0,0},//"state",
                             {0,0,0},//"*cell_voltages_mV",
@@ -82,7 +82,7 @@ static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = {
                             {0,0,0},//"pack_cell_min_mV",
                             {0,0,0},//"pack_current_mA",
                             {0,0,0},//"pack_voltage_mV",
-                            {0,0,0},//"max_cell_temp_C"
+                            {0,0,0},//"max_cell_temp_dC"
                             {0,0,0}//"error"
 };
 

@@ -58,7 +58,7 @@ static const char * const locstring[] =  {
                             "max_cell_temp_param",
                             //can't write to the follwing
                             "state",
-                            "cell_voltages_mV",
+                            "cvm",
                             "pack_cell_max_mV",
                             "pack_cell_min_mV",
                             "pack_current_mA",

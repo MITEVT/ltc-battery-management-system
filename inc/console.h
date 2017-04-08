@@ -18,7 +18,9 @@ static const char * const commands[] = { "get",
                             "bal",
                             "chrg",
                             "dis",
-                            "config_def"};
+                            "config_def",
+                            "measure"
+                                    };
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         2 ,
@@ -27,12 +29,17 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         1 ,
                         0 ,
                         0 ,
-                        0 };
+                        0 ,
+                        0};
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
-                            "Set a value. Possible options:", "This", 
-                            "flash that sucker", 
-                            "set balance current"};
+                            "Set a value. Possible options:", "Get help!", 
+                            "go through BMS initialization procedure again, load from eeprom", 
+                            "set balance current: bal [off|NUMBER]",
+                            "go into charge mode: chrg [on|off]",
+                            "go into discharge mode: dis [on|off]",
+                            "configure pack config defaults",
+                            "start measurement printout mode, four flags (pcurrent/pvoltage/cell temps/voltages): measure [print_flags|temps|voltages|packcurrent|packvoltage|on|off]"};
 
 static const char * const locstring[] =  {
                             "cell_min_mV",
@@ -93,6 +100,11 @@ typedef struct {
     bool config_default;
     BMS_SSM_MODE_T mode_request;
     uint32_t balance_mV;
+    bool measure_on;
+    bool measure_temp;
+    bool measure_voltage;
+    bool measure_packcurrent;
+    bool measure_packvoltage;
 } CONSOLE_OUTPUT_T;
 
 typedef struct console_t {

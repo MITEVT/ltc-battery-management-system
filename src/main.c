@@ -229,6 +229,10 @@ void Process_Keyboard(void) {
 // [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
+// [TODO] Update console to get cell temperatures,      WHO:Skanda
+//        max cell temperature, min cell temperature, 
+//        avg cell temperature, min cell temperature
+//        position, and max cell temperature position
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // 
 // In order of priority
@@ -237,9 +241,7 @@ void Process_Keyboard(void) {
 // [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] send CAN messages when BMS hangs              WHO:Jorge
-// [TODO] Get minimum, maximum, and average cell        
-//        temperature
-// [TODO] Open contactors if a cell goes                
+// [TODO] Open contactors if a cell goes                WHO:Jorge
 //        outside a reasonable temperature range
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to

@@ -33,6 +33,14 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 }
 
 void Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+#ifdef FSAE_DRIVERS
+    if (input->pack_status->max_cell_temp_dC > state->pack_config->fan_on_threshold_dC) {
+        output->fans_on = true;
+    } else {
+        output->fans_on = false;
+    }
+#endif //FSAE_DRIVERS
+
     switch (input->mode_request) {
         case BMS_SSM_MODE_DISCHARGE:
             if (state->discharge_state == BMS_DISCHARGE_OFF) {

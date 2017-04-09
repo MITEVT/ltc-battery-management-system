@@ -317,7 +317,8 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	/* Select function PIO1_3 */ 
+    /* Select function PIO1_3 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	
     Chip_GPIO_SetPinDIRInput(LPC_GPIO, CTR_SWTCH);
 #ifdef FSAE_DRIVERS
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
@@ -327,6 +328,34 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_CHARGE_ENABLE_GPIO);
     /* Select function PIO3_2 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_CHARGE_ENABLE_GPIO, IOCON_FUNC0); 
+
+    // configure fan 1 pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_1_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAN_1_PIN, 
+            (IOCON_FUNC2 | IOCON_MODE_INACT));
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_1_PIN, false);
+    // configure fan 2 pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_2_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAN_2_PIN, 
+            (IOCON_FUNC2 | IOCON_MODE_INACT));
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_2_PIN, false); 
+    // Set pwm for fans 1 and 2
+    Chip_TIMER_Init(LPC_TIMER32_1);
+    Chip_TIMER_Reset(LPC_TIMER32_1);
+    Chip_TIMER_PrescaleSet(LPC_TIMER32_1, FAN_TIMER_PRESCALE);  /* Set the prescaler */
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE, FAN_PWM_CYCLE); 
+    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE);
+    /* Enable PWM mode for pin CT32B1_MAT1 and CT32B1_MAT2 */ 
+    const uint8_t pwmControlRegister_TIMER32_1 = (0x02 | 0x04);
+    LPC_TIMER32_1->PWMC |= pwmControlRegister_TIMER32_1;
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_1);  
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_2);  
+    // Start the timer
+    Chip_TIMER_Enable(LPC_TIMER32_1);
 #endif //FSAE_DRIVERS
 
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);

@@ -209,7 +209,8 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     pack_config->cv_min_current_ms = CV_MIN_CURRENT_ms;
     pack_config->cc_cell_voltage_mV = CC_CELL_VOLTAGE_mV;
     pack_config->cell_discharge_c_rating_cC = CELL_DISCHARGE_C_RATING_cC;
-    pack_config->max_cell_temp_dC = MAX_CELL_TEMP_C;
+    pack_config->max_cell_temp_dC = MAX_CELL_TEMP_dC;
+    pack_config->fan_on_threshold_dC = FAN_ON_THRESHOLD_dC;
 
     pack_config->module_cell_count[0] = MODULE_CELL_COUNT;
     pack_config->module_cell_count[1] = MODULE_CELL_COUNT;
@@ -217,6 +218,8 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     for(i = pack_config->num_modules; i < MAX_NUM_MODULES; i++) {
         pack_config->module_cell_count[i] = MODULE_CELL_COUNT;
     }
+
+
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE, so only need to run checks

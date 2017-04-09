@@ -28,7 +28,8 @@
 #define CV_MIN_CURRENT_ms 60000
 #define CC_CELL_VOLTAGE_mV 4300
 #define CELL_DISCHARGE_C_RATING_cC 200 // at 27 degrees C
-#define MAX_CELL_TEMP_C 50
+#define MAX_CELL_TEMP_dC 600
+#define FAN_ON_THRESHOLD_dC 450
 #define MODULE_CELL_COUNT 12
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);

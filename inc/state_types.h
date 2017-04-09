@@ -20,6 +20,7 @@ typedef struct {
     
     uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
     uint32_t max_cell_temp_dC;
+    int16_t fan_on_threshold_dC;
     uint8_t *module_cell_count;
     // Total Size = 44 + 4 + 4 + 1= 53 bytes
 } PACK_CONFIG_T;
@@ -172,6 +173,7 @@ typedef struct BMS_OUTPUT {
     BMS_CHARGE_REQ_T *charge_req;
     bool close_contactors;
     bool *balance_req;
+    bool fans_on;
 
     // for bms initialization
     bool read_eeprom_packconfig;

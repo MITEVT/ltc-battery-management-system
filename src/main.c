@@ -57,6 +57,7 @@ void Init_BMS_Structs(void) {
     bms_output.close_contactors = false;
     bms_output.balance_req = balance_reqs;
     memset(balance_reqs, 0, sizeof(balance_reqs[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
+    bms_output.fans_on = false;
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
 
@@ -85,10 +86,11 @@ void Init_BMS_Structs(void) {
     pack_config.pack_cells_p = 0;
     pack_config.cv_min_current_mA = 0;
     pack_config.cv_min_current_ms = 0;
-    pack_config.cc_cell_voltage_mV = 0;
+    pack_config.cc_cell_voltage_mV = 0; 
 
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
     pack_config.max_cell_temp_dC = 0;
+    pack_config.fan_on_threshold_dC = 0;
 
     //assign bms_inputs
     bms_input.hard_reset_line = false;
@@ -151,6 +153,14 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
         Board_LED_On(FSAE_CHARGE_ENABLE_GPIO);
     } else {
         Board_LED_Off(FSAE_CHARGE_ENABLE_GPIO);
+    }
+
+    if (bms_output->fans_on) {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_ON_DUTY_RATIO_OFF);  
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_ON_DUTY_RATIO_OFF);  
+    } else {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);  
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);  
     }
 #else
     if(bms_output->close_contactors) {

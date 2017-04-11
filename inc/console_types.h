@@ -10,6 +10,7 @@ typedef enum {
     C_CHRG,
     C_DIS,
     C_CONFIG_DEF,
+    C_MEASURE,
     NUMCOMMANDS
 } command_label_t;
 

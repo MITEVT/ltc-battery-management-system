@@ -57,9 +57,12 @@ void Init_BMS_Structs(void) {
     bms_output.close_contactors = false;
     bms_output.balance_req = balance_reqs;
     memset(balance_reqs, 0, sizeof(balance_reqs[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
-    bms_output.fans_on = false;
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
+    // FSAE specific BMS outputs
+#ifdef FSAE_DRIVERS 
+    bms_output.fans_on = false;
+#endif //FSAE_DRIVERS
 
     charge_req.charger_on = 0;
     charge_req.charge_current_mA = 0;
@@ -90,7 +93,10 @@ void Init_BMS_Structs(void) {
 
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
     pack_config.max_cell_temp_dC = 0;
+    // FSAE specific pack configurations
+#ifdef FSAE_DRIVERS
     pack_config.fan_on_threshold_dC = 0;
+#endif //FSAE_DRIVERS
 
     //assign bms_inputs
     bms_input.hard_reset_line = false;

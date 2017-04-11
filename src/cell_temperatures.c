@@ -24,6 +24,8 @@ void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages,
 }
 
 void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+#ifdef FSAE_DRIVERS
+
     int16_t maxCellTemperature = INT16_MIN;
     int16_t minCellTemperature = INT16_MAX;
     int16_t cellTemperaturesSum = 0;
@@ -50,6 +52,10 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
             cellTemperaturesSum/(MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE);
     pack_status->max_cell_temp_position = maxCellTempraturePosition;
     pack_status->min_cell_temp_position = minCellTemperaturePosition;
+
+#else
+    UNUSED(pack_status);
+#endif //FSAE_DRIVERS
 }
 
 /**************************************************************************************

@@ -210,7 +210,11 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     pack_config->cc_cell_voltage_mV = CC_CELL_VOLTAGE_mV;
     pack_config->cell_discharge_c_rating_cC = CELL_DISCHARGE_C_RATING_cC;
     pack_config->max_cell_temp_dC = MAX_CELL_TEMP_dC;
+
+    // FSAE specific pack configurations
+#ifdef FSAE_DRIVERS
     pack_config->fan_on_threshold_dC = FAN_ON_THRESHOLD_dC;
+#endif //FSAE_DRIVERS
 
     pack_config->module_cell_count[0] = MODULE_CELL_COUNT;
     pack_config->module_cell_count[1] = MODULE_CELL_COUNT;

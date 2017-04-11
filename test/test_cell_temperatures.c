@@ -228,7 +228,9 @@ TEST(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorTwentyThree
  *   - number of cell with minimum cell temperature
  *     - 1
  */
+#ifdef FSAE_DRIVERS
 TEST(Cell_Temperatures_Test, UpdateMaxMinAvgCellTemperatures_AllTempsNegative) {
+
     printf("UpdateMaxMinAvgCellTemperatures_AllTempsNegative");
     
     // initialize array of cell temperatures
@@ -258,6 +260,7 @@ TEST(Cell_Temperatures_Test, UpdateMaxMinAvgCellTemperatures_AllTempsNegative) {
     TEST_ASSERT_EQUAL_INT(expected_min_cell_temp_position, 
             pack_status.min_cell_temp_position);
 }
+#endif //FSAE_DRIVERS
 
 /**
  * Covers:
@@ -282,6 +285,7 @@ TEST(Cell_Temperatures_Test, UpdateMaxMinAvgCellTemperatures_AllTempsNegative) {
  *   - number of cells with minimum cell temperature
  *     - 1
  */
+#ifdef FSAE_DRIVERS
 TEST(Cell_Temperatures_Test, 
             UpdateMaxMinAvgCellTemperatures_AllTempsNegativeExceptTwoTempsAtZero) {
     printf("UpdateMaxMinAvgCellTemperatures_AllTempsNegativeExceptTwoTempsAtZero");
@@ -316,6 +320,7 @@ TEST(Cell_Temperatures_Test,
             (pack_status.max_cell_temp_position==maxCellTempPosition2));
     TEST_ASSERT_EQUAL_INT(minCellTempPosition, pack_status.min_cell_temp_position);
 }
+#endif //FSAE_DRIVERS
 
 /**
  * Covers:
@@ -340,6 +345,7 @@ TEST(Cell_Temperatures_Test,
  *   - number of cells with minimum cell temperature
  *     - >1
  */
+#ifdef FSAE_DRIVERS
 TEST(Cell_Temperatures_Test, 
             UpdateMaxMinAvgCellTemperatures_MaxCellTempPositive) {
     printf("UpdateMaxMinAvgCellTemperatures_MaxCellTempPositive");
@@ -374,6 +380,7 @@ TEST(Cell_Temperatures_Test,
     TEST_ASSERT_TRUE((pack_status.min_cell_temp_position==minCellTempPosition1) ||
             (pack_status.min_cell_temp_position==minCellTempPosition2));
 }
+#endif //FSAE_DRIVERS
 
 /**
  * Covers:
@@ -397,6 +404,7 @@ TEST(Cell_Temperatures_Test,
  *   - number of cells with minimum cell temperature
  *     - 1
  */
+#ifdef FSAE_DRIVERS
 TEST(Cell_Temperatures_Test, 
             UpdateMaxMinAvgCellTemperatures_MinCellTempPositive) {
     printf("UpdateMaxMinAvgCellTemperatures_MinCellTempPositive");
@@ -426,6 +434,7 @@ TEST(Cell_Temperatures_Test,
     TEST_ASSERT_EQUAL_INT(maxCellTempPosition, pack_status.max_cell_temp_position);
     TEST_ASSERT_EQUAL_INT(minCellTempPosition, pack_status.min_cell_temp_position);
 }
+#endif //FSAE_DRIVERS
 
 /**
  * Covers:
@@ -449,6 +458,7 @@ TEST(Cell_Temperatures_Test,
  *   - number of cells with minimum cell temperature
  *     - 1
  */
+#ifdef FSAE_DRIVERS
 TEST(Cell_Temperatures_Test, UpdateMaxMinAvgCellTemperatures_AvgTemperatureZero) {
     printf("UpdateMaxMinAvgCellTemperatures_AvgTemperatureZero");
 
@@ -477,12 +487,14 @@ TEST(Cell_Temperatures_Test, UpdateMaxMinAvgCellTemperatures_AvgTemperatureZero)
     TEST_ASSERT_EQUAL_INT(maxCellTempPosition, pack_status.max_cell_temp_position);
     TEST_ASSERT_EQUAL_INT(minCellTempPosition, pack_status.min_cell_temp_position);
 }
+#endif //FSAE_DRIVERS
 
 TEST_GROUP_RUNNER(Cell_Temperatures_Test) {
     RUN_TEST_CASE(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorZero);
     RUN_TEST_CASE(Cell_Temperatures_Test, UpdateCellTemperatures_currentThermistorTen);
     RUN_TEST_CASE(Cell_Temperatures_Test, 
             UpdateCellTemperatures_currentThermistorTwentyThree);
+#ifdef FSAE_DRIVERS
     RUN_TEST_CASE(Cell_Temperatures_Test, 
             UpdateMaxMinAvgCellTemperatures_AllTempsNegative);
     RUN_TEST_CASE(Cell_Temperatures_Test, 
@@ -493,5 +505,6 @@ TEST_GROUP_RUNNER(Cell_Temperatures_Test) {
             UpdateMaxMinAvgCellTemperatures_MinCellTempPositive);
     RUN_TEST_CASE(Cell_Temperatures_Test, 
             UpdateMaxMinAvgCellTemperatures_AvgTemperatureZero);
+#endif //FSAE_DRIVERS
 }
 

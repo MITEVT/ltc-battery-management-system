@@ -29,8 +29,12 @@
 #define CC_CELL_VOLTAGE_mV 4300
 #define CELL_DISCHARGE_C_RATING_cC 200 // at 27 degrees C
 #define MAX_CELL_TEMP_dC 600
-#define FAN_ON_THRESHOLD_dC 450
 #define MODULE_CELL_COUNT 12
+
+// FSAE specific macros
+#ifdef FSAE_DRIVERS
+#define FAN_ON_THRESHOLD_dC 450
+#endif //FSAE_DRIVERS
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);
 uint8_t EEPROM_ChangeConfig(rw_loc_label_t rw_loc, uint32_t val);

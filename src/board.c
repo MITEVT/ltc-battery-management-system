@@ -1,6 +1,7 @@
 // ltc-battery-management-system
 #include "board.h"
-#include "can_constants.h"
+#include "fsae_can_spec.h"
+#include "MY17_Can_Library.h"
 #include "bms_can.h"
 #include "cell_temperatures.h"
 
@@ -102,8 +103,11 @@ void Send_BMS_Discharge_Response_Ready(void) {
     uint8_t bms_discharge_bits = bms_discharge_bytes*8;
     uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
     uint8_t data[bms_discharge_bits];
+    // TODO_CAN change to use modern can spec
+    /*
     data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__READY << max_bit_bms_discharge);
     CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
+    */
 }
 
 /**
@@ -114,8 +118,11 @@ void Send_BMS_Discharge_Response_Not_Ready(void) {
     uint8_t bms_discharge_bits = bms_discharge_bytes*8;
     uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
     uint8_t data[bms_discharge_bytes];
+    // TODO_CAN change to use modern can spec
+    /*
     data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__NOT_READY << max_bit_bms_discharge);
     CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
+    */
 }
 
 /**
@@ -881,6 +888,8 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
                 Error_Pass(ERROR_BRUSA);
             }
 #ifdef FSAE_DRIVERS
+            // TODO_CAN change this to use can library and more recent spec
+            /*
         } else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
             latest_vcu_heartbeat_time = msTicks;
             //TODO: create helper function that parses VCU heartbeat
@@ -900,6 +909,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             } else {
                 DEBUG_Print("Invalid discharge request. You should never reach here");
             }
+            */
 #endif //FSAE_DRIVERS
         } else {
             // [TODO] handle other types of CAN messages

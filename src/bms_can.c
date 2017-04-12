@@ -1,7 +1,8 @@
 #include "bms_can.h"
 
 #include "state_types.h"
-#include "can_constants.h"
+#include "MY17_Can_Library.h"
+#include "fsae_can_spec.h"
 #include "board.h"
 
 void BMS_CAN_ConstructHeartbeatData(BMS_SSM_MODE_T state, uint16_t soc, uint8_t * data) {

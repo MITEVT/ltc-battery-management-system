@@ -10,6 +10,11 @@
 // lpc11cx4-library
 #include "brusa.h"
 
+// FSAE libraries
+#ifdef FSAE_DRIVERS
+#include "MY17_Can_Library.h"
+#endif
+
 const uint32_t OscRateIn = 0;
 
 #define UART_BUFFER_SIZE 100

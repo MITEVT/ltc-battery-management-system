@@ -349,6 +349,9 @@ int main(void) {
     memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
+#ifdef FSAE_DRIVERS
+    bms_output.fans_on = false;
+#endif
 
     while(1) {
         //set bms_output

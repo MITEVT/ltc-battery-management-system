@@ -26,11 +26,13 @@ void Output_Measurements(
                 for (j = 0; j < bms_state->pack_config->module_cell_count[i]; j++) {
                     utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
                     Board_Print_BLOCKING(tempstr);
-                    Board_Print_BLOCKING(",");
+                    if(j != bms_state->pack_config->module_cell_count[i] - 1 || i != bms_state->pack_config->num_modules - 1) {
+                        Board_Print_BLOCKING(",");
+                    }
                     idx++;
                 }
-                Board_Print_BLOCKING("\n");
             }
+            Board_Print_BLOCKING("\n");
             lastVoltagesPrintTime = msTicks;
         }
 

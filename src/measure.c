@@ -22,6 +22,7 @@ void Output_Measurements(
         if(console_output->measure_voltage && (msTicks - lastVoltagesPrintTime) > VOLTAGES_PRINT_PERIOD_ms) {
             uint32_t i, j, idx;
             idx = 0;
+            // Board_Print_BLOCKING("cvs: ");
             for (i = 0; i < bms_state->pack_config->num_modules; i++) {
                 for (j = 0; j < bms_state->pack_config->module_cell_count[i]; j++) {
                     utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);

@@ -204,7 +204,7 @@ void Process_Keyboard(void) {
 
 // BIG TODO LIST
 // ----------------
-// [TODO] Add mode for continuous data stream           WHO:Skanda
+// [TODO] Add mode for continuous data stream           WHO:Skanda [DONE]
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
@@ -274,11 +274,7 @@ int main(void) {
     Board_CAN_Init(CAN_BAUD);
     Board_UART_Init(UART_BAUD);
 
-#ifdef DEBUG_ENABLE
-	Board_Println("Board Up (DEBUG)");
-#else
-    Board_Println("Board Up");   
-#endif
+	Board_Println("Board Up");
 
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
     SOC_Init();

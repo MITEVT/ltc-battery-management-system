@@ -159,7 +159,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 void Board_LTC6804_DeInit(void);
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status);
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bms_state);
 
 void Board_LTC6804_ProcessOutput(bool *balance_req);
 
@@ -175,7 +175,7 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  *
  * @param pack_status mutable datatype containing array of cell temperatures
  */
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules);
 
 #ifndef TEST_HARDWARE
 /**

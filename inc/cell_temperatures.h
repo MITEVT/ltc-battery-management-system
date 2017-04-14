@@ -38,7 +38,7 @@
  * @param pack_status mutable datatype containing array of cell temperatures
  */
 void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
-        uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status);
+        uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status, uint8_t num_modules);
 
 /**
  * @details updates maximum, minimum, and average cell temperatures in pack_status
@@ -47,7 +47,7 @@ void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages,
  *                    cell temperature, minimum cell temperature, and average cell 
  *                    temperature
  */
-void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules);
 
 /****************************************************************************************
  * Private Functions
@@ -66,6 +66,6 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
  * thermistorTemperature_GPIO1_modulen, ...}
  */
 void getThermistorTemperatures(uint32_t * gpioVoltages, 
-        int16_t * thermistorTemperatures);
+        int16_t * thermistorTemperatures, uint8_t num_modules);
 
 #endif //CELL_TEMPERATURES

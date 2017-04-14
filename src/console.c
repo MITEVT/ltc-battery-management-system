@@ -171,7 +171,7 @@ static void get(const char * const * argv) {
                     Board_Println(tempstr);
                     break;
                 case ROL_max_temp_dC:
-                    utoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
+                    itoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:

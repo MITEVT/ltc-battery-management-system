@@ -459,9 +459,9 @@ void Board_Init_Drivers(void) {
 
 }
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bms_state) {
     Board_LTC6804_GetCellVoltages(pack_status);
-    Board_LTC6804_GetCellTemperatures(pack_status);
+    Board_LTC6804_GetCellTemperatures(pack_status, bms_state->pack_config->num_modules);
     Board_LTC6804_OpenWireTest();
 }
 
@@ -508,7 +508,7 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #endif
 }
 
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules) {
 #ifndef TEST_HARDWARE
 #ifdef FSAE_DRIVERS
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
@@ -611,13 +611,13 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     if (status != LTC6804_PASS) return;
 
     CellTemperatures_UpdateCellTemperaturesArray(gpioVoltages, currentThermistor, 
-            pack_status);
+            pack_status, num_modules);
 
     // Finished getting thermistor voltages. Reset flag
     ltc6804_getThermistorVoltagesFlag = false;
 
     if (currentThermistor == THERMISTOR_GROUP_THREE_END) {
-        CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status);
+        CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status, num_modules);
     }
     
     #else 

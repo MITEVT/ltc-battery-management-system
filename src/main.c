@@ -211,7 +211,7 @@ void Process_Keyboard(void) {
 // [TODO] Add current sense handling                    WHO:Jorge
 //        Make sure to add it in the 'measure' command
 // [TODO] Add thermistor array handling                 WHO:Jorge
-//        Make sure to add it in the 'measure' command
+//        Make sure to add it in the 'measure' command  (Skanda: [DONE])
 // [TODO] Clean up macros                               WHO:Skanda
 // [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
@@ -220,12 +220,12 @@ void Process_Keyboard(void) {
 // [TODO] Cleanup board                                 ALL
 // [TODO] Print out mod/cell to min/max, error          WHO:Eric
 // [TODO] Refactor similiar functions in error handler  WHO:Rango
-// [TODO] Line 253, console.c                           WHO:Rango!!
+// [TODO] Line 253, console.c                           WHO:Rango
 // [TODO] Validate packconfig values in EEPROM either 
 //              needs to be moved 
 //        elsewhere and implement bounds checking
 // [TODO] EEPROM checksum!!!                            WHO:Skanda [DONE]
-// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
+// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL    [DONE]
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo

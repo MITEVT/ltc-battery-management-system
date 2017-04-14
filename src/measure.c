@@ -26,7 +26,6 @@ void Output_Measurements(
                 Board_Print_BLOCKING(",");
 
                 Board_PrintThermistorTemperatures(module, bms_input->pack_status);
-                Board_Print_BLOCKING("\r\n");
             }
             lastTempsPrintTime = msTicks;
         }

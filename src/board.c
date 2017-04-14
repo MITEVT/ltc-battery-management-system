@@ -509,6 +509,8 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 }
 
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+#ifndef TEST_HARDWARE
+#ifdef FSAE_DRIVERS
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
         board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
 
@@ -527,7 +529,6 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
 
     }
 
-#ifndef TEST_HARDWARE
      LTC6804_STATUS_T status;
 
     // set multiplexer address 
@@ -619,6 +620,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status);
     }
     
+    #endif // FSAE_DRIVERS
 #else 
     UNUSED(pack_status);
 #endif //TEST_HARDWARE

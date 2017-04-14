@@ -222,8 +222,6 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     for(i = pack_config->num_modules; i < MAX_NUM_MODULES; i++) {
         pack_config->module_cell_count[i] = MODULE_CELL_COUNT;
     }
-
-
 }
 
 // SHOULD ONLY BE CALLED IN STANDBY MODE, so only need to run checks

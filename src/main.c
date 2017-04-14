@@ -120,6 +120,10 @@ void Init_BMS_Structs(void) {
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
+#ifdef FSAE_DRIVERS
+    pack_status.min_cell_temp_dC = 0;
+    pack_status.avg_cell_temp_dC = 0;
+#endif //FSAE_DRIVERS
 
 }
 

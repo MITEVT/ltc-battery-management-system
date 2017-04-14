@@ -20,13 +20,13 @@ typedef struct {
     
     uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
     uint32_t max_cell_temp_dC;
-    uint8_t *module_cell_count;
-    // Total Size = 44 + 4 + 4 + 1= 53 bytes
-    
     // FSAE specific configurations
 #ifdef FSAE_DRIVERS
     int16_t fan_on_threshold_dC;
 #endif //FSAE_DRIVERS
+
+    uint8_t *module_cell_count;
+    // Total Size = 44 + 4 + 4 + 1= 53 bytes (not including fan_on_threshold)
     
 } PACK_CONFIG_T;
 

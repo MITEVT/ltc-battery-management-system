@@ -33,10 +33,18 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
     uint16_t maxCellTempraturePosition = 0;
     uint16_t minCellTemperaturePosition = 0;
 
+    char tempstr[20];
+    utoa(maxCellTemperature, tempstr, 10);
+    Board_Print_BLOCKING("MAX TEMP BEGIN:");
+    Board_Println_BLOCKING(tempstr);
     uint16_t i;
+
     for (i=0; i<MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE; i++) {
         cellTemperaturesSum += pack_status->cell_temperatures_dC[i];
         if (pack_status->cell_temperatures_dC[i] > maxCellTemperature) {
+            utoa(pack_status->cell_temperatures_dC[i], tempstr, 10);
+            Board_Print_BLOCKING("SETTING NEW MAX TEMP:");
+            Board_Println_BLOCKING(tempstr);
             maxCellTemperature = pack_status->cell_temperatures_dC[i];
             maxCellTempraturePosition = i;
         }
@@ -45,6 +53,10 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
             minCellTemperaturePosition = i;
         }
     }
+
+    utoa(maxCellTemperature, tempstr, 10);
+    Board_Print_BLOCKING("MAX TEMP:");
+    Board_Println_BLOCKING(tempstr);
 
     //update pack_status
     pack_status->max_cell_temp_dC = maxCellTemperature;

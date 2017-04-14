@@ -48,22 +48,22 @@ static char str[10];
 
 static BMS_SSM_MODE_T CAN_mode_request;
 
+//CAN STUFF
+CCAN_MSG_OBJ_T can_rx_msg;
+
 #ifdef FSAE_DRIVERS
 static uint32_t last_bms_heartbeat_time = 0;
 static uint8_t received_discharge_request = 0;
-#endif
 
-//CAN STUFF
-CCAN_MSG_OBJ_T can_rx_msg;
-#ifdef FSAE_DRIVERS
 uint32_t latest_vcu_heartbeat_time = 0;
+
+static uint32_t board_lastThermistorShiftTime_ms = 0;
+uint8_t currentThermistor = 0;
 #endif //FSAE_DRIVERS
 
 #endif
 
 //Cell temperature sensing stuff
-static uint32_t board_lastThermistorShiftTime_ms = 0;
-uint8_t currentThermistor = 0;
 static bool ltc6804_setMultiplexerAddressFlag = false;
 static bool ltc6804_getThermistorVoltagesFlag = false;
 

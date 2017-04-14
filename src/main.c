@@ -90,7 +90,7 @@ void Init_BMS_Structs(void) {
     pack_config.pack_cells_p = 0;
     pack_config.cv_min_current_mA = 0;
     pack_config.cv_min_current_ms = 0;
-    pack_config.cc_cell_voltage_mV = 0; 
+    pack_config.cc_cell_voltage_mV = 0;
 
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
     pack_config.max_cell_temp_dC = 0;

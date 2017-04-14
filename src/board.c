@@ -59,13 +59,13 @@ uint32_t latest_vcu_heartbeat_time = 0;
 
 static uint32_t board_lastThermistorShiftTime_ms = 0;
 uint8_t currentThermistor = 0;
-#endif //FSAE_DRIVERS
-
-#endif
 
 //Cell temperature sensing stuff
 static bool ltc6804_setMultiplexerAddressFlag = false;
 static bool ltc6804_getThermistorVoltagesFlag = false;
+#endif //FSAE_DRIVERS
+
+#endif
 
 volatile uint32_t msTicks;
 
@@ -620,6 +620,8 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status);
     }
     
+    #else 
+        UNUSED(pack_status);
     #endif // FSAE_DRIVERS
 #else 
     UNUSED(pack_status);

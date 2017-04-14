@@ -11,6 +11,8 @@
  * Public Functions
  * ***********************************************************************************/
 
+#ifdef FSAE_DRIVERS
+
 void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages, 
         uint8_t currentThermistor, BMS_PACK_STATUS_T * pack_status) {
     int16_t thermistorTemperatures[MAX_NUM_MODULES];
@@ -67,3 +69,5 @@ void getThermistorTemperatures(uint32_t * gpioVoltages,
               (gpioVoltages[i*LTC6804_GPIO_COUNT]>>SHIFT_VOLTAGE) + A0;
     }
 }
+
+#endif

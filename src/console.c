@@ -144,6 +144,16 @@ static void get(const char * const * argv) {
                         Board_Println_BLOCKING("----");
                     }
                     break;
+                case ROL_cell_temps_dC:
+                    for (i = 0; i < bms_state->pack_config->num_modules; i++) {
+                        utoa(i, tempstr, 10);
+                        Board_Print_BLOCKING("module ");
+                        Board_Print_BLOCKING(tempstr);
+                        Board_Print_BLOCKING(": ");
+
+                        Board_PrintThermistorTemperatures(i, bms_input->pack_status);
+                    }
+                    break;
                 case ROL_pack_cell_max_mV:
                     utoa(bms_input->pack_status->pack_cell_max_mV, tempstr,10);
                     Board_Println(tempstr);
@@ -160,8 +170,8 @@ static void get(const char * const * argv) {
                     utoa(bms_input->pack_status->pack_voltage_mV, tempstr,10);
                     Board_Println(tempstr);
                     break;
-                case ROL_max_cell_temp_dC:
-                    utoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
+                case ROL_max_temp_dC:
+                    utoa(bms_input->pack_status->max_cell_temp_C, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:

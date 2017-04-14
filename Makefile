@@ -46,15 +46,28 @@ LD_SCRIPT = gcc.ld
 # output folder (absolute or relative path, leave empty for in-tree compilation)
 OUT_DIR = bin
 
+# run either `make FSAE=1` or just regular `make`
+ifeq ($(FSAE),1)
+	# include directories (absolute or relative paths to additional folders with
+	# headers, current folder is always included)
+	INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/ ../MY17/lib/MY17_Can_Library ../MY17/lib/MY17_Can_Library/can_validator
+
+	# additional directories with source files (absolute or relative paths to
+	# folders with source files, current folder is always included)
+	SRCS_DIRS = src/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ ../MY17/lib/MY17_Can_Library ../MY17/lib/MY17_Can_Library/can_validator
+
+	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS
+else
+	SRCS_DIRS = src/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/
+	INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
+	SPECIAL_FSAE_FLAGS =
+endif
+
 # C definitions
-C_DEFS = -DCORE_M0 -DDEBUG_ENABLE
+C_DEFS = -DCORE_M0 -DDEBUG_ENABLE $(SPECIAL_FSAE_FLAGS)
 
 # ASM definitions
 AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main
-
-# include directories (absolute or relative paths to additional folders with
-# headers, current folder is always included)
-INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
 
 # library directories (absolute or relative paths to additional folders with
 # libraries)
@@ -64,9 +77,6 @@ LIB_DIRS =
 # math library libm.a and libsome_name.a)
 LIBS =
 
-# additional directories with source files (absolute or relative paths to
-# folders with source files, current folder is always included)
-SRCS_DIRS = ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ src/
 
 # extension of C files
 C_EXT = c

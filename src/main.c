@@ -170,10 +170,7 @@ void Process_Keyboard(void) {
 // [TODO] Do heartbeats, see board.c todo               WHO:Rango
 // [TODO] Cleanup board                                 ALL
 // [TODO] Print out mod/cell to min/max, error          WHO:Eric
-// [TODO] Validate packconfig values in EEPROM either 
-//              needs to be moved 
-//        elsewhere and implement bounds checking
-// [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
+// [TODO] On a Force Hang, write the error to EEPROM    WHO:Skanda
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
@@ -185,8 +182,6 @@ void Process_Keyboard(void) {
 //        to standby
 // [TODO] Convert thermistor voltages into cell         
 //        temperatures
-// [TODO] Get minimum, maximum, and average cell        
-//        temperature
 // [TODO] Control fans                                  
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] change the heartbeat when when BMS hangs as well      WHO:Jorge

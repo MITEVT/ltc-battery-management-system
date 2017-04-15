@@ -26,7 +26,7 @@ BMS_STATE_T bms_state;
 
 void Set_PackConfig(
         uint8_t cell_capacity_cAh, uint8_t cell_discharge_c_rating_cC,
-        uint8_t pack_cells_p, uint8_t max_cell_temp_C,
+        uint8_t pack_cells_p, uint8_t max_cell_temp_dC,
         uint8_t min_cell_voltage_mV,
         uint8_t max_cell_voltage_mV,
         uint8_t num_modules, uint8_t num_cells_in_module1, uint8_t num_cells_in_module2
@@ -86,7 +86,7 @@ TEST(Discharge_Test, calculate_max_current) {
 
 void Set_PackConfig(
         uint8_t cell_capacity_cAh, uint8_t cell_discharge_c_rating_cC,
-        uint8_t pack_cells_p, uint8_t max_cell_temp_C,
+        uint8_t pack_cells_p, uint8_t max_cell_temp_dC,
         uint8_t min_cell_voltage_mV,
         uint8_t max_cell_voltage_mV,
         uint8_t num_modules, uint8_t num_cells_in_module1, uint8_t num_cells_in_module2
@@ -94,7 +94,7 @@ void Set_PackConfig(
     bms_state.pack_config->cell_capacity_cAh = cell_capacity_cAh;
     bms_state.pack_config->cell_discharge_c_rating_cC = cell_discharge_c_rating_cC;
     bms_state.pack_config->pack_cells_p = pack_cells_p;
-    bms_state.pack_config->max_cell_temp_C = max_cell_temp_C;
+    bms_state.pack_config->max_cell_temp_dC = max_cell_temp_dC;
     bms_state.pack_config->cell_min_mV = min_cell_voltage_mV;
     bms_state.pack_config->cell_max_mV = max_cell_voltage_mV;
     bms_state.pack_config->num_modules = num_modules;
@@ -141,7 +141,7 @@ TEST(Discharge_Test, discharge_step_to_run) {
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
         bms_input.pack_status->cell_voltages_mV[i] = 70;
     }
-    bms_input.pack_status->max_cell_temp_C = 1;
+    bms_input.pack_status->max_cell_temp_dC = 1;
     
     Discharge_Step(&bms_input, &bms_state, &bms_output);
     TEST_ASSERT_EQUAL(bms_state.curr_mode, BMS_SSM_MODE_DISCHARGE);
@@ -159,7 +159,7 @@ TEST(Discharge_Test, discharge_step_undervoltage_error) {
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
         bms_input.pack_status->cell_voltages_mV[i] = 0;
     }
-    bms_input.pack_status->max_cell_temp_C = 1;
+    bms_input.pack_status->max_cell_temp_dC = 1;
     
     Discharge_Step(&bms_input, &bms_state, &bms_output);
 }
@@ -175,7 +175,7 @@ TEST(Discharge_Test, discharge_step_overcurrent_error) {
     for(i = 0; i < Get_Total_Cell_Count(bms_state.pack_config); i++) {
         bms_input.pack_status->cell_voltages_mV[i] = 70;
     }
-    bms_input.pack_status->max_cell_temp_C = 1;
+    bms_input.pack_status->max_cell_temp_dC = 1;
     
     Discharge_Step(&bms_input, &bms_state, &bms_output);
 }

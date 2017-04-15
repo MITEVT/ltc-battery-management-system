@@ -53,6 +53,10 @@ void Init_BMS_Structs(void) {
     memset(balance_reqs, 0, sizeof(balance_reqs[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
+    // FSAE specific BMS outputs
+#ifdef FSAE_DRIVERS 
+    bms_output.fans_on = false;
+#endif //FSAE_DRIVERS
 
     charge_req.charger_on = 0;
     charge_req.charge_current_mA = 0;
@@ -82,7 +86,11 @@ void Init_BMS_Structs(void) {
     pack_config.cc_cell_voltage_mV = 0;
 
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
-    pack_config.max_cell_temp_C = 0;
+    pack_config.max_cell_temp_dC = 0;
+    // FSAE specific pack configurations
+#ifdef FSAE_DRIVERS
+    pack_config.fan_on_threshold_dC = 0;
+#endif //FSAE_DRIVERS
 
     //assign bms_inputs
     bms_input.hard_reset_line = false;
@@ -104,7 +112,11 @@ void Init_BMS_Structs(void) {
     pack_status.pack_cell_min_mV = 0xFFFFFFFF;
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
-    pack_status.max_cell_temp_C = 0;
+    pack_status.max_cell_temp_dC = 0;
+#ifdef FSAE_DRIVERS
+    pack_status.min_cell_temp_dC = 0;
+    pack_status.avg_cell_temp_dC = 0;
+#endif //FSAE_DRIVERS
 
 }
 
@@ -118,7 +130,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         Board_GetModeRequest(&console_output, bms_input);
         Board_CAN_ProcessInput(bms_input, &bms_output); // CAN has precedence over console
-        Board_LTC6804_ProcessInputs(&pack_status);
+        Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
 
     bms_input->contactors_closed = Board_Contactors_Closed();
@@ -128,6 +140,33 @@ void Process_Input(BMS_INPUT_T* bms_input) {
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+#ifdef FSAE_DRIVERS
+    if(bms_output->close_contactors) {
+        Board_LED_On(FSAE_FAULT_GPIO);
+    } else {
+        Board_LED_Off(FSAE_FAULT_GPIO);
+    }
+
+    if (bms_output->charge_req->charger_on) {
+        Board_LED_On(FSAE_CHARGE_ENABLE_GPIO);
+    } else {
+        Board_LED_Off(FSAE_CHARGE_ENABLE_GPIO);
+    }
+
+    if (bms_output->fans_on) {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_ON_DUTY_RATIO_OFF);  
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_ON_DUTY_RATIO_OFF);  
+    } else {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);  
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);  
+    }
+#else
+    if(bms_output->close_contactors) {
+        Board_LED_On(LED2);
+    } else {
+        Board_LED_Off(LED2);
+    }
+#endif //FSAE_DRIVERS
     
     if (bms_output->read_eeprom_packconfig){
         if(console_output.config_default){
@@ -159,55 +198,45 @@ void Process_Keyboard(void) {
     }
 }
 
-// BIG TODO LIST
-// ----------------
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
-//        Make sure to add it in the 'measure' command
 // [TODO] Add thermistor array handling                 WHO:Jorge
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
-
-// [TODO] Do heartbeats, see board.c todo               WHO:Rango
+// [TODO] Do heartbeats                           WHO:Rango
 // [TODO] Cleanup board                                 ALL
-// [TODO] Print out mod/cell to min/max, error          WHO:Eric
-// [TODO] On a Force Hang, write the error to EEPROM    WHO:Skanda
 // [TODO] Implement watchdog timer                      WHO:Erpo
+// 
+// In order of priority
+// [TODO] Handle control flow errors. (e.g.             WHO:Jorge
+//        currentThermistor out of range)
+// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
+// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
+// [TODO] send CAN messages when BMS hangs              WHO:Jorge
+// [TODO] Open contactors if a cell goes                WHO:Jorge
+//        outside a reasonable temperature range
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
 // [TODO] open contactors if the charge current is      WHO:Jorge
 //        above the charge C rating and move to standby
-// [TODO] Open contactors if a cell goes                
-//        above the maximum allowed temperature and go
-//        to standby
-// [TODO] Convert thermistor voltages into cell         
-//        temperatures
-// [TODO] Control fans                                  
-// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] change the heartbeat when when BMS hangs as well      WHO:Jorge
-// [TODO] continue sending HBs when BMS is errored out
-// [TODO] implement logic that throws an error if a    
-//        blown fuse is detected
-// [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
-//        is ready to charge
-// [TODO] throw an error if the pack current is high 
+// [TODO] make the BMS hang if the pack current is high 
 //        while the BMS is in standby, init, or balance
-// [TODO] throw an error if the contactors are       
+// [TODO] make the BMS hang if the contactors are       
 //        closed when the BMS is in standby, init, or
-//        balance
-// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
-// [TODO] Remove code for discharge requests            WHO:Jorge
-// [TODO] process input struct,output other signals     
+//        balance     
 // [TODO] Add print out leveling                        WHO:Erpo/Skanda
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
 // [TODO at the end] Add console history                WHO:Rango
 // [TODO at the end] BRUSA error handling               WHO:Erpo
 //
-// [Not critical]
+// [Not urgent]
 // [TODO] Send warnings through CAN                     WHO:Jorge
+// [TODO] implement logic that opens contactors if a    
+//        blown fuse is detected
+
 int main(void) {
 
     Init_BMS_Structs();
@@ -234,6 +263,7 @@ int main(void) {
     Board_Println("Applications Up");
 
     uint32_t last_count = msTicks;
+    //uint32_t lastThermistorTemperaturePrint = msTicks;
 
     while(1) {
 
@@ -268,6 +298,9 @@ int main(void) {
     memset(bms_output.balance_req, 0, sizeof(bms_output.balance_req[0])*Get_Total_Cell_Count(&pack_config));
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
+#ifdef FSAE_DRIVERS
+    bms_output.fans_on = false;
+#endif
 
     while(1) {
         //set bms_output

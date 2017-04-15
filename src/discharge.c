@@ -15,8 +15,8 @@ void Discharge_Init(BMS_STATE_T *state) {
 
 uint32_t Calculate_Max_Current(
         uint32_t cell_capacity_cAh, uint32_t discharge_rating_cC,
-        uint32_t pack_cells_p, uint16_t cell_temp_C) {
-    (void)(cell_temp_C);
+        uint32_t pack_cells_p, uint16_t cell_temp_dC) {
+    (void)(cell_temp_dC);
     return cell_capacity_cAh * discharge_rating_cC * pack_cells_p / 10;
 }
 
@@ -24,7 +24,7 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
     total_num_cells = Get_Total_Cell_Count(pack_config);
 
     min_cell_voltage_mV = pack_config->cell_min_mV;
-    max_cell_temp_thres_C = pack_config->max_cell_temp_C;
+    max_cell_temp_thres_C = pack_config->max_cell_temp_dC;
     max_pack_current_mA = Calculate_Max_Current(
                             pack_config->cell_capacity_cAh,
                             pack_config->cell_discharge_c_rating_cC,
@@ -33,6 +33,14 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 }
 
 void Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+#ifdef FSAE_DRIVERS
+    if (input->pack_status->max_cell_temp_dC > state->pack_config->fan_on_threshold_dC) {
+        output->fans_on = true;
+    } else {
+        output->fans_on = false;
+    }
+#endif //FSAE_DRIVERS
+
     switch (input->mode_request) {
         case BMS_SSM_MODE_DISCHARGE:
             if (state->discharge_state == BMS_DISCHARGE_OFF) {
@@ -69,7 +77,7 @@ handler:
                                     state->pack_config->cell_capacity_cAh,
                                     state->pack_config->cell_discharge_c_rating_cC,
                                     state->pack_config->pack_cells_p,
-                                    input->pack_status->max_cell_temp_C);
+                                    input->pack_status->max_cell_temp_dC);
             if(input->pack_status->pack_current_mA > max_pack_current_mA) {
                 Error_Assert(ERROR_OVER_CURRENT, input->msTicks);
             }

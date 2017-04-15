@@ -104,8 +104,8 @@ static void get(const char * const * argv) {
                 utoa(bms_state->pack_config->cell_discharge_c_rating_cC, tempstr,10);
                 Board_Println(tempstr);
                 break;
-            case RWL_max_cell_temp_C:
-                utoa(bms_state->pack_config->max_cell_temp_C, tempstr,10);
+            case RWL_max_cell_temp_dC:
+                utoa(bms_state->pack_config->max_cell_temp_dC, tempstr,10);
                 Board_Println(tempstr);
                 break;
             case RWL_LENGTH:
@@ -136,12 +136,19 @@ static void get(const char * const * argv) {
                 case ROL_cell_voltages_mV:
                     idx = 0;
                     for (i = 0; i < bms_state->pack_config->num_modules; i++) {
-                        for (j = 0; j < bms_state->pack_config->module_cell_count[i]; j++) {
+                        uint8_t cc = bms_state->pack_config->module_cell_count[i];
+                        utoa(i, tempstr, 10);
+                        Board_Print_BLOCKING("module ");
+                        Board_Print_BLOCKING(tempstr);
+                        Board_Print_BLOCKING(": ");
+                        for (j = 0; j+1 < cc; j++) {
                             utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
-                            Board_Println_BLOCKING(tempstr);
+                            Board_Print_BLOCKING(tempstr);
+                            Board_Print_BLOCKING(",");
                             idx++;
                         }
-                        Board_Println_BLOCKING("----");
+                        utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
+                        Board_Println_BLOCKING(tempstr);
                     }
                     break;
                 case ROL_cell_temps_dC:
@@ -171,7 +178,7 @@ static void get(const char * const * argv) {
                     Board_Println(tempstr);
                     break;
                 case ROL_max_temp_dC:
-                    utoa(bms_input->pack_status->max_cell_temp_C, tempstr,10);
+                    itoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:

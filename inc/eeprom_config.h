@@ -11,7 +11,7 @@
 
 #define EEPROM_DATA_START_PCKCFG 0x000000
 #define EEPROM_DATA_START_CC 0x000100
-#define STORAGE_VERSION 0x04
+#define STORAGE_VERSION 0x05
 #define CHECKSUM_BYTESIZE 1
 #define VERSION_BYTESIZE 1
 #define ERROR_BYTESIZE 1
@@ -20,7 +20,7 @@
 #define CELL_MIN_mV 2800
 #define CELL_MAX_mV 4200
 #define CELL_CAPACITY_cAh 250
-#define NUM_MODULES 1
+#define NUM_MODULES 6
 #define CELL_CHARGE_C_RATING_cC 5
 #define BALANCE_ON_THRESHOLD_mV 4
 #define BALANCE_OFF_THRESHOLD_mV 1
@@ -29,8 +29,13 @@
 #define CV_MIN_CURRENT_ms 60000
 #define CC_CELL_VOLTAGE_mV 4300
 #define CELL_DISCHARGE_C_RATING_cC 200 // at 27 degrees C
-#define MAX_CELL_TEMP_C 50
+#define MAX_CELL_TEMP_dC 600
 #define MODULE_CELL_COUNT 12
+
+// FSAE specific macros
+#ifdef FSAE_DRIVERS
+#define FAN_ON_THRESHOLD_dC 450
+#endif //FSAE_DRIVERS
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);
 uint8_t EEPROM_ChangeConfig(rw_loc_label_t rw_loc, uint32_t val);

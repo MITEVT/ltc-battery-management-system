@@ -33,8 +33,25 @@
 #define IOCON_CTR_SWTCH IOCON_PIO1_4
 
 #ifdef FSAE_DRIVERS
+
 #define FSAE_FAULT_GPIO 3, 0
 #define IOCON_FSAE_FAULT_GPIO IOCON_PIO3_0
+#define FSAE_CHARGE_ENABLE_GPIO 3, 2
+#define IOCON_FSAE_CHARGE_ENABLE_GPIO IOCON_PIO3_2
+
+// Macros for Fan setup
+#define FSAE_FAN_1_PIN 1, 4
+#define IOCON_FSAE_FAN_1_PIN IOCON_PIO1_4
+#define FSAE_FAN_2_PIN 1, 3
+#define IOCON_FSAE_FAN_2_PIN IOCON_PIO1_3
+#define FAN_TIMER_PRESCALE 18
+#define MATCH_REGISTER_FAN_1 3
+#define MATCH_REGISTER_FAN_2 2
+#define MATCH_REGISTER_FAN_PWM_CYCLE 0
+#define FAN_OFF_DUTY_RATIO_OFF 200
+#define FAN_ON_DUTY_RATIO_OFF 90
+#define FAN_PWM_CYCLE 100
+
 #endif //FSAE_DRIVERS
 
 #define UART_BUFFER_SIZE 100 // may need to change based on number of BMS size, Rx and Tx size
@@ -135,7 +152,7 @@ bool Board_LTC6804_Init(PACK_CONFIG_T * pack_config, uint32_t * cell_voltages_mV
 
 void Board_LTC6804_DeInit(void);
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status);
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bms_state);
 
 void Board_LTC6804_ProcessOutput(bool *balance_req);
 
@@ -151,7 +168,7 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  *
  * @param pack_status mutable datatype containing array of cell temperatures
  */
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status);
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules);
 
 #ifndef TEST_HARDWARE
 /**

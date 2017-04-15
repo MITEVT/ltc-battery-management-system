@@ -18,7 +18,7 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     input->eeprom_packconfig_read_done = false;
 
     input->hard_reset_line = false;
-    input->pack_status->max_cell_temp_C = 0;
+    input->pack_status->max_cell_temp_dC = 0;
 
     input->eeprom_read_error = false;
 
@@ -113,8 +113,8 @@ static void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
     // }
     //[TODO] change to case statement
     if (state->curr_mode != BMS_SSM_MODE_INIT) {
-        uint32_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_C;
-        if (input->pack_status->max_cell_temp_C > max_cell_temp_thres_C) {
+        int16_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_dC;
+        if (input->pack_status->max_cell_temp_dC > max_cell_temp_thres_C) {
             Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
             return;
         }

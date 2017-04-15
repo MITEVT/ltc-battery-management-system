@@ -48,26 +48,27 @@ static char str[10];
 
 static BMS_SSM_MODE_T CAN_mode_request;
 
+//CAN STUFF
+CCAN_MSG_OBJ_T can_rx_msg;
+
+static uint32_t _last_brusa_ctrl = 0;
+
 #ifdef FSAE_DRIVERS
 static uint32_t last_bms_heartbeat_time = 0;
 static uint8_t received_discharge_request = 0;
-#endif
 
-//CAN STUFF
-CCAN_MSG_OBJ_T can_rx_msg;
-#ifdef FSAE_DRIVERS
 uint32_t latest_vcu_heartbeat_time = 0;
-#endif //FSAE_DRIVERS
-
-#endif
-
-static uint32_t _last_brusa_ctrl = 0;
 
 //Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
 uint8_t currentThermistor = 0;
+
+//Cell temperature sensing stuff
 static bool ltc6804_setMultiplexerAddressFlag = false;
 static bool ltc6804_getThermistorVoltagesFlag = false;
+#endif //FSAE_DRIVERS
+
+#endif
 
 volatile uint32_t msTicks;
 
@@ -321,20 +322,50 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED0);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	/* Select function PIO1_3 */ 
+    /* Select function PIO1_3 */ 
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_FUNC1);	
     Chip_GPIO_SetPinDIRInput(LPC_GPIO, CTR_SWTCH);
 #ifdef FSAE_DRIVERS
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
     /* Select function PIO3_0 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAULT_GPIO, IOCON_FUNC0); 
+    
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_CHARGE_ENABLE_GPIO);
+    /* Select function PIO3_2 */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_CHARGE_ENABLE_GPIO, IOCON_FUNC0); 
+
+    // configure fan 1 pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_1_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAN_1_PIN, 
+            (IOCON_FUNC2 | IOCON_MODE_INACT));
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_1_PIN, false);
+    // configure fan 2 pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_2_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FSAE_FAN_2_PIN, 
+            (IOCON_FUNC2 | IOCON_MODE_INACT));
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_2_PIN, false); 
+    // Set pwm for fans 1 and 2
+    Chip_TIMER_Init(LPC_TIMER32_1);
+    Chip_TIMER_Reset(LPC_TIMER32_1);
+    Chip_TIMER_PrescaleSet(LPC_TIMER32_1, FAN_TIMER_PRESCALE);  /* Set the prescaler */
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE, FAN_PWM_CYCLE); 
+    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE);
+    /* Enable PWM mode for pin CT32B1_MAT1 and CT32B1_MAT2 */ 
+    const uint8_t pwmControlRegister_TIMER32_1 = (0x02 | 0x04);
+    LPC_TIMER32_1->PWMC |= pwmControlRegister_TIMER32_1;
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_1);  
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_2);  
+    // Start the timer
+    Chip_TIMER_Enable(LPC_TIMER32_1);
 #endif //FSAE_DRIVERS
 
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED0, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
-#ifdef FSAE_DRIVERS
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
-#endif // FSAE_DRIVERS
     Board_Headroom_Init();
     
     //SSP for EEPROM
@@ -420,9 +451,9 @@ void Board_LTC6804_DeInit(void) {
 #endif
 }
 
-void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
+void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bms_state) {
     Board_LTC6804_GetCellVoltages(pack_status);
-    Board_LTC6804_GetCellTemperatures(pack_status);
+    Board_LTC6804_GetCellTemperatures(pack_status, bms_state->pack_config->num_modules);
     Board_LTC6804_OpenWireTest();
 }
 
@@ -469,7 +500,9 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 #endif
 }
 
-void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
+void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules) {
+#ifndef TEST_HARDWARE
+#ifdef FSAE_DRIVERS
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
         board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
 
@@ -488,7 +521,6 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
 
     }
 
-#ifndef TEST_HARDWARE
      LTC6804_STATUS_T status;
 
     // set multiplexer address 
@@ -507,13 +539,19 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
         if (status != LTC6804_PASS) return;
         
         // Get thermistor address
-        uint8_t thermistorAddress;
-        if (currentThermistor < GROUP_ONE_THERMISTOR_COUNT) {
-            thermistorAddress = currentThermistor;
+        uint8_t thermistorAddress = 0;
+        if (currentThermistor <= THERMISTOR_GROUP_ONE_END) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_ONE_OFFSET;
+        } else if ((THERMISTOR_GROUP_TWO_START <= currentThermistor) && 
+                (currentThermistor <= THERMISTOR_GROUP_TWO_END)) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_TWO_OFFSET;
+        } else if ((THERMISTOR_GROUP_THREE_START <= currentThermistor) && 
+                (currentThermistor <= THERMISTOR_GROUP_THREE_END)) {
+            thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
         } else {
-            thermistorAddress = currentThermistor + GROUP_TWO_THERMISTOR_OFFSET;
+            Board_Println("Invalid value of currentThermistor. You should never reach here");
         }
-        
+
         // shift bits into shift resgister
         int8_t i;
         for (i=7; i>=0; i--) {
@@ -565,13 +603,22 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status) {
     if (status != LTC6804_PASS) return;
 
     CellTemperatures_UpdateCellTemperaturesArray(gpioVoltages, currentThermistor, 
-            pack_status);
+            pack_status, num_modules);
 
     // Finished getting thermistor voltages. Reset flag
     ltc6804_getThermistorVoltagesFlag = false;
+
+    if (currentThermistor == THERMISTOR_GROUP_THREE_END) {
+        CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status, num_modules);
+    }
     
+    #else 
+        UNUSED(pack_status);
+        UNUSED(num_modules);
+    #endif // FSAE_DRIVERS
 #else 
     UNUSED(pack_status);
+    UNUSED(num_modules);
 #endif //TEST_HARDWARE
 }
 
@@ -736,10 +783,13 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 
     if (console_mode_request == BMS_SSM_MODE_STANDBY) {
         bms_input->mode_request = CAN_mode_request;
+        Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
     } else if (CAN_mode_request == BMS_SSM_MODE_STANDBY) {
         bms_input->mode_request = console_mode_request;
+        Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
     } else if (console_mode_request == CAN_mode_request) {
         bms_input->mode_request = console_mode_request;
+        Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
     } else {
         Error_Assert(ERROR_CONFLICTING_MODE_REQUESTS, msTicks);
     }

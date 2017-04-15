@@ -296,14 +296,20 @@ bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
 #endif
 }
 
-void Board_Contactors_Close(bool close_contactors) {
-    //TODO: implement function
+void Board_Contactors_Set(bool close_contactors) {
+#ifdef FSAE_DRIVERS
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAULT_GPIO, close_contactors);
+#else
     (void)(close_contactors);
+#endif
 }
 
-bool Board_Contactors_IsClosed(void) {
-    //TODO: implement function
+bool Board_Contactors_Closed(void) {
+#ifdef FSAE_DRIVERS
+    return Chip_GPIO_GetPinState(LPC_GPIO, FSAE_FAULT_GPIO);
+#else
     return false;
+#endif
 }
 
 void Board_Init_EEPROM(void) {
@@ -332,15 +338,6 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
 #endif // FSAE_DRIVERS
     Board_Headroom_Init();
-
-    // Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CTR_SWTCH, IOCON_MODE_PULLUP);
-
-    Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
     
     //SSP for EEPROM
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 

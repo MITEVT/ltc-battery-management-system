@@ -306,10 +306,6 @@ bool Board_Contactors_IsClosed(void) {
     return false;
 }
 
-void Board_Init_EEPROM(void) {
-
-}
-
 void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE
     Chip_GPIO_Init(LPC_GPIO);

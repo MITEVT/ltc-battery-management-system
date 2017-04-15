@@ -184,24 +184,6 @@ void Process_Keyboard(void) {
     }
 }
 
-// PLANNED DEMO FOR FSAE AT END OF FEB
-    // Turn on BMS
-    // Get Cell Voltages
-    // Over Serial, Balance 4mV below min
-        // If taking too long, get balance to finish by changing voltage
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Use VCU to enter discharge
-        // Look at contactors, current, voltage, etc
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Plug in Brusa
-    // Use serial to enter charge
-        // Look at contactors, current, voltage, etc
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Modify parameters
-    // Repeat
-    // Cause Error
-    // Restart
-
 // BIG TODO LIST
 // ----------------
 // [TODO] Undervoltage (create error handler)           WHO:Erpo

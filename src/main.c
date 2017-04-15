@@ -204,28 +204,28 @@ void Process_Keyboard(void) {
 
 // BIG TODO LIST
 // ----------------
-// [TODO] Add mode for continuous data stream           WHO:Skanda [IN PROGRESS]
-// [TODO] Undervoltage (create error handler)           WHO:Erpo [DONE]
+// [TODO] Add mode for continuous data stream           WHO:Skanda [DONE]
+// [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
 //        Make sure to add it in the 'measure' command
 // [TODO] Add thermistor array handling                 WHO:Jorge
-//        Make sure to add it in the 'measure' command
+//        Make sure to add it in the 'measure' command  (Skanda: [DONE])
 // [TODO] Clean up macros                               WHO:Skanda
-// [TODO] Remove LTC_SPI error                          WHO:Erpo [DONE]
+// [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
 
-// [TODO] Do heartbeats, see board.c todo               WHO:Rango [IN PROGRESS]
+// [TODO] Do heartbeats, see board.c todo               WHO:Rango
 // [TODO] Cleanup board                                 ALL
 // [TODO] Print out mod/cell to min/max, error          WHO:Eric
 // [TODO] Refactor similiar functions in error handler  WHO:Rango
-// [TODO] Line 253, console.c                           WHO:Rango!! [DONE]
+// [TODO] Line 253, console.c                           WHO:Rango
 // [TODO] Validate packconfig values in EEPROM either 
 //              needs to be moved 
 //        elsewhere and implement bounds checking
 // [TODO] EEPROM checksum!!!                            WHO:Skanda [DONE]
-// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL
+// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL    [DONE]
 // [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo
@@ -274,11 +274,7 @@ int main(void) {
     Board_CAN_Init(CAN_BAUD);
     Board_UART_Init(UART_BAUD);
 
-#ifdef DEBUG_ENABLE
-	Board_Println("Board Up (DEBUG)");
-#else
-    Board_Println("Board Up");   
-#endif
+	Board_Println("Board Up");
 
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
     SOC_Init();

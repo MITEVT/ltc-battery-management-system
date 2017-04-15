@@ -37,13 +37,6 @@
 #define IOCON_FSAE_FAULT_GPIO IOCON_PIO3_0
 #endif //FSAE_DRIVERS
 
-#define BAL_SW 1, 2
-#define IOCON_BAL_SW IOCON_PIO1_2
-#define CHRG_SW 1, 2
-#define IOCON_CHRG_SW IOCON_PIO1_2
-#define DISCHRG_SW 1, 2
-#define IOCON_DISCHRG_SW IOCON_PIO1_2
-
 #define UART_BUFFER_SIZE 100 // may need to change based on number of BMS size, Rx and Tx size
 
 #define CONTACTOR_P 2, 8
@@ -209,14 +202,14 @@ bool Board_LTC6804_OpenWireTest(void);
  *
  * @param close_contactors true if contactors should be closed, false otherwise
  */
-void Board_Close_Contactors(bool close_contactors);
+void Board_Contactors_Set(bool close_contactors);
 
 /**
  * @details get the status of the contactors
  *
  * @return true if contactors are closed, false otherwise
  */
-bool Board_Contactors_IsClosed(void);
+bool Board_Contactors_Closed(void);
 
 /******** Test Hardware Exemptions ***********/
 

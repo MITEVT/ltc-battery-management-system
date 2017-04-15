@@ -212,8 +212,6 @@ void Process_Keyboard(void) {
 //        to standby
 // [TODO] Convert thermistor voltages into cell         
 //        temperatures
-// [TODO] Get minimum, maximum, and average cell        
-//        temperature
 // [TODO] Control fans                                  
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
 // [TODO] change the heartbeat when when BMS hangs as well      WHO:Jorge

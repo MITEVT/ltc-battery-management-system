@@ -61,6 +61,8 @@ uint32_t latest_vcu_heartbeat_time = 0;
 
 #endif
 
+static uint32_t _last_brusa_ctrl = 0;
+
 //Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
 uint8_t currentThermistor = 0;
@@ -856,18 +858,9 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #endif //FSAE_DRIVERS
 }
 
-static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
-
-
 // [TODO] Make timing.h that has this (or board.h)
-    // Make pythong script generate
+    // Make python script generate
 #define NLG5_CTL_DLY_mS 99
-// #define NLG5_CTL_DLY_mS 1000
-#ifdef DEBUG_ENABLE
-    #define NLG5_CTL_STATE_REQ(curr_mode) (curr_mode==ASDF && conditional)
-#else
-    #define NLG5_CTL_STATE_REQ(curr_mode) ()
-#endif
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
     UNUSED(bms_state);
@@ -891,19 +884,10 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
              brusa_control.clear_error = 0;
              bms_input->charger_on = true;
         }
-        // brusa_control.output_mV = 0;
-        // brusa_control.output_cA = 0;
+
         Brusa_MakeCTL(&brusa_control, &temp_msg);
         CAN_TransmitMsgObj(&temp_msg);
         _last_brusa_ctrl = msTicks;
-
-        // bms_input->charger_on = true;
-        // Board_Print("B_V: ");
-        // Board_PrintNum(bms_output->charge_req->charge_voltage_mV, 10);
-        // Board_Println("");
-        // Board_Print("B_C: ");
-        // Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
-        // Board_Println("");
     }
 
     if (!bms_output->charge_req->charger_on) {

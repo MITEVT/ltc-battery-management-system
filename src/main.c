@@ -204,16 +204,12 @@ void Process_Keyboard(void) {
 
 // BIG TODO LIST
 // ----------------
-// [TODO] Add mode for continuous data stream           WHO:Skanda [DONE]
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
 //        Make sure to add it in the 'measure' command
 // [TODO] Add thermistor array handling                 WHO:Jorge
-//        Make sure to add it in the 'measure' command  (Skanda: [DONE])
-// [TODO] Clean up macros                               WHO:Skanda
-// [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
 
 // [TODO] Do heartbeats, see board.c todo               WHO:Rango
@@ -222,9 +218,6 @@ void Process_Keyboard(void) {
 // [TODO] Validate packconfig values in EEPROM either 
 //              needs to be moved 
 //        elsewhere and implement bounds checking
-// [TODO] EEPROM checksum!!!                            WHO:Skanda [DONE]
-// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL    [DONE]
-// [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
 // [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // [TODO] Open contactors if pack                       WHO:Jorge
@@ -241,14 +234,15 @@ void Process_Keyboard(void) {
 //        temperature
 // [TODO] Control fans                                  
 // [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] send CAN messages when BMS hangs as well      WHO:Jorge
-// [TODO] implement logic that opens contactors if a    
+// [TODO] change the heartbeat when when BMS hangs as well      WHO:Jorge
+// [TODO] continue sending HBs when BMS is errored out
+// [TODO] implement logic that throws an error if a    
 //        blown fuse is detected
 // [TODO] set charge enable pin to logic high if BMS    WHO:Jorge
 //        is ready to charge
-// [TODO] make the BMS hang if the pack current is high 
+// [TODO] throw an error if the pack current is high 
 //        while the BMS is in standby, init, or balance
-// [TODO] make the BMS hang if the contactors are       
+// [TODO] throw an error if the contactors are       
 //        closed when the BMS is in standby, init, or
 //        balance
 // [TODO] Implement things in FSAE's BMS specification  WHO:Jorge

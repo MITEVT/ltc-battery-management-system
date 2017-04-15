@@ -1,14 +1,16 @@
 #include "eeprom_config.h"
+#include "error_handler.h"
 #include "board.h"
 
 
-#define DATA_BLOCK_SIZE sizeof(PACK_CONFIG_T) + CHECKSUM_BYTESIZE + VERSION_BYTESIZE + MAX_NUM_MODULES
+#define DATA_BLOCK_SIZE sizeof(PACK_CONFIG_T) + ERROR_BYTESIZE + CHECKSUM_BYTESIZE + VERSION_BYTESIZE + MAX_NUM_MODULES
 #define CC_PAGE_SZ 64
 static uint8_t eeprom_data_buf[DATA_BLOCK_SIZE];
 static PACK_CONFIG_T eeprom_packconf_buf;
 static uint8_t mcc[MAX_NUM_MODULES];
 static uint8_t eeprom_data_addr_pckcfg[3]; // LC1024 eeprom address length is 3 bytes
 static uint8_t eeprom_data_addr_cc[3];
+static uint8_t saved_bms_error;
 
 
 static bool Validate_PackConfig(PACK_CONFIG_T *pack_config, uint16_t version, uint8_t checksum);
@@ -87,6 +89,7 @@ void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin
 
     Zero_EEPROM_DataBuffer();
     eeprom_packconf_buf.module_cell_count = mcc;
+    saved_bms_error = 255;
 
     Board_Println_BLOCKING("Finished EEPROM init...");
     Board_BlockingDelay(200);
@@ -161,8 +164,9 @@ bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
     // loading into the eeprom driver packconfig buffer
     memcpy(&eeprom_packconf_buf, eeprom_data_buf, sizeof(PACK_CONFIG_T)-sizeof(void*)); 
     memcpy(mcc, &eeprom_data_buf[sizeof(PACK_CONFIG_T)], MAX_NUM_MODULES); 
-    uint16_t version = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE];
-    uint8_t checksum = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE];
+    uint16_t version = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE - ERROR_BYTESIZE];
+    uint8_t checksum = eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - ERROR_BYTESIZE];
+    saved_bms_error = eeprom_data_buf[DATA_BLOCK_SIZE - ERROR_BYTESIZE];
 
     if (Validate_PackConfig(&eeprom_packconf_buf, version, checksum)) {
         Board_Println_BLOCKING("Passed validation, using load from EEPROM...");
@@ -170,9 +174,7 @@ bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
         uint8_t * their_mccp = pack_config->module_cell_count;
         memcpy(pack_config, &eeprom_packconf_buf, sizeof(PACK_CONFIG_T)-sizeof(void*));
         pack_config->module_cell_count = their_mccp;
-        Board_Println_BLOCKING("cpy pack_config");
         memcpy(pack_config->module_cell_count, mcc, MAX_NUM_MODULES); 
-        Board_Println_BLOCKING("cpy mcc");
         return true;
     } else {
         Board_Println_BLOCKING("Using pre-configured defaults...");
@@ -184,6 +186,33 @@ bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config) {
         return true;
     }
 
+}
+
+void Print_EEPROM_Error(void) {
+    Board_Print("Error saved in EEPROM: ");
+    if(saved_bms_error < ERROR_NUM_ERRORS) {
+        Board_Println(ERROR_NAMES[saved_bms_error]);
+    } else {
+        Board_Println("No Error!");
+    }
+}
+
+uint8_t Get_EEPROM_Error(void) {
+    return saved_bms_error;
+}
+
+void Set_EEPROM_Error(uint8_t error) {
+    Board_Print("Error to be saved in EEPROM next cycle: ");
+    if(error < ERROR_NUM_ERRORS) {
+        Board_Println(ERROR_NAMES[error]);
+    } else {
+        Board_Println("No Error!");
+    }
+    saved_bms_error = error;
+}
+
+void Write_EEPROM_Error(void) {
+    Write_PackConfig_EEPROM();
 }
 
 void Write_EEPROM_PackConfig_Defaults(void) {
@@ -277,8 +306,9 @@ static void Write_PackConfig_EEPROM(void) {
     // offset in the below line: we do not copy the module cell count ptr (1 byte) 
     memcpy(eeprom_data_buf, &eeprom_packconf_buf, sizeof(PACK_CONFIG_T)-sizeof(void*)); 
     memcpy(&eeprom_data_buf[sizeof(PACK_CONFIG_T)], mcc, MAX_NUM_MODULES); 
-    eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE] = STORAGE_VERSION;
-    eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE] = Calculate_Checksum(&eeprom_packconf_buf);
+    eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - VERSION_BYTESIZE - ERROR_BYTESIZE] = STORAGE_VERSION;
+    eeprom_data_buf[DATA_BLOCK_SIZE - CHECKSUM_BYTESIZE - ERROR_BYTESIZE] = Calculate_Checksum(&eeprom_packconf_buf);
+    eeprom_data_buf[DATA_BLOCK_SIZE - ERROR_BYTESIZE] = saved_bms_error;
 
 
     LC1024_WriteEnable();

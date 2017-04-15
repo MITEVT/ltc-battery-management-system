@@ -135,6 +135,8 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
             console_output.config_default = false;
         }
         bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
+        Print_EEPROM_Error();
+        Set_EEPROM_Error(255); // magic # for no error
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
         Board_LTC6804_DeInit(); 
@@ -219,7 +221,6 @@ int main(void) {
 	Board_Println("Board Up");
 
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
-    SOC_Init();
     Board_Println_BLOCKING("Finished EEPROM init");
     
     Error_Init();
@@ -260,6 +261,7 @@ int main(void) {
     }
 
     Board_Println("FORCED HANG");
+    Write_EEPROM_Error();
 
     bms_output.close_contactors = false;
     bms_output.charge_req->charger_on = false;

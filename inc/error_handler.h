@@ -78,5 +78,4 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 const ERROR_STATUS_T * Error_HB_GetStatus(HBEAT_T hb);
 ERROR_HANDLER_STATUS_T Error_HB_Handle(uint32_t msTicks);
 
-
 #endif

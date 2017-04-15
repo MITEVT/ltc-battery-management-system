@@ -26,7 +26,7 @@ void SSM_Init(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     Discharge_Init(state);
 }
 
-BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
+void Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
     switch(state->init_state) {
         case(BMS_INIT_OFF):
             output->read_eeprom_packconfig = true;
@@ -54,7 +54,6 @@ BMS_ERROR_T Init_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *outp
             state->curr_mode = BMS_SSM_MODE_STANDBY;
             break;
     }
-    return 0;
 }
 
 bool Is_Valid_Jump(BMS_SSM_MODE_T mode1, BMS_SSM_MODE_T mode2) {

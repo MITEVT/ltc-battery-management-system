@@ -219,8 +219,6 @@ void Process_Keyboard(void) {
 // [TODO] Do heartbeats, see board.c todo               WHO:Rango
 // [TODO] Cleanup board                                 ALL
 // [TODO] Print out mod/cell to min/max, error          WHO:Eric
-// [TODO] Refactor similiar functions in error handler  WHO:Rango
-// [TODO] Line 253, console.c                           WHO:Rango
 // [TODO] Validate packconfig values in EEPROM either 
 //              needs to be moved 
 //        elsewhere and implement bounds checking

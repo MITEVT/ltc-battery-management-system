@@ -51,12 +51,15 @@ static BMS_SSM_MODE_T CAN_mode_request;
 //CAN STUFF
 CCAN_MSG_OBJ_T can_rx_msg;
 
+static uint32_t _last_brusa_ctrl = 0;
+
 #ifdef FSAE_DRIVERS
 static uint32_t last_bms_heartbeat_time = 0;
 static uint8_t received_discharge_request = 0;
 
 uint32_t latest_vcu_heartbeat_time = 0;
 
+//Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
 uint8_t currentThermistor = 0;
 
@@ -296,18 +299,20 @@ bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
 #endif
 }
 
-void Board_Contactors_Close(bool close_contactors) {
-    //TODO: implement function
+void Board_Contactors_Set(bool close_contactors) {
+#ifdef FSAE_DRIVERS
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAULT_GPIO, close_contactors);
+#else
     (void)(close_contactors);
+#endif
 }
 
-bool Board_Contactors_IsClosed(void) {
-    //TODO: implement function
+bool Board_Contactors_Closed(void) {
+#ifdef FSAE_DRIVERS
+    return Chip_GPIO_GetPinState(LPC_GPIO, FSAE_FAULT_GPIO);
+#else
     return false;
-}
-
-void Board_Init_EEPROM(void) {
-
+#endif
 }
 
 void Board_GPIO_Init(void) {
@@ -362,15 +367,6 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED1, true);
     Chip_GPIO_WriteDirBit(LPC_GPIO, LED2, true);
     Board_Headroom_Init();
-
-    // Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CTR_SWTCH, IOCON_MODE_PULLUP);
-
-    Chip_GPIO_WriteDirBit(LPC_GPIO, BAL_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_BAL_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, CHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_CHRG_SW, IOCON_MODE_PULLUP);
-    Chip_GPIO_WriteDirBit(LPC_GPIO, DISCHRG_SW, false);
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_DISCHRG_SW, IOCON_MODE_PULLUP);
     
     //SSP for EEPROM
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
@@ -453,10 +449,6 @@ void Board_LTC6804_DeInit(void) {
     _ltc6804_initialized = false;
     _ltc6804_init_state = LTC6804_INIT_NONE;
 #endif
-}
-
-void Board_Init_Drivers(void) {
-
 }
 
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bms_state) {
@@ -622,9 +614,11 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
     
     #else 
         UNUSED(pack_status);
+        UNUSED(num_modules);
     #endif // FSAE_DRIVERS
 #else 
     UNUSED(pack_status);
+    UNUSED(num_modules);
 #endif //TEST_HARDWARE
 }
 
@@ -914,18 +908,9 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #endif //FSAE_DRIVERS
 }
 
-static uint32_t _last_brusa_ctrl = 0; // [TODO] Refactor dummy
-
-
 // [TODO] Make timing.h that has this (or board.h)
-    // Make pythong script generate
+    // Make python script generate
 #define NLG5_CTL_DLY_mS 99
-// #define NLG5_CTL_DLY_mS 1000
-#ifdef DEBUG_ENABLE
-    #define NLG5_CTL_STATE_REQ(curr_mode) (curr_mode==ASDF && conditional)
-#else
-    #define NLG5_CTL_STATE_REQ(curr_mode) ()
-#endif
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
     UNUSED(bms_state);
@@ -949,19 +934,10 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
              brusa_control.clear_error = 0;
              bms_input->charger_on = true;
         }
-        // brusa_control.output_mV = 0;
-        // brusa_control.output_cA = 0;
+
         Brusa_MakeCTL(&brusa_control, &temp_msg);
         CAN_TransmitMsgObj(&temp_msg);
         _last_brusa_ctrl = msTicks;
-
-        // bms_input->charger_on = true;
-        // Board_Print("B_V: ");
-        // Board_PrintNum(bms_output->charge_req->charge_voltage_mV, 10);
-        // Board_Println("");
-        // Board_Print("B_C: ");
-        // Board_PrintNum(bms_output->charge_req->charge_current_mA, 10);
-        // Board_Println("");
     }
 
     if (!bms_output->charge_req->charger_on) {

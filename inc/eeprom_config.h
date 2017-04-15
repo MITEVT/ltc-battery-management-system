@@ -11,15 +11,16 @@
 
 #define EEPROM_DATA_START_PCKCFG 0x000000
 #define EEPROM_DATA_START_CC 0x000100
-#define STORAGE_VERSION 0x04
+#define STORAGE_VERSION 0x05
 #define CHECKSUM_BYTESIZE 1
 #define VERSION_BYTESIZE 1
+#define ERROR_BYTESIZE 1
 
 // Default Pack Configuration
 #define CELL_MIN_mV 2800
 #define CELL_MAX_mV 4200
 #define CELL_CAPACITY_cAh 250
-#define NUM_MODULES 1
+#define NUM_MODULES 6
 #define CELL_CHARGE_C_RATING_cC 5
 #define BALANCE_ON_THRESHOLD_mV 4
 #define BALANCE_OFF_THRESHOLD_mV 1
@@ -41,6 +42,10 @@ uint8_t EEPROM_ChangeConfig(rw_loc_label_t rw_loc, uint32_t val);
 bool EEPROM_LoadPackConfig(PACK_CONFIG_T *pack_config);
 void Write_EEPROM_PackConfig_Defaults(void);
 
+void Print_EEPROM_Error(void);
+void Write_EEPROM_Error(void);
+void Set_EEPROM_Error(uint8_t error);
+uint8_t Get_EEPROM_Error(void);
 
 uint32_t EEPROM_LoadCCPage_Num(uint8_t idx);
 void EEPROM_WriteCCPage_Num(uint8_t idx, uint32_t val);

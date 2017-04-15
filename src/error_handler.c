@@ -1,4 +1,5 @@
 #include "error_handler.h"
+#include "eeprom_config.h"
 
 #define CELL_OVER_VOLTAGE_timeout_ms  	1000
 #define CELL_UNDER_VOLTAGE_timeout_ms  	1000
@@ -112,6 +113,7 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
 		if (error_vector[i].error || error_vector[i].handling) {
 			if (error_handler_vector[i].handler(&error_vector[i], msTicks,error_handler_vector[i].timeout) 
 				== HANDLER_HALT) {
+                Set_EEPROM_Error(i);
 				return HANDLER_HALT;
 			}
 		}

@@ -10,13 +10,6 @@
 #include "error_handler.h"
 #include "brusa.h"
 
-#define BAL_SW 1, 2
-#define IOCON_BAL_SW IOCON_PIO1_2
-#define CHRG_SW 1, 2
-#define IOCON_CHRG_SW IOCON_PIO1_2
-#define DISCHRG_SW 1, 2
-#define IOCON_DISCHRG_SW IOCON_PIO1_2
-
 #define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
@@ -133,13 +126,6 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // Read pack status
     // Read hardware signal inputs
     // update and other fields in msTicks in &input
-    
-    // Contactor Mocking
-    if(Board_Switch_Read(CTR_SWTCH) == 0) {
-        bms_input->contactors_closed = true;
-    } else {
-        bms_input->contactors_closed = false;
-    }
 
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
         Board_GetModeRequest(&console_output, bms_input);
@@ -147,6 +133,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
 
+    bms_input->contactors_closed = Board_Contactors_Closed();
     bms_input->msTicks = msTicks;
 }
 
@@ -187,15 +174,16 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
             console_output.config_default = false;
         }
         bms_input->eeprom_packconfig_read_done = EEPROM_LoadPackConfig(&pack_config);
+        Print_EEPROM_Error();
+        Set_EEPROM_Error(255); // magic # for no error
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
         Board_LTC6804_DeInit(); 
 
     } else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
-        // bms_input->ltc_packconfig_check_done = true;
-        
     } else {
+        Board_Contactors_Set(bms_output->close_contactors);
         Board_LTC6804_ProcessOutput(bms_output->balance_req);
         Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
     }
@@ -210,54 +198,14 @@ void Process_Keyboard(void) {
     }
 }
 
-// PLANNED DEMO FOR FSAE AT END OF FEB
-    // Turn on BMS
-    // Get Cell Voltages
-    // Over Serial, Balance 4mV below min
-        // If taking too long, get balance to finish by changing voltage
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Use VCU to enter discharge
-        // Look at contactors, current, voltage, etc
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Plug in Brusa
-    // Use serial to enter charge
-        // Look at contactors, current, voltage, etc
-    // Go back to BMS_SSM_MODE_STANDBY
-    // Modify parameters
-    // Repeat
-    // Cause Error
-    // Restart
-
-// BIG TODO LIST
-// ----------------
-// [TODO] Add mode for continuous data stream           WHO:Skanda [DONE]
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL
 // [TODO] Add current sense handling                    WHO:Jorge
-//        Make sure to add it in the 'measure' command
 // [TODO] Add thermistor array handling                 WHO:Jorge
-//        Make sure to add it in the 'measure' command  (Skanda: [DONE])
-// [TODO] Clean up macros                               WHO:Skanda
-// [TODO] Remove LTC_SPI error                          WHO:Erpo
 // [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
-
-// [TODO] Do heartbeats, see board.c todo               WHO:Rango
+// [TODO] Do heartbeats                           WHO:Rango
 // [TODO] Cleanup board                                 ALL
-// [TODO] Print out mod/cell to min/max, error          WHO:Eric
-// [TODO] Refactor similiar functions in error handler  WHO:Rango
-// [TODO] Line 253, console.c                           WHO:Rango
-// [TODO] Validate packconfig values in EEPROM either 
-//              needs to be moved 
-//        elsewhere and implement bounds checking
-// [TODO] EEPROM checksum!!!                            WHO:Skanda [DONE]
-// [TODO] Review/cleanup GetModeRequest in board.c:523  WHO:ALL    [DONE]
-// [TODO] SPACES AND TABS ARE CONSISTENT                WHO:Skanda [DONE]
-// [TODO] On a Force Hang, write the error to EEPROM    WHO:Rango
-// [TODO] Update console to get cell temperatures,      WHO:Skanda
-//        max cell temperature, min cell temperature, 
-//        avg cell temperature, min cell temperature
-//        position, and max cell temperature position
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // 
 // In order of priority
@@ -288,6 +236,7 @@ void Process_Keyboard(void) {
 // [TODO] Send warnings through CAN                     WHO:Jorge
 // [TODO] implement logic that opens contactors if a    
 //        blown fuse is detected
+
 int main(void) {
 
     Init_BMS_Structs();
@@ -301,7 +250,6 @@ int main(void) {
 	Board_Println("Board Up");
 
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
-    SOC_Init();
     Board_Println_BLOCKING("Finished EEPROM init");
     
     Error_Init();
@@ -343,6 +291,7 @@ int main(void) {
     }
 
     Board_Println("FORCED HANG");
+    Write_EEPROM_Error();
 
     bms_output.close_contactors = false;
     bms_output.charge_req->charger_on = false;

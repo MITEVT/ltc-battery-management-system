@@ -136,12 +136,19 @@ static void get(const char * const * argv) {
                 case ROL_cell_voltages_mV:
                     idx = 0;
                     for (i = 0; i < bms_state->pack_config->num_modules; i++) {
-                        for (j = 0; j < bms_state->pack_config->module_cell_count[i]; j++) {
+                        uint8_t cc = bms_state->pack_config->module_cell_count[i];
+                        utoa(i, tempstr, 10);
+                        Board_Print_BLOCKING("module ");
+                        Board_Print_BLOCKING(tempstr);
+                        Board_Print_BLOCKING(": ");
+                        for (j = 0; j+1 < cc; j++) {
                             utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
-                            Board_Println_BLOCKING(tempstr);
+                            Board_Print_BLOCKING(tempstr);
+                            Board_Print_BLOCKING(",");
                             idx++;
                         }
-                        Board_Println_BLOCKING("----");
+                        utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
+                        Board_Println_BLOCKING(tempstr);
                     }
                     break;
                 case ROL_cell_temps_dC:

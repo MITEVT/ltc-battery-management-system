@@ -35,12 +35,10 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
 
     uint16_t module;
 
-    Board_PrintThermistorTemperatures(0, pack_status);
-
     for (module = 0; module < num_modules; module++) {
         uint16_t start = module*MAX_THERMISTORS_PER_MODULE;
         uint32_t idx;
-        for(idx = start; idx < (start + MAX_THERMISTORS_PER_MODULE); idx++) {
+        for(idx = start; (uint8_t) idx < start +  MAX_THERMISTORS_PER_MODULE; idx++) {
             cellTemperaturesSum += pack_status->cell_temperatures_dC[idx];
 
             if (pack_status->cell_temperatures_dC[idx] > maxCellTemperature) {

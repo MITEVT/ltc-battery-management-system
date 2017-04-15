@@ -421,10 +421,6 @@ void Board_LTC6804_DeInit(void) {
 #endif
 }
 
-void Board_Init_Drivers(void) {
-
-}
-
 void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status) {
     Board_LTC6804_GetCellVoltages(pack_status);
     Board_LTC6804_GetCellTemperatures(pack_status);

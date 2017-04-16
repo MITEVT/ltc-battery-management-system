@@ -10,6 +10,10 @@
 #include "error_handler.h"
 #include "brusa.h"
 
+#ifdef FSAE_DRIVERS
+    #include "fsae_pins.h"
+#endif
+
 #define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
@@ -132,34 +136,21 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         Board_CAN_ProcessInput(bms_input, &bms_output); // CAN has precedence over console
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
-
-    bms_input->contactors_closed = Board_Contactors_Closed();
     bms_input->msTicks = msTicks;
+#ifdef FSAE_DRIVERS
+    bms_input->contactors_closed = Fsae_Fault_Pin_Get();
+#endif
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+    //
+    Board_Contactors_Set(bms_output->close_contactors);
+
 #ifdef FSAE_DRIVERS
-    if(bms_output->close_contactors) {
-        Board_LED_On(FSAE_FAULT_GPIO);
-    } else {
-        Board_LED_Off(FSAE_FAULT_GPIO);
-    }
-
-    if (bms_output->charge_req->charger_on) {
-        Board_LED_On(FSAE_CHARGE_ENABLE_GPIO);
-    } else {
-        Board_LED_Off(FSAE_CHARGE_ENABLE_GPIO);
-    }
-
-    if (bms_output->fans_on) {
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_ON_DUTY_RATIO_OFF);  
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_ON_DUTY_RATIO_OFF);  
-    } else {
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);  
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);  
-    }
+    Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
+    Fsae_Fan_Set(bms_output->fans_on);
 #else
     if(bms_output->close_contactors) {
         Board_LED_On(LED2);
@@ -243,7 +234,6 @@ int main(void) {
 
     Board_Chip_Init();
     Board_GPIO_Init();
-    Board_Headroom_Init();
     Board_CAN_Init(CAN_BAUD);
     Board_UART_Init(UART_BAUD);
 

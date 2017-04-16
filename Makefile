@@ -50,16 +50,22 @@ OUT_DIR = bin
 ifeq ($(FSAE),1)
 	# include directories (absolute or relative paths to additional folders with
 	# headers, current folder is always included)
-	INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/ ../MY17/lib/MY17_Can_Library ../MY17/lib/MY17_Can_Library/can_validator
+	INC_DIRS_CROSS = inc/ inc/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/ ../MY17/lib/MY17_Can_Library
 
 	# additional directories with source files (absolute or relative paths to
 	# folders with source files, current folder is always included)
-	SRCS_DIRS = src/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ ../MY17/lib/MY17_Can_Library ../MY17/lib/MY17_Can_Library/can_validator
+	SRCS_DIRS = src/ src/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ ../MY17/lib/MY17_Can_Library
 
-	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS
+	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHUTECTURE_ARM
 else
-	SRCS_DIRS = src/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/
-	INC_DIRS_CROSS = inc/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
+	# include directories (absolute or relative paths to additional folders with
+	# headers, current folder is always included)
+	SRCS_DIRS = src/ src/evt_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/
+
+	# additional directories with source files (absolute or relative paths to
+	# folders with source files, current folder is always included)
+	INC_DIRS_CROSS = inc/ inc/evt_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
+
 	SPECIAL_FSAE_FLAGS =
 endif
 

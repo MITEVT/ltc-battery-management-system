@@ -2,6 +2,10 @@
 
 #include "board.h"
 
+#ifdef FSAE_DRIVERS
+    #include "fsae_can.h"
+#endif
+
 static uint16_t total_num_cells;
 static uint32_t min_cell_voltage_mV;
 static uint32_t max_pack_current_mA;
@@ -33,14 +37,6 @@ void Discharge_Config(PACK_CONFIG_T *pack_config) {
 }
 
 void Discharge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
-#ifdef FSAE_DRIVERS
-    if (input->pack_status->max_cell_temp_dC > state->pack_config->fan_on_threshold_dC) {
-        output->fans_on = true;
-    } else {
-        output->fans_on = false;
-    }
-#endif //FSAE_DRIVERS
-
     switch (input->mode_request) {
         case BMS_SSM_MODE_DISCHARGE:
             if (state->discharge_state == BMS_DISCHARGE_OFF) {
@@ -85,6 +81,23 @@ handler:
             if(!input->contactors_closed) {
                 state->discharge_state = BMS_DISCHARGE_INIT;
             }
+
+#ifdef FSAE_DRIVERS
+            // Handle fan logic
+            const int16_t curr_cell_temp = input->pack_status->max_cell_temp_dC;
+            const int16_t fan_threshold_temp =
+                    state->pack_config->fan_on_threshold_dC;
+            output->fans_on = curr_cell_temp > fan_threshold_temp;
+
+            // Handle VCU heartbeat logic
+            uint32_t time_since_vcu_msg =
+                    input->msTicks - input->last_vcu_msg_ms;
+            bool vcu_timeout = time_since_vcu_msg > VCU_HEARTBEAT_TIMEOUT;
+            if ((input->last_vcu_msg_ms != 0) && vcu_timeout) {
+                Error_Assert(ERROR_VCU_DEAD, input->msTicks);
+            }
+#endif //FSAE_DRIVERS
+
             break;
         case BMS_DISCHARGE_DONE:
             output->close_contactors = false;

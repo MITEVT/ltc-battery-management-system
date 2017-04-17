@@ -123,9 +123,9 @@ void Init_BMS_Structs(void) {
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
 #ifdef FSAE_DRIVERS
-    pack_status.min_cell_temp_dC = 0xFFFF;
-    pack_status.avg_cell_temp_dC = 0xFFFF;
-    pack_status.min_cell_temp_position = UINT16_MAX;
+    pack_status.min_cell_temp_dC = 0;
+    pack_status.avg_cell_temp_dC = 0;
+    pack_status.min_cell_temp_position = 0;
     pack_status.max_cell_temp_position = 0;
 #endif //FSAE_DRIVERS
 
@@ -145,20 +145,16 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     }
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
-#ifdef FSAE_DRIVERS
-    bms_input->contactors_closed = Fsae_Fault_Pin_Get();
-#endif
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
     //
-    Board_Contactors_Set(bms_output->close_contactors);
-
 #ifdef FSAE_DRIVERS
+    Board_Contactors_Set(bms_output->close_contactors);
     Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
-    // TODO properly set the fans using duty ration calculator from board.c
+    // TODO figure out whether to turn fans on in ssm
     Fsae_Fan_Set(bms_output->fans_on);
 #else
     if(bms_output->close_contactors) {
@@ -167,7 +163,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
         Board_LED_Off(LED2);
     }
 #endif //FSAE_DRIVERS
-    
+
     if (bms_output->read_eeprom_packconfig){
         if(console_output.config_default){
             Write_EEPROM_PackConfig_Defaults();

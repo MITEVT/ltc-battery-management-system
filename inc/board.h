@@ -193,6 +193,11 @@ void Board_Contactors_Set(bool close_contactors);
  */
 bool Board_Contactors_Closed(void);
 
+#ifdef FSAE_DRIVERS
+void Board_SetFanDutyRatio(int16_t maxCellTemp, int16_t fanOnThreshold,
+      BMS_SSM_MODE_T curr_mode);
+#endif // FSAE_DRIVERS
+
 /******** Test Hardware Exemptions ***********/
 
 #ifndef TEST_HARDWARE

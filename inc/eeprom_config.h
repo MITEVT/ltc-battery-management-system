@@ -17,8 +17,8 @@
 #define ERROR_BYTESIZE 1
 
 // Default Pack Configuration
-#define CELL_MIN_mV 2800
-#define CELL_MAX_mV 4200
+#define CELL_MIN_mV 2500 // from datasheet, contact elliot
+#define CELL_MAX_mV 4250 // from datas,eet, contact elliot
 #define CELL_CAPACITY_cAh 250
 #define NUM_MODULES 6
 #define CELL_CHARGE_C_RATING_cC 5

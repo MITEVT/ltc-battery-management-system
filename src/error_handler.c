@@ -3,7 +3,6 @@
 
 #define CELL_OVER_VOLTAGE_timeout_ms  	1000
 #define CELL_UNDER_VOLTAGE_timeout_ms  	1000
-#define CELL_OVER_TEMP_timeout_ms  		1000
 #define OVER_CURRENT_timeout_ms 		500
 #define LTC6802_PEC_timeout_count  		10
 #define LTC6802_CVST_timeout_count 		2
@@ -13,6 +12,17 @@
 #define EEPROM_timeout_count  			5
 #define CONFLICTING_MODE_REQUESTS_count   2
 
+#ifdef FSAE_DRIVERS
+
+    #define CELL_OVER_TEMP_timeout_ms  		60000
+    #define CELL_UNDER_TEMP_timeout_ms  	60000
+    #define VCU_DEAD_count           1
+
+#else
+
+    #define CELL_OVER_TEMP_timeout_ms  		1000
+
+#endif
 
 static ERROR_STATUS_T error_vector[ERROR_NUM_ERRORS];
 
@@ -26,11 +36,18 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
                             {_Error_Handle_Count,	EEPROM_timeout_count},	
                             {_Error_Handle_Timeout, CELL_UNDER_VOLTAGE_timeout_ms},
                             {_Error_Handle_Timeout,	CELL_OVER_VOLTAGE_timeout_ms},
+#ifdef FSAE_DRIVERS
+                            {_Error_Handle_Timeout, CELL_UNDER_TEMP_timeout_ms},
+#endif
                             {_Error_Handle_Timeout, CELL_OVER_TEMP_timeout_ms},
                             {_Error_Handle_Timeout, OVER_CURRENT_timeout_ms},
                             {_Error_Handle_Count, 	BRUSA_timeout_count},
                             {_Error_Handle_Count, 	CAN_timeout_count},
-                            {_Error_Handle_Count,   CONFLICTING_MODE_REQUESTS_count}};
+                            {_Error_Handle_Count,   CONFLICTING_MODE_REQUESTS_count}
+#ifdef FSAE_DRIVERS
+                            ,{_Error_Handle_Count,  VCU_DEAD_count}
+#endif //FSAE_DRIVERS
+                            };
 
 
 void Error_Init(void){

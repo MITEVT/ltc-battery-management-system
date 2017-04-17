@@ -22,6 +22,7 @@ typedef enum error {
     ERROR_CONFLICTING_MODE_REQUESTS,
 #ifdef FSAE_DRIVERS
     ERROR_VCU_DEAD,
+    ERROR_CONTROL_FLOW,
 #endif
     ERROR_NUM_ERRORS
 } ERROR_T;
@@ -43,6 +44,7 @@ static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
     "ERROR_CONFLICTING_MODE_REQUESTS"
 #ifdef FSAE_DRIVERS
     ,"ERROR_VCU_DEAD"
+    ,"ERROR_CONTROL_FLOW"
 #endif
 };
 

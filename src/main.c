@@ -93,6 +93,8 @@ void Init_BMS_Structs(void) {
     pack_config.max_cell_temp_dC = 0;
     // FSAE specific pack configurations
 #ifdef FSAE_DRIVERS
+    // TODO figure out these settings
+    pack_config.min_cell_temp_dC = 0;
     pack_config.fan_on_threshold_dC = 0;
 #endif //FSAE_DRIVERS
 
@@ -107,6 +109,9 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_packconfig_read_done = false;
     bms_input.ltc_packconfig_check_done = false;
     bms_input.eeprom_read_error = false;
+#ifdef FSAE_DRIVERS
+    bms_input.last_vcu_msg_ms = 0;
+#endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
     memset(cell_temperatures, 0, sizeof(cell_temperatures));
@@ -118,8 +123,10 @@ void Init_BMS_Structs(void) {
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
 #ifdef FSAE_DRIVERS
-    pack_status.min_cell_temp_dC = 0;
-    pack_status.avg_cell_temp_dC = 0;
+    pack_status.min_cell_temp_dC = 0xFFFF;
+    pack_status.avg_cell_temp_dC = 0xFFFF;
+    pack_status.max_cell_temp_position = UINT16_MAX;
+    pack_status.max_cell_temp_position = UINT16_MAX;
 #endif //FSAE_DRIVERS
 
 }

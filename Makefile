@@ -56,7 +56,7 @@ ifeq ($(FSAE),1)
 	# folders with source files, current folder is always included)
 	SRCS_DIRS = src/ src/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ ../MY17/lib/MY17_Can_Library
 
-	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHUTECTURE_ARM
+	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHITECTURE_ARM
 else
 	# include directories (absolute or relative paths to additional folders with
 	# headers, current folder is always included)

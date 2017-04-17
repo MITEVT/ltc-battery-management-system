@@ -16,7 +16,8 @@
 
     #define CELL_OVER_TEMP_timeout_ms  		60000
     #define CELL_UNDER_TEMP_timeout_ms  	60000
-    #define VCU_DEAD_count           1
+    #define VCU_DEAD_count                1
+    #define CONTROL_FLOW_count            1
 
 #else
 
@@ -46,6 +47,7 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
                             {_Error_Handle_Count,   CONFLICTING_MODE_REQUESTS_count}
 #ifdef FSAE_DRIVERS
                             ,{_Error_Handle_Count,  VCU_DEAD_count}
+                            ,{_Error_Handle_Count,  CONTROL_FLOW_count}
 #endif //FSAE_DRIVERS
                             };
 

@@ -1,19 +1,26 @@
 // ltc-battery-management-system
 #include "board.h"
-#include "can_constants.h"
-#include "bms_can.h"
-#include "cell_temperatures.h"
+#include "error_handler.h"
 
 // C libraries
 #include <string.h>
 
-// lpc11cx4-library
-#include "brusa.h"
+
+#ifdef FSAE_DRIVERS
+
+    #include "fsae_can.h"
+    #include "cell_temperatures.h"
+
+#else // FSAE_DRIVERS
+
+    #include "can.h"
+    #include "brusa.h"
+
+#endif // FSAE_DRIVERS
 
 const uint32_t OscRateIn = 0;
 
 #define UART_BUFFER_SIZE 100
-#define BMS_HEARTBEAT_PERIOD 1000
 #define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 
 //#define PRINT_MODE_REQUESTS
@@ -46,18 +53,7 @@ static LTC6804_INIT_STATE_T _ltc6804_init_state;
 
 static char str[10];
 
-static BMS_SSM_MODE_T CAN_mode_request;
-
-//CAN STUFF
-CCAN_MSG_OBJ_T can_rx_msg;
-
-static uint32_t _last_brusa_ctrl = 0;
-
 #ifdef FSAE_DRIVERS
-static uint32_t last_bms_heartbeat_time = 0;
-static uint8_t received_discharge_request = 0;
-
-uint32_t latest_vcu_heartbeat_time = 0;
 
 //Cell temperature sensing stuff
 static uint32_t board_lastThermistorShiftTime_ms = 0;
@@ -66,15 +62,19 @@ uint8_t currentThermistor = 0;
 //Cell temperature sensing stuff
 static bool ltc6804_setMultiplexerAddressFlag = false;
 static bool ltc6804_getThermistorVoltagesFlag = false;
-#endif //FSAE_DRIVERS
 
-#endif
+#else //FSAE_DRIVERS
+
+//CAN STUFF
+CCAN_MSG_OBJ_T can_rx_msg;
+
+static uint32_t _last_brusa_ctrl = 0;
+
+#endif // FSAE_DRIVERS
+
+#endif // TEST_HARDWARE
 
 volatile uint32_t msTicks;
-
-#ifdef PRINT_MODE_REQUESTS
-    static uint32_t last_get_mode_request_debug_message = 0;
-#endif
 
 #ifndef TEST_HARDWARE
 
@@ -92,56 +92,7 @@ void SysTick_Handler(void) {
     msTicks++;
 }
 
-/**
- * @details send a BMS discharge response indicating that the BMS is in discharge state
- */
-void Send_BMS_Discharge_Response_Ready(void) {
-    uint8_t bms_discharge_bytes = 1;
-    uint8_t bms_discharge_bits = bms_discharge_bytes*8;
-    uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
-    uint8_t data[bms_discharge_bits];
-    data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__READY << max_bit_bms_discharge);
-    CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
-}
-
-/**
- * @details send a BMS discharge response indicating that the BMS is not in discharge state
- */
-void Send_BMS_Discharge_Response_Not_Ready(void) { 
-    uint8_t bms_discharge_bytes = 1;
-    uint8_t bms_discharge_bits = bms_discharge_bytes*8;
-    uint8_t max_bit_bms_discharge = bms_discharge_bits - 1;
-    uint8_t data[bms_discharge_bytes];
-    data[0] = 0 | (____BMS_DISCHARGE_RESPONSE__DISCHARGE_RESPONSE__NOT_READY << max_bit_bms_discharge);
-    CAN_Transmit(BMS_DISCHARGE_RESPONSE__id, data, bms_discharge_bytes);
-}
-
-/**
- * @details sends a BMS discharge response over CAN
- */
-void Send_BMS_Discharge_Response(BMS_SSM_MODE_T current_state) {
-    if (current_state == BMS_SSM_MODE_DISCHARGE) {
-        Send_BMS_Discharge_Response_Ready();
-    } else {
-        Send_BMS_Discharge_Response_Not_Ready();
-    }
-}
-
-/**
- * @details sends BMS heartbeat
- *
- * @param bms_state current state of the BMS
- */
-void Send_BMS_Heartbeat(BMS_STATE_T * bms_state) {
-    const uint8_t bms_heartbeat_bytes = 2; 
-    //TODO: don't hardcode bms_heartbeat_bytes
-    uint16_t soc = 0; 
-    //TODO: compute soc in the state machine and save it in some datatype
-        uint8_t bms_heartbeat_data[bms_heartbeat_bytes];
-    BMS_CAN_ConstructHeartbeatData(bms_state->curr_mode, soc, bms_heartbeat_data);
-        CAN_Transmit(BMS_HEARTBEAT__id, bms_heartbeat_data, bms_heartbeat_bytes);
-}
-#endif
+#endif // TEST_HARDWARE
 
 // ------------------------------------------------
 // Public Functions
@@ -243,8 +194,13 @@ void Board_UART_Init(uint32_t baudRateHz) {
 
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
+
+#ifdef FSAE_DRIVERS
+    Fsae_Can_Init(baudRateHz);
+#else // FSAE_DRIVERS
     CAN_Init(baudRateHz);
-    CAN_mode_request = BMS_SSM_MODE_STANDBY;
+#endif // FSAE_DRIVERS
+
 #else
     UNUSED(baudRateHz);
 #endif
@@ -310,13 +266,13 @@ bool Board_Contactors_Closed(void) {
 #endif
 }
 
-#ifndef TEST_HARDWARE
 void Board_GPIO_Init(void) {
+#ifndef TEST_HARDWARE
     Chip_GPIO_Init(LPC_GPIO);
 
 #ifdef FSAE_DRIVERS
     Fsae_GPIO_Init();
-#else
+#else // FSAE_DRIVERS
     Evt_GPIO_Init();
 #endif //FSAE_DRIVERS
 
@@ -330,8 +286,7 @@ void Board_GPIO_Init(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_PULLUP));   /* MOSI0 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
-#endif
-
+#endif // TEST_HARDWARE
 }
 
 bool Board_LTC6804_Init(PACK_CONFIG_T *pack_config, uint32_t *cell_voltages_mV) {
@@ -456,7 +411,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
 #ifndef TEST_HARDWARE
 #ifdef FSAE_DRIVERS
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
-        board_lastThermistorShiftTime_ms += TIME_PER_THERMISTOR_MS;
+        board_lastThermistorShiftTime_ms = msTicks;
 
         // if we finished reading previous thermistor voltage, go to next thermistor
         if (!ltc6804_setMultiplexerAddressFlag && !ltc6804_getThermistorVoltagesFlag) {
@@ -502,6 +457,9 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
             thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
         } else {
             Board_Println("Invalid value of currentThermistor. You should never reach here");
+#ifdef FSAE_DRIVERS
+            Error_Assert(ERROR_CONTROL_FLOW, msTicks);
+#endif
         }
 
         // shift bits into shift resgister
@@ -592,6 +550,9 @@ void Board_HandleLtc6804Status(LTC6804_STATUS_T status) {
             break;
         default:
             Board_Println("Entered default case in Board_HandleLtc6804Status(). You should never reach here");
+#ifdef FSAE_DRIVERS
+            Error_Assert(ERROR_CONTROL_FLOW, msTicks);
+#endif
 
     }
 }
@@ -729,67 +690,25 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
     if (console_output -> valid_mode_request) {
             console_mode_request = console_output->mode_request;
             bms_input->balance_mV = console_output->balance_mV;
-    } else {
-            console_mode_request = BMS_SSM_MODE_STANDBY;
     }
-
+    BMS_SSM_MODE_T can_mode_request = BMS_SSM_MODE_STANDBY;
+#ifdef FSAE_DRIVERS
+    if (bms_input->last_vcu_msg_ms != 0) {
+        can_mode_request = BMS_SSM_MODE_DISCHARGE;
+    }
+#endif
     if (console_mode_request == BMS_SSM_MODE_STANDBY) {
-        bms_input->mode_request = CAN_mode_request;
+        bms_input->mode_request = can_mode_request;
         Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
-    } else if (CAN_mode_request == BMS_SSM_MODE_STANDBY) {
+    } else if (can_mode_request == BMS_SSM_MODE_STANDBY) {
         bms_input->mode_request = console_mode_request;
         Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
-    } else if (console_mode_request == CAN_mode_request) {
+    } else if (console_mode_request == can_mode_request) {
         bms_input->mode_request = console_mode_request;
         Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);
     } else {
         Error_Assert(ERROR_CONFLICTING_MODE_REQUESTS, msTicks);
     }
-
-#ifdef PRINT_MODE_REQUESTS
-    bool print_debug_message;
-    if ((msTicks - last_get_mode_request_debug_message) > 1000) {
-        Board_Print("console_mode_request: ");
-        switch(console_mode_request) {
-            case BMS_SSM_MODE_STANDBY:
-                Board_Print("standby    ");
-                break;
-            case BMS_SSM_MODE_DISCHARGE:
-                Board_Print("discharge    ");
-                break;
-            default:
-                Board_Print("other state");
-        }
-        Board_Print("CAN_mode_request: ");
-        switch (CAN_mode_request) {
-            case BMS_SSM_MODE_STANDBY:
-                Board_Print("standby    ");
-                break;
-            case BMS_SSM_MODE_DISCHARGE:
-                Board_Print("discharge    ");
-                break;
-            default:
-                Board_Print("other state");
-        }
-        Board_Print("bms_input->mode_request: ");
-        switch (bms_input->mode_request) {
-            case BMS_SSM_MODE_STANDBY:
-                Board_Println("standby    ");
-                break;
-            case BMS_SSM_MODE_DISCHARGE:
-                Board_Print("discharge\r\n");
-                break;
-            default:
-                Board_Println("other state");
-        }
-
-        print_debug_message = true;
-        last_get_mode_request_debug_message = msTicks;
-    } else {
-        print_debug_message = false;
-    }
-#endif //PRINT_MODE_REQUESTS
-
 }
 
 /**
@@ -800,6 +719,10 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  */
 // [TODO] Refactor to case
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
+#ifdef FSAE_DRIVERS
+    Fsae_Can_Receive(bms_input, bms_output);
+    return;
+#else // FSAE_DRIVERS
     CCAN_MSG_OBJ_T rx_msg;
     if (CAN_Receive(&rx_msg) != NO_RX_CAN_MESSAGE) {
         if (rx_msg.mode_id == NLG5_STATUS) { 
@@ -826,47 +749,23 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             } else {
                 Error_Pass(ERROR_BRUSA);
             }
-#ifdef FSAE_DRIVERS
-        } else if (rx_msg.mode_id == VCU_HEARTBEAT__id) {
-            latest_vcu_heartbeat_time = msTicks;
-            //TODO: create helper function that parses VCU heartbeat
-            if ((rx_msg.data[0]>>7) == ____VCU_HEARTBEAT__STATE__DISCHARGE) {
-                CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
-            } else if ((rx_msg.data[0])>>7 == ____VCU_HEARTBEAT__STATE__STANDBY) {
-                CAN_mode_request = BMS_SSM_MODE_STANDBY;
-            } else {
-                DEBUG_Print("Unrecognized VCU heartbeat state. You should never reach here.");
-            }
-        } else if (rx_msg.mode_id == VCU_DISCHARGE_REQUEST__id) {
-            //TODO: create helper function that parses VCU discharge request message
-            if ((rx_msg.data[0]>>7) == ____VCU_DISCHARGE_REQUEST__DISCHARGE_REQUEST__ENTER_DISCHARGE) {
-                CAN_mode_request = BMS_SSM_MODE_DISCHARGE;
-                //set flag that tells Board_CAN_ProcessOutputs() to send discharge response message
-                received_discharge_request = 1;
-            } else {
-                DEBUG_Print("Invalid discharge request. You should never reach here");
-            }
-#endif //FSAE_DRIVERS
-        } else {
-            // [TODO] handle other types of CAN messages
         }
     }
-   
-#ifdef FSAE_DRIVERS
-    const uint32_t vcu_heartbeat_timeout = 10000;
-    if ( (msTicks - latest_vcu_heartbeat_time) > vcu_heartbeat_timeout) {
-        CAN_mode_request = BMS_SSM_MODE_STANDBY;
-    }
-#endif //FSAE_DRIVERS
+#endif // FSAE_DRIVERS
 }
 
-// [TODO] Make timing.h that has this (or board.h)
-    // Make python script generate
-#define NLG5_CTL_DLY_mS 99
-
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
+#ifdef FSAE_DRIVERS
+    Fsae_Can_Transmit(bms_input, bms_state, bms_output);
+    return;
+#else // FSAE_DRIVERS
+
     UNUSED(bms_state);
-    
+
+    // [TODO] Make timing.h that has this (or board.h)
+    // Make python script generate
+    #define NLG5_CTL_DLY_mS 99
+
     // Easy way to turn off charger in case of accident
     if (bms_output->charge_req->charger_on && msTicks - _last_brusa_ctrl >= NLG5_CTL_DLY_mS) {
         NLG5_CTL_T brusa_control;
@@ -895,27 +794,12 @@ void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BM
     if (!bms_output->charge_req->charger_on) {
         bms_input->charger_on = false;
     }
-
-#ifdef FSAE_DRIVERS
-    //Send BMS Heartbeat
-    if (msTicks - last_bms_heartbeat_time > BMS_HEARTBEAT_PERIOD) {
-        Send_BMS_Heartbeat(bms_state);
-        last_bms_heartbeat_time = msTicks;
-    }
-    
-    //Send BMS Discharge response
-    if (received_discharge_request) {
-        Send_BMS_Discharge_Response(bms_state->curr_mode);
-        received_discharge_request = 0;
-    } 
-#endif //FSAE_DRIVERS
-
     if (CAN_GetErrorStatus()) {
         Board_Println("CAN Error");
         Error_Assert(ERROR_CAN, msTicks);
         CAN_ResetPeripheral();
         Board_CAN_Init(CAN_BAUD);
     }
+#endif // FSAE_DRIVERS
 }
-#endif
-
+#endif // TEST_HARDWARE

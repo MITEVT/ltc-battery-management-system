@@ -103,6 +103,7 @@ uint32_t Board_Print(const char *str);
  */
 uint32_t Board_Println(const char *str);
 
+uint32_t Board_PrintNum(uint32_t num, uint8_t base);
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *

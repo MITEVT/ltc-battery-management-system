@@ -22,6 +22,7 @@ typedef struct {
     uint32_t max_cell_temp_dC;
     // FSAE specific configurations
 #ifdef FSAE_DRIVERS
+    int16_t min_cell_temp_dC;
     int16_t fan_on_threshold_dC;
 #endif //FSAE_DRIVERS
 
@@ -143,6 +144,10 @@ typedef struct BMS_INPUT {
     bool ltc_packconfig_check_done;
 
     bool eeprom_read_error;
+
+#ifdef FSAE_DRIVERS
+    uint32_t last_vcu_msg_ms;
+#endif
 } BMS_INPUT_T;
 
 /*

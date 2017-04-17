@@ -236,7 +236,7 @@ void Board_Headroom_Toggle(void){
 #ifdef FSAE_DRIVERS
     // Do nothing here, we don't care
 #else // FSAE_DRIVERS
-    Chip_GPIO_SetPinState(LPC_GPIO, HEADROOM, 1 - Chip_GPIO_GetPinState(LPC_GPIO, HEADROOM));
+    Evt_Headroom_Toggle();
 #endif // FSAE_DRIVERS
 #endif // TEST_HARDWARE
 }
@@ -270,11 +270,18 @@ void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE
     Chip_GPIO_Init(LPC_GPIO);
 
-#ifdef FSAE_DRIVERS
-    Fsae_GPIO_Init();
-#else // FSAE_DRIVERS
-    Evt_GPIO_Init();
-#endif //FSAE_DRIVERS
+    // Initialize devices common to both.
+    // Note that values of the LED constants differ between devices.
+
+    // LED1
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED1);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED1, IOCON_LED1_FUNC);
+    Chip_GPIO_SetPinState(LPC_GPIO, LED1, false);
+
+    // LED2
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_LED2_FUNC);
+    Chip_GPIO_SetPinState(LPC_GPIO, LED2, false);
 
     //SSP for EEPROM
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
@@ -286,6 +293,14 @@ void Board_GPIO_Init(void) {
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_9, (IOCON_FUNC1 | IOCON_MODE_PULLUP));   /* MOSI0 */
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO0_6, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* SCK0 */
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
+
+    // device-specific pins initalized here
+#ifdef FSAE_DRIVERS
+    Fsae_GPIO_Init();
+#else // FSAE_DRIVERS
+    Evt_GPIO_Init();
+#endif //FSAE_DRIVERS
+
 #endif // TEST_HARDWARE
 }
 
@@ -693,6 +708,9 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
     }
     BMS_SSM_MODE_T can_mode_request = BMS_SSM_MODE_STANDBY;
 #ifdef FSAE_DRIVERS
+    // If the VCU is alive (and the pack is OK), we want to bring the fault pin high.
+    // This does NOT mean we want to be actively discharging the packs, just that
+    // the fault pin should be asserted.
     if (bms_input->last_vcu_msg_ms != 0) {
         can_mode_request = BMS_SSM_MODE_DISCHARGE;
     }

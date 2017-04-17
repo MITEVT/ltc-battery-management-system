@@ -5,9 +5,13 @@
 
 // LED1
 #define LED1 2, 9
+#define IOCON_LED1 IOCON_PIO2_9
+#define IOCON_LED1_FUNC IOCON_FUNC0
 
 // LED2
 #define LED2 2, 10
+#define IOCON_LED2 IOCON_PIO2_10
+#define IOCON_LED2_FUNC IOCON_FUNC0
 
 void Fsae_GPIO_Init(void);
 

@@ -139,11 +139,12 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // update and other fields in msTicks in &input
 
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+        Board_CAN_ProcessInput(bms_input, &bms_output);
         Board_GetModeRequest(&console_output, bms_input);
-        Board_CAN_ProcessInput(bms_input, &bms_output); // CAN has precedence over console
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
     bms_input->msTicks = msTicks;
+    bms_input->contactors_closed = Board_Contactors_Closed();
 #ifdef FSAE_DRIVERS
     bms_input->contactors_closed = Fsae_Fault_Pin_Get();
 #endif

@@ -465,9 +465,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
             thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
         } else {
             Board_Println("Invalid value of currentThermistor. You should never reach here");
-#ifdef FSAE_DRIVERS
             Error_Assert(ERROR_CONTROL_FLOW, msTicks);
-#endif
         }
 
         // shift bits into shift resgister
@@ -732,7 +730,6 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
     Fsae_Can_Receive(bms_input, bms_output);
-    return;
 #else // FSAE_DRIVERS
     Evt_Can_Receive(bms_input, bms_output);
 #endif // FSAE_DRIVERS
@@ -741,7 +738,6 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
     Fsae_Can_Transmit(bms_input, bms_state, bms_output);
-    return;
 #else // FSAE_DRIVERS
     Evt_Can_Transmit(bms_input, bms_state, bms_output);
 #endif // FSAE_DRIVERS

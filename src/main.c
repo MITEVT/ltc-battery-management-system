@@ -154,7 +154,6 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
 #ifdef FSAE_DRIVERS
     Board_Contactors_Set(bms_output->close_contactors);
     Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
-    // TODO figure out whether to turn fans on in ssm
     Fsae_Fan_Set(bms_output->fans_on);
 #else
     if(bms_output->close_contactors) {

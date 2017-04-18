@@ -34,7 +34,8 @@
 
 // FSAE specific macros
 #ifdef FSAE_DRIVERS
-#define FAN_ON_THRESHOLD_dC 450
+    #define MIN_CELL_TEMP_dC -30
+    #define FAN_ON_THRESHOLD_dC 450
 #endif //FSAE_DRIVERS
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);

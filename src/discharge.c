@@ -76,6 +76,8 @@ handler:
                                     input->pack_status->max_cell_temp_dC);
             if(input->pack_status->pack_current_mA > max_pack_current_mA) {
                 Error_Assert(ERROR_OVER_CURRENT, input->msTicks);
+            } else {
+                Error_Pass(ERROR_OVER_CURRENT);
             }
 
             if(!input->contactors_closed) {

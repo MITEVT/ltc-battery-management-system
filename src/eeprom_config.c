@@ -236,6 +236,7 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
     // FSAE specific pack configurations
 #ifdef FSAE_DRIVERS
     pack_config->fan_on_threshold_dC = FAN_ON_THRESHOLD_dC;
+    pack_config->min_cell_temp_dC = MIN_CELL_TEMP_dC;
 #endif //FSAE_DRIVERS
 
     uint8_t i;

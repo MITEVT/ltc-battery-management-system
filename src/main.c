@@ -123,7 +123,7 @@ void Init_BMS_Structs(void) {
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
 #ifdef FSAE_DRIVERS
-    pack_status.min_cell_temp_dC = 0;
+    pack_status.min_cell_temp_dC = -100;
     pack_status.avg_cell_temp_dC = 0;
     pack_status.min_cell_temp_position = 0;
     pack_status.max_cell_temp_position = 0;
@@ -296,6 +296,7 @@ int main(void) {
 
     while(1) {
         //set bms_output
+        bms_input.msTicks = msTicks;
         Process_Output(&bms_input, &bms_output, &bms_state);
         Process_Keyboard();
         if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {

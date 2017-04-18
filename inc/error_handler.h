@@ -87,6 +87,7 @@ void Error_Pass(ERROR_T er_t);
 void Error_HB(HBEAT_T hb);
 
 const ERROR_STATUS_T *  Error_GetStatus(ERROR_T er_t);
+bool Error_ShouldHalt(ERROR_T er_t, uint32_t msTicks);
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 
 const ERROR_STATUS_T * Error_HB_GetStatus(HBEAT_T hb);

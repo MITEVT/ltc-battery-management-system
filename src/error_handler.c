@@ -127,17 +127,24 @@ static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint3
 }
 
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
-	ERROR_T i;
-	for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
-		if (error_vector[i].error || error_vector[i].handling) {
-			if (error_handler_vector[i].handler(&error_vector[i], msTicks,error_handler_vector[i].timeout) 
-				== HANDLER_HALT) {
-                Set_EEPROM_Error(i);
-				return HANDLER_HALT;
-			}
-		}
-	}
-	return HANDLER_FINE;
+    ERROR_T i;
+    for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
+        if (Error_ShouldHalt(i, msTicks)) {
+            Set_EEPROM_Error(i);
+            return HANDLER_HALT;
+        }
+    }
+    return HANDLER_FINE;
+}
+
+bool Error_ShouldHalt(ERROR_T i, uint32_t msTicks) {
+    if (error_vector[i].error || error_vector[i].handling) {
+        if (error_handler_vector[i].handler(&error_vector[i], msTicks,error_handler_vector[i].timeout) 
+                == HANDLER_HALT) {
+            return true;
+        }
+    }
+    return false;
 }
 
 const ERROR_STATUS_T * Error_GetStatus(ERROR_T er_t) {

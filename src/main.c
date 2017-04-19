@@ -203,13 +203,6 @@ void Process_Keyboard(void) {
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // 
 // In order of priority
-// [TODO] Handle control flow errors. (e.g.             WHO:Jorge
-//        currentThermistor out of range)
-// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
-// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] send CAN messages when BMS hangs              WHO:Jorge
-// [TODO] Open contactors if a cell goes                WHO:Jorge
-//        outside a reasonable temperature range
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
@@ -217,9 +210,9 @@ void Process_Keyboard(void) {
 //        above the charge C rating and move to standby
 // [TODO] make the BMS hang if the pack current is high 
 //        while the BMS is in standby, init, or balance
-// [TODO] make the BMS hang if the contactors are       
+// [TODO] make the BMS hang if the contactors are
 //        closed when the BMS is in standby, init, or
-//        balance     
+//        balance
 // [TODO] Add print out leveling                        WHO:Erpo/Skanda
 //
 // [TODO at the end] Add console print handling **      WHO:Rango

@@ -14,8 +14,8 @@
 
 #ifdef FSAE_DRIVERS
 
-    #define CELL_OVER_TEMP_timeout_ms  		60000
-    #define CELL_UNDER_TEMP_timeout_ms  	60000
+    #define CELL_OVER_TEMP_timeout_ms     10000
+    #define CELL_UNDER_TEMP_timeout_ms    10000
     #define VCU_DEAD_count                1
     #define CONTROL_FLOW_count            1
 

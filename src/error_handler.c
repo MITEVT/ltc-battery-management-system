@@ -130,7 +130,9 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
     ERROR_T i;
     for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
         if (Error_ShouldHalt(i, msTicks)) {
+#ifndef TEST_HARDWARE
             Set_EEPROM_Error(i);
+#endif // TEST_HARDWARE
             return HANDLER_HALT;
         }
     }

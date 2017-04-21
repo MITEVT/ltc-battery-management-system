@@ -23,6 +23,8 @@ const uint32_t OscRateIn = 0;
 #define UART_BUFFER_SIZE 100
 #define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))
 
+#define UNUSED(x) (void)(x)
+
 //#define PRINT_MODE_REQUESTS
 
 #ifndef TEST_HARDWARE
@@ -243,6 +245,7 @@ bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
 #endif
 }
 
+#ifndef TEST_HARDWARE
 void Board_Contactors_Set(bool close_contactors) {
 #ifdef FSAE_DRIVERS
     Fsae_Fault_Pin_Set(close_contactors);
@@ -250,7 +253,9 @@ void Board_Contactors_Set(bool close_contactors) {
     UNUSED(close_contactors);
 #endif
 }
+#endif // TEST_HARDWARE
 
+#ifndef TEST_HARDWARE
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
     return Fsae_Fault_Pin_Get();
@@ -258,6 +263,7 @@ bool Board_Contactors_Closed(void) {
     return false;
 #endif
 }
+#endif // TEST_HARDARE
 
 void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE

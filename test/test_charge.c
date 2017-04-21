@@ -25,7 +25,6 @@ uint8_t mod_cell_count[NUM_MODULES] = {2, 2};
 uint32_t cell_voltages_mV[TOTAL_CELLS] = {3400, 3401, 3402, 3403};
 BMS_CHARGE_REQ_T _charge_req;
 bool balance_requests[NUM_MODULES];
-BMS_ERROR_T bms_errors[NUM_MODULES];
 
 void Test_Charge_SM_Shutdown(void);
 

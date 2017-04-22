@@ -20,9 +20,14 @@ void Output_Measurements(
         if(console_output->measure_temp && (msTicks - lastTempsPrintTime) > TEMPS_PRINT_PERIOD_ms) {
             uint8_t module;
             for (module = 0; module < bms_state->pack_config->num_modules; module++) {
+                utoa(msTicks, tempstr, 10); // print msTicks
+                Board_Print_BLOCKING(tempstr);
+                Board_Print_BLOCKING(",");
+
                 utoa(module, tempstr, 10);
                 Board_Print_BLOCKING("temps,");
-                Board_Print_BLOCKING(tempstr);
+                Board_Print_BLOCKING(tempstr); // print module
+
                 Board_Print_BLOCKING(",");
 
                 Board_PrintThermistorTemperatures(module, bms_input->pack_status);
@@ -35,10 +40,16 @@ void Output_Measurements(
             uint32_t idx;
             idx = 0;
             for (i = 0; i < bms_state->pack_config->num_modules; i++) {
-                utoa(i, tempstr, 10);
-                Board_Print_BLOCKING("cvs,");
+
+                utoa(msTicks, tempstr, 10); // print msTicks
                 Board_Print_BLOCKING(tempstr);
                 Board_Print_BLOCKING(",");
+
+                utoa(i, tempstr, 10);
+                Board_Print_BLOCKING("cvs,");
+                Board_Print_BLOCKING(tempstr); // print module
+                Board_Print_BLOCKING(",");
+
                 for (j = 0; j+1 < bms_state->pack_config->module_cell_count[i]; j++) {
                     utoa(bms_input->pack_status->cell_voltages_mV[idx], tempstr, 10);
                     Board_Print_BLOCKING(tempstr);

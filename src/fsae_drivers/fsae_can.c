@@ -83,19 +83,6 @@ void Receive_Vcu_Heartbeat(BMS_INPUT_T *bms_input) {
 void Receive_Unknown_Message(void) {
     Frame frame;
     Can_RawRead(&frame);
-    Board_Print("Unknown input: id=0x");
-    Board_PrintNum(frame.id, 16);
-    Board_Print(", len=");
-    Board_PrintNum(frame.len, 10);
-    Board_Print(", data=[");
-    uint8_t i;
-    for (i = 0; i < frame.len; i++) {
-        Board_Print("0x");
-        Board_PrintNum(frame.data[i], 16);
-        Board_Print(", ");
-    }
-    Board_Println("");
-
 }
 
 void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {

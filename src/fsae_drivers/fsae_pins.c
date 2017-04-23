@@ -49,6 +49,32 @@
 #define FAN_ON_DUTY_RATIO 10
 #define FAN_TIMER_ON (FAN_PWM_CYCLE - FAN_ON_DUTY_RATIO)
 
+// Unused pins
+#define PIN_37 3, 1
+#define PIN_37_IOCON IOCON_PIO3_1
+#define PIN_37_PIO_FUNC IOCON_FUNC0
+#define PIN_35 1, 2
+#define PIN_35_IOCON IOCON_PIO1_2
+#define PIN_35_PIO_FUNC IOCON_FUNC1
+#define PIN_34 1, 1
+#define PIN_34_IOCON IOCON_PIO1_1
+#define PIN_34_PIO_FUNC IOCON_FUNC1
+#define PIN_33 1, 0
+#define PIN_33_IOCON IOCON_PIO1_0
+#define PIN_33_PIO_FUNC IOCON_FUNC1
+#define PIN_32 0, 11
+#define PIN_32_IOCON IOCON_PIO0_11
+#define PIN_32_PIO_FUNC IOCON_FUNC1
+#define PIN_31 2, 11
+#define PIN_31_IOCON IOCON_PIO2_11
+#define PIN_31_PIO_FUNC IOCON_FUNC0
+#define PIN_30 1, 10
+#define PIN_30_IOCON IOCON_PIO1_10
+#define PIN_30_PIO_FUNC IOCON_FUNC0
+#define PIN_29 0, 10
+#define PIN_29_IOCON IOCON_PIO0_10
+#define PIN_29_PIO_FUNC IOCON_FUNC1
+
 void Fsae_GPIO_Init(void) {
 
     // Fault Pin
@@ -90,6 +116,48 @@ void Fsae_GPIO_Init(void) {
     Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
             MATCH_REGISTER_FAN_2);  
     Chip_TIMER_Enable(LPC_TIMER32_1);
+
+    // Enable pull down resistors on unused pins
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_37);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_37_IOCON, 
+        (PIN_37_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_37, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_35);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_35_IOCON, 
+        (PIN_35_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_35, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_34);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_34_IOCON, 
+        (PIN_34_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_34, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_33);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_33_IOCON, 
+        (PIN_33_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_33, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_32);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_32_IOCON, 
+        (PIN_32_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_32, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_31);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_31_IOCON, 
+        (PIN_31_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_31, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_30);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_30_IOCON, 
+        (PIN_30_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_30, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_29);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_29_IOCON, 
+        (PIN_29_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_29, false);
+
 }
 
 void Fsae_Fault_Pin_Set(bool state) {

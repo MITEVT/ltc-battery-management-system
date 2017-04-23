@@ -12,11 +12,18 @@ typedef enum error {
     ERROR_EEPROM,
     ERROR_CELL_UNDER_VOLTAGE,
     ERROR_CELL_OVER_VOLTAGE,
+#ifdef FSAE_DRIVERS
+    ERROR_CELL_UNDER_TEMP,
+#endif
     ERROR_CELL_OVER_TEMP,
     ERROR_OVER_CURRENT,
     ERROR_BRUSA,
     ERROR_CAN,
     ERROR_CONFLICTING_MODE_REQUESTS,
+#ifdef FSAE_DRIVERS
+    ERROR_VCU_DEAD,
+    ERROR_CONTROL_FLOW,
+#endif
     ERROR_NUM_ERRORS
 } ERROR_T;
 
@@ -27,11 +34,18 @@ static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
     "ERROR_EEPROM",
     "ERROR_CELL_UNDER_VOLTAGE",
     "ERROR_CELL_OVER_VOLTAGE",
+#ifdef FSAE_DRIVERS
+    "ERROR_CELL_UNDER_TEMP",
+#endif
     "ERROR_CELL_OVER_TEMP",
     "ERROR_OVER_CURRENT",
     "ERROR_BRUSA", // [TODO] Remove for FSAE
     "ERROR_CAN",
     "ERROR_CONFLICTING_MODE_REQUESTS"
+#ifdef FSAE_DRIVERS
+    ,"ERROR_VCU_DEAD"
+    ,"ERROR_CONTROL_FLOW"
+#endif
 };
 
 typedef enum hbeats {
@@ -73,6 +87,7 @@ void Error_Pass(ERROR_T er_t);
 void Error_HB(HBEAT_T hb);
 
 const ERROR_STATUS_T *  Error_GetStatus(ERROR_T er_t);
+bool Error_ShouldHalt(ERROR_T er_t, uint32_t msTicks);
 ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
 
 const ERROR_STATUS_T * Error_HB_GetStatus(HBEAT_T hb);

@@ -17,8 +17,8 @@
 #define ERROR_BYTESIZE 1
 
 // Default Pack Configuration
-#define CELL_MIN_mV 2800
-#define CELL_MAX_mV 4200
+#define CELL_MIN_mV 2500 // from datasheet, contact elliot
+#define CELL_MAX_mV 4250 // from datas,eet, contact elliot
 #define CELL_CAPACITY_cAh 250
 #define NUM_MODULES 6
 #define CELL_CHARGE_C_RATING_cC 5
@@ -34,7 +34,8 @@
 
 // FSAE specific macros
 #ifdef FSAE_DRIVERS
-#define FAN_ON_THRESHOLD_dC 450
+    #define MIN_CELL_TEMP_dC -30
+    #define FAN_ON_THRESHOLD_dC 450
 #endif //FSAE_DRIVERS
 
 void EEPROM_Init(LPC_SSP_T *pSSP, uint32_t baud, uint8_t cs_gpio, uint8_t cs_pin);

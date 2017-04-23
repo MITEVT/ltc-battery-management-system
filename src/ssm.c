@@ -113,21 +113,36 @@ static void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
     // }
     //[TODO] change to case statement
     if (state->curr_mode != BMS_SSM_MODE_INIT) {
-        int16_t max_cell_temp_thres_C = state->pack_config->max_cell_temp_dC;
-        if (input->pack_status->max_cell_temp_dC > max_cell_temp_thres_C) {
-            Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
-            return;
-        }
+        int16_t max_cell_temp_thres_dC = state->pack_config->max_cell_temp_dC;
 
         if (input->pack_status->pack_cell_min_mV < state->pack_config->cell_min_mV) {
             Error_Assert(ERROR_CELL_UNDER_VOLTAGE, input->msTicks);
-            return;
+        } else {
+            Error_Pass(ERROR_CELL_UNDER_VOLTAGE);
         }
 
         if (input->pack_status->pack_cell_max_mV > state->pack_config->cell_max_mV + 5) {
             Error_Assert(ERROR_CELL_OVER_VOLTAGE, input->msTicks);
-            return;
+        } else {
+            Error_Pass(ERROR_CELL_OVER_VOLTAGE);
         }
+
+        if (input->pack_status->max_cell_temp_dC > max_cell_temp_thres_dC) {
+            Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
+        } else {
+            Error_Pass(ERROR_CELL_OVER_TEMP);
+        }
+
+#ifdef FSAE_DRIVERS
+
+        int16_t min_cell_temp_thres_dC = state->pack_config->min_cell_temp_dC;
+        if (input->pack_status->min_cell_temp_dC < min_cell_temp_thres_dC) {
+            Error_Assert(ERROR_CELL_UNDER_TEMP, input->msTicks);
+        } else {
+            Error_Pass(ERROR_CELL_UNDER_TEMP);
+        }
+
+#endif
     }
 }
 

@@ -16,43 +16,21 @@
     #include "can.h"
     #include "ltc6804.h"
     #include "console.h"
-#endif
- 
+#endif //TEST_HARDWARE
+
 #include "error_handler.h"
 #include "config.h"
 #include "state_types.h"
 #include <string.h>
 #include <stdint.h>
 
-
-#define LED0 2, 8
-#define LED1 2, 10
-#define LED2 1, 3 // pin 39
-#define IOCON_LED2 IOCON_PIO1_3
-#define CTR_SWTCH 1, 4 // pin 40 on lpc24, used as input 
-#define IOCON_CTR_SWTCH IOCON_PIO1_4
-
+/************************* BEGIN DEVICE SPECIFIC PINS *************************/
 #ifdef FSAE_DRIVERS
-
-#define FSAE_FAULT_GPIO 3, 0
-#define IOCON_FSAE_FAULT_GPIO IOCON_PIO3_0
-#define FSAE_CHARGE_ENABLE_GPIO 3, 2
-#define IOCON_FSAE_CHARGE_ENABLE_GPIO IOCON_PIO3_2
-
-// Macros for Fan setup
-#define FSAE_FAN_1_PIN 1, 4
-#define IOCON_FSAE_FAN_1_PIN IOCON_PIO1_4
-#define FSAE_FAN_2_PIN 1, 3
-#define IOCON_FSAE_FAN_2_PIN IOCON_PIO1_3
-#define FAN_TIMER_PRESCALE 18
-#define MATCH_REGISTER_FAN_1 3
-#define MATCH_REGISTER_FAN_2 2
-#define MATCH_REGISTER_FAN_PWM_CYCLE 0
-#define FAN_OFF_DUTY_RATIO_OFF 200
-#define FAN_ON_DUTY_RATIO_OFF 90
-#define FAN_PWM_CYCLE 100
-
+    #include "fsae_drivers/fsae_pins.h"
+#else //FSAE_DRIVERS
+    #include "evt_drivers/evt_pins.h"
 #endif //FSAE_DRIVERS
+/************************* END DEVICE SPECIFIC PINS ***************************/
 
 #define UART_BUFFER_SIZE 100 // may need to change based on number of BMS size, Rx and Tx size
 
@@ -60,18 +38,15 @@
 #define CONTACTOR_N 2, 7
 #define CONTACTOR_PRE 2, 1
 
-#define HEADROOM 3, 2
-#define IOCON_HEADROOM IOCON_PIO3_2
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
-#define TIME_PER_THERMISTOR_MS 400
+#define TIME_PER_THERMISTOR_MS 40
 
 // ltc6804 constants
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4
 #define LTC6804_SHIFT_REGISTER_CLOCK 3
 #define LTC6804_SHIFT_REGISTER_LATCH 2
 #define LTC6804_GPIO_COUNT 5
-
 
 typedef enum {
     LTC6804_INIT_NONE, LTC6804_INIT_CFG, LTC6804_INIT_CVST, LTC6804_INIT_OWT, LTC6804_INIT_DONE
@@ -98,8 +73,6 @@ void Board_LED_On(uint8_t led_gpio, uint8_t led_pin);
 void Board_LED_Off(uint8_t led_gpio, uint8_t led_pin);
 
 void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin);
-
-void Board_Headroom_Init(void);
 
 void Board_Headroom_Toggle(void);
 
@@ -130,6 +103,7 @@ uint32_t Board_Print(const char *str);
  */
 uint32_t Board_Println(const char *str);
 
+uint32_t Board_PrintNum(uint32_t num, uint8_t base);
 /**
  * @details Non-blocking printing for user interface. Appends a newline
  *
@@ -169,15 +143,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status);
  * @param pack_status mutable datatype containing array of cell temperatures
  */
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules);
-
-#ifndef TEST_HARDWARE
-/**
- * @details handles status returned by an LTC6804 driver
- *
- * @param status status of the LTC6804
- */
-void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
-#endif //TEST_HARDWARE
 
 /**
  * @details prints thermistor temperatures of module module
@@ -241,12 +206,17 @@ bool Board_Contactors_Closed(void);
  */
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input);
 
+/**
+ * @details handles status returned by an LTC6804 driver
+ *
+ * @param status status of the LTC6804
+ */
+void Board_HandleLtc6804Status(LTC6804_STATUS_T status);
 
 void Board_CAN_ProcessInput(BMS_INPUT_T * bms_input, BMS_OUTPUT_T *bms_output);
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output);
 
-#endif
+#endif // TEST_HARDWARE
 
-
-#endif
+#endif // _BOARD_H_

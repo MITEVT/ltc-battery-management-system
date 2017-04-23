@@ -5,8 +5,9 @@ static void RunAllTests(void) {
   RUN_TEST_GROUP(SSM_Test);
   RUN_TEST_GROUP(Discharge_Test);
   RUN_TEST_GROUP(ERROR_Test);
-  RUN_TEST_GROUP(BMS_CAN_Test);
+#ifdef FSAE_DRIVERS
   RUN_TEST_GROUP(Cell_Temperatures_Test);
+#endif // FSAE_DRIVERS
 }
 
 int main(int argc, const char * argv[]) {

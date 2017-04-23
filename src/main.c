@@ -10,6 +10,10 @@
 #include "error_handler.h"
 #include "brusa.h"
 
+#ifdef FSAE_DRIVERS
+    #include "fsae_pins.h"
+#endif
+
 #define EEPROM_CS_PIN 0, 7
 
 extern volatile uint32_t msTicks;
@@ -89,6 +93,8 @@ void Init_BMS_Structs(void) {
     pack_config.max_cell_temp_dC = 0;
     // FSAE specific pack configurations
 #ifdef FSAE_DRIVERS
+    // TODO figure out these settings
+    pack_config.min_cell_temp_dC = 0;
     pack_config.fan_on_threshold_dC = 0;
 #endif //FSAE_DRIVERS
 
@@ -103,6 +109,9 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_packconfig_read_done = false;
     bms_input.ltc_packconfig_check_done = false;
     bms_input.eeprom_read_error = false;
+#ifdef FSAE_DRIVERS
+    bms_input.last_vcu_msg_ms = 0;
+#endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
     memset(cell_temperatures, 0, sizeof(cell_temperatures));
@@ -114,8 +123,10 @@ void Init_BMS_Structs(void) {
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
 #ifdef FSAE_DRIVERS
-    pack_status.min_cell_temp_dC = 0;
+    pack_status.min_cell_temp_dC = -100;
     pack_status.avg_cell_temp_dC = 0;
+    pack_status.min_cell_temp_position = 0;
+    pack_status.max_cell_temp_position = 0;
 #endif //FSAE_DRIVERS
 
 }
@@ -128,38 +139,22 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // update and other fields in msTicks in &input
 
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
+        Board_CAN_ProcessInput(bms_input, &bms_output);
         Board_GetModeRequest(&console_output, bms_input);
-        Board_CAN_ProcessInput(bms_input, &bms_output); // CAN has precedence over console
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
-
-    bms_input->contactors_closed = Board_Contactors_Closed();
     bms_input->msTicks = msTicks;
+    bms_input->contactors_closed = Board_Contactors_Closed();
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
+    //
 #ifdef FSAE_DRIVERS
-    if(bms_output->close_contactors) {
-        Board_LED_On(FSAE_FAULT_GPIO);
-    } else {
-        Board_LED_Off(FSAE_FAULT_GPIO);
-    }
-
-    if (bms_output->charge_req->charger_on) {
-        Board_LED_On(FSAE_CHARGE_ENABLE_GPIO);
-    } else {
-        Board_LED_Off(FSAE_CHARGE_ENABLE_GPIO);
-    }
-
-    if (bms_output->fans_on) {
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_ON_DUTY_RATIO_OFF);  
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_ON_DUTY_RATIO_OFF);  
-    } else {
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_OFF_DUTY_RATIO_OFF);  
-        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_OFF_DUTY_RATIO_OFF);  
-    }
+    Board_Contactors_Set(bms_output->close_contactors);
+    Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
+    Fsae_Fan_Set(bms_output->fans_on);
 #else
     if(bms_output->close_contactors) {
         Board_LED_On(LED2);
@@ -167,7 +162,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
         Board_LED_Off(LED2);
     }
 #endif //FSAE_DRIVERS
-    
+
     if (bms_output->read_eeprom_packconfig){
         if(console_output.config_default){
             Write_EEPROM_PackConfig_Defaults();
@@ -183,7 +178,6 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
     } else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
     } else {
-        Board_Contactors_Set(bms_output->close_contactors);
         Board_LTC6804_ProcessOutput(bms_output->balance_req);
         Board_CAN_ProcessOutput(bms_input, bms_state, bms_output);
     }
@@ -209,13 +203,6 @@ void Process_Keyboard(void) {
 // [TODO] Implement watchdog timer                      WHO:Erpo
 // 
 // In order of priority
-// [TODO] Handle control flow errors. (e.g.             WHO:Jorge
-//        currentThermistor out of range)
-// [TODO] Implement things in FSAE's BMS specification  WHO:Jorge
-// [TODO] implement all messages in FSAE CAN spec       WHO:Jorge
-// [TODO] send CAN messages when BMS hangs              WHO:Jorge
-// [TODO] Open contactors if a cell goes                WHO:Jorge
-//        outside a reasonable temperature range
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
@@ -223,9 +210,9 @@ void Process_Keyboard(void) {
 //        above the charge C rating and move to standby
 // [TODO] make the BMS hang if the pack current is high 
 //        while the BMS is in standby, init, or balance
-// [TODO] make the BMS hang if the contactors are       
+// [TODO] make the BMS hang if the contactors are
 //        closed when the BMS is in standby, init, or
-//        balance     
+//        balance
 // [TODO] Add print out leveling                        WHO:Erpo/Skanda
 //
 // [TODO at the end] Add console print handling **      WHO:Rango
@@ -243,7 +230,6 @@ int main(void) {
 
     Board_Chip_Init();
     Board_GPIO_Init();
-    Board_Headroom_Init();
     Board_CAN_Init(CAN_BAUD);
     Board_UART_Init(UART_BAUD);
 
@@ -263,7 +249,6 @@ int main(void) {
     Board_Println("Applications Up");
 
     uint32_t last_count = msTicks;
-    //uint32_t lastThermistorTemperaturePrint = msTicks;
 
     while(1) {
 
@@ -304,6 +289,7 @@ int main(void) {
 
     while(1) {
         //set bms_output
+        bms_input.msTicks = msTicks;
         Process_Output(&bms_input, &bms_output, &bms_state);
         Process_Keyboard();
         if(bms_state.curr_mode == BMS_SSM_MODE_INIT) {

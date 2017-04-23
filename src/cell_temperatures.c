@@ -26,19 +26,19 @@ void CellTemperatures_UpdateCellTemperaturesArray(uint32_t * gpioVoltages,
 }
 
 void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules) {
-
     int16_t maxCellTemperature = INT16_MIN;
     int16_t minCellTemperature = INT16_MAX;
-    int16_t cellTemperaturesSum = 0;
+    int32_t cellTemperaturesSum = 0;
     uint16_t maxCellTemperaturePosition = 0;
     uint16_t minCellTemperaturePosition = 0;
 
-    uint16_t module;
+    uint8_t module;
 
     for (module = 0; module < num_modules; module++) {
+        // 255 * 24 < UINT16_MAX so this is safe
         uint16_t start = module*MAX_THERMISTORS_PER_MODULE;
-        uint32_t idx;
-        for(idx = start; (uint8_t) idx < start +  MAX_THERMISTORS_PER_MODULE; idx++) {
+        uint16_t idx;
+        for(idx = start; idx < start + MAX_THERMISTORS_PER_MODULE; idx++) {
             cellTemperaturesSum += pack_status->cell_temperatures_dC[idx];
 
             if (pack_status->cell_temperatures_dC[idx] > maxCellTemperature) {
@@ -49,7 +49,6 @@ void CellTemperatures_UpdateMaxMinAvgCellTemperatures(BMS_PACK_STATUS_T * pack_s
                 minCellTemperature = pack_status->cell_temperatures_dC[idx];
                 minCellTemperaturePosition = idx;
             }
-
         }
     }
 

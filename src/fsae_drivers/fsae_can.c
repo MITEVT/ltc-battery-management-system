@@ -22,18 +22,12 @@ void Send_Bms_Errors(uint32_t msTicks);
 void Send_Bms_CellTemps(BMS_PACK_STATUS_T * pack_status);
 void Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status);
 
-void Fsae_Can_Pass(void);
-
 Can_Bms_ErrorID_T bms_error_to_can_error(ERROR_T error);
 Can_Bms_ErrorID_T get_error_status(uint32_t msTicks);
 bool is_pack_error(Can_Bms_ErrorID_T errorType);
 
 void Fsae_Can_Init(uint32_t baud_rate) {
     Can_Init(baud_rate);
-}
-
-void Fsae_Can_Pass(void) {
-    Can_Pass();
 }
 
 void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
@@ -55,7 +49,6 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 
 void Fsae_Can_Transmit(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
     UNUSED(bms_output);
-    Fsae_Can_Pass();
     uint32_t msTicks = bms_input->msTicks;
     if ( (msTicks - last_bms_heartbeat_time) > BMS_HEARTBEAT_PERIOD) {
         last_bms_heartbeat_time = msTicks;

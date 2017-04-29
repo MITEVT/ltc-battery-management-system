@@ -14,8 +14,9 @@ static uint32_t last_bms_errors_time = 0;
 static uint32_t last_bms_cellTemps_time = 0;
 static uint32_t last_bms_packStatus_time = 0;
 
-void Receive_Vcu_Heartbeat(BMS_INPUT_T *bms_input);
-void Receive_Unknown_Message(void);
+static bool isResetting = false;
+
+void handle_can_error(Can_ErrorID_T err);
 
 void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state);
 void Send_Bms_Errors(uint32_t msTicks);
@@ -33,16 +34,30 @@ void Fsae_Can_Init(uint32_t baud_rate) {
 void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     UNUSED(bms_output);
     Can_MsgID_T msgType = Can_MsgType();
+
     if (msgType == Can_No_Msg) {
-      return;
+        // No message, so do nothing this round
+        return;
+    } else if (msgType == Can_Error_Msg) {
+        Can_ErrorID_T err = Can_Error_Read();
+        handle_can_error(err);
+        return;
     }
-    else if (msgType == Can_Unknown_Msg) {
-      Receive_Unknown_Message();
-    }
-    else if (msgType == Can_Vcu_BmsHeartbeat_Msg){
-      Receive_Vcu_Heartbeat(bms_input);
-    }
-    else {
+
+    // We had a successful reception, so finish reset (if it's still happening)
+    isResetting = false;
+
+    if (msgType == Can_Unknown_Msg) {
+        // TODO use masking instead of this forced read
+        Frame f;
+        Can_Unknown_Read(&f);
+    } else if (msgType == Can_Vcu_BmsHeartbeat_Msg){
+        // Yes, you actually have to call read here,
+        // even though the contents of the message are unused.
+        Can_Vcu_BmsHeartbeat_T msg;
+        Can_Vcu_BmsHeartbeat_Read(&msg);
+        bms_input->last_vcu_msg_ms = bms_input->msTicks;
+    } else {
         // TODO handle current messages
     }
 }
@@ -66,18 +81,24 @@ void Fsae_Can_Transmit(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPU
         last_bms_packStatus_time = msTicks;
         Send_Bms_PackStatus(bms_input->pack_status);
     }
-
 }
 
-void Receive_Vcu_Heartbeat(BMS_INPUT_T *bms_input) {
-    bms_input->last_vcu_msg_ms = bms_input->msTicks;
-}
+void handle_can_error(Can_ErrorID_T err) {
+    if (err == Can_Error_NONE || err == Can_Error_NO_RX) {
+        // Neither of these are real errors
+        isResetting = false;
+        return;
+    }
+    if (!isResetting) {
+        // We have an error, and should start a reset.
+        // TODO change behavior depending on error type.
+        isResetting = true;
+        CAN_ResetPeripheral();
+        Fsae_Can_Init(500000);
+        UNUSED(err);
+    }
 
-void Receive_Unknown_Message(void) {
-    Frame frame;
-    Can_UnknownRead(&frame);
 }
-
 void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {
     Can_Bms_Heartbeat_T bmsHeartbeat;
     Can_Bms_ErrorID_T error_type = get_error_status(bms_input->msTicks);
@@ -115,13 +136,13 @@ void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {
     // TODO when we get SOC working
     bmsHeartbeat.soc = 0;
 
-    Can_Bms_Heartbeat_Write(&bmsHeartbeat);
+    handle_can_error(Can_Bms_Heartbeat_Write(&bmsHeartbeat));
 }
 
 void Send_Bms_Errors(uint32_t msTicks) {
     Can_Bms_Error_T error_msg;
     error_msg.type = get_error_status(msTicks);
-    Can_Bms_Error_Write(&error_msg);
+    handle_can_error(Can_Bms_Error_Write(&error_msg));
 }
 
 /**
@@ -139,7 +160,7 @@ void Send_Bms_CellTemps(BMS_PACK_STATUS_T * pack_status) {
     cellTemps.max_cell_temp = pack_status->max_cell_temp_dC;
     cellTemps.id_max_cell_temp = pack_status->max_cell_temp_position;
 
-    Can_Bms_CellTemps_Write(&cellTemps);
+    handle_can_error(Can_Bms_CellTemps_Write(&cellTemps));
 }
 
 /**
@@ -157,7 +178,7 @@ void Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status) {
     canPackStatus.max_cell_voltage = pack_status->pack_cell_max_mV;
     canPackStatus.id_max_cell_voltage = 0; //TODO: get actual id max cell voltage
 
-    Can_Bms_PackStatus_Write(&canPackStatus);
+    handle_can_error(Can_Bms_PackStatus_Write(&canPackStatus));
 }
 
 Can_Bms_ErrorID_T get_error_status(uint32_t msTicks) {

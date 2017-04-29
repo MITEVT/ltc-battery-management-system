@@ -75,7 +75,7 @@ void Receive_Vcu_Heartbeat(BMS_INPUT_T *bms_input) {
 
 void Receive_Unknown_Message(void) {
     Frame frame;
-    Can_RawRead(&frame);
+    Can_UnknownRead(&frame);
 }
 
 void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {

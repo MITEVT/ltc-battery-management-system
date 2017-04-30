@@ -6,9 +6,11 @@
 #include "error_handler.h"
 
 static uint32_t _last_brusa_ctrl = 0;
+static volatile uint32_t *msTicksPtr;
 
-void Evt_Can_Init(uint32_t baudRateHz) {
-    CAN_Init(baudRateHz);
+void Evt_Can_Init(uint32_t baudRateHz, volatile uint32_t* msTicksPtrArg) {
+    CAN_Init(baudRateHz, msTicksPtr);
+    msTicksPtr = msTicksPtrArg;
 }
 
 void Evt_Can_Transmit(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
@@ -51,7 +53,7 @@ void Evt_Can_Transmit(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT
         Board_Println("CAN Error");
         Error_Assert(ERROR_CAN, bms_input->msTicks);
         CAN_ResetPeripheral();
-        Board_CAN_Init(CAN_BAUD);
+        Board_CAN_Init(CAN_BAUD, msTicksPtr);
     }
 
 }

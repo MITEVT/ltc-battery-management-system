@@ -80,7 +80,7 @@ void Board_BlockingDelay(uint32_t dlyTicks);
 
 bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin);
 
-void Board_CAN_Init(uint32_t baudRateHz);
+void Board_CAN_Init(uint32_t baudRateHz, volatile uint32_t *msTicksPtr);
 
 /**
  * @details Initialize the UART used for debugging

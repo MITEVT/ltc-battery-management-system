@@ -230,7 +230,7 @@ int main(void) {
 
     Board_Chip_Init();
     Board_GPIO_Init();
-    Board_CAN_Init(CAN_BAUD);
+    Board_CAN_Init(CAN_BAUD, &msTicks);
     Board_UART_Init(UART_BAUD);
 
 	Board_Println("Board Up");

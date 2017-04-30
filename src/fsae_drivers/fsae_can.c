@@ -26,8 +26,8 @@ Can_Bms_ErrorID_T bms_error_to_can_error(ERROR_T error);
 Can_Bms_ErrorID_T get_error_status(uint32_t msTicks);
 bool is_pack_error(Can_Bms_ErrorID_T errorType);
 
-void Fsae_Can_Init(uint32_t baud_rate) {
-    Can_Init(baud_rate);
+void Fsae_Can_Init(uint32_t baud_rate, volatile uint32_t *msTicksPtr) {
+    Can_Init(baud_rate, msTicksPtr);
 }
 
 void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {

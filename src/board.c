@@ -187,13 +187,13 @@ void Board_UART_Init(uint32_t baudRateHz) {
 #endif
 }
 
-void Board_CAN_Init(uint32_t baudRateHz){
+void Board_CAN_Init(uint32_t baudRateHz, volatile uint32_t *msTicksPtr){
 #ifndef TEST_HARDWARE
 
 #ifdef FSAE_DRIVERS
-    Fsae_Can_Init(baudRateHz);
+    Fsae_Can_Init(baudRateHz, msTicksPtr);
 #else // FSAE_DRIVERS
-    Evt_Can_Init(baudRateHz);
+    Evt_Can_Init(baudRateHz, msTicksPtr);
 #endif // FSAE_DRIVERS
 
 #else

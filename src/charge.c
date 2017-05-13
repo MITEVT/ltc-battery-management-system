@@ -1,6 +1,9 @@
 #include "charge.h"
 #include "bms_utils.h"
 
+#define BALANCE_ON_THRESH_MS 3000
+#define BALANCE_OFF_WAITING_THRESH_MS 3000
+
 static uint16_t total_num_cells;
 static uint32_t cc_charge_voltage_mV;
 static uint32_t cc_charge_current_mA;
@@ -8,7 +11,7 @@ static uint32_t cv_charge_voltage_mV;
 static uint32_t cv_charge_current_mA;
 static uint32_t last_time_above_cv_min_curr;
 
-bool _calc_balance(bool *balance_req, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config);
+bool _calc_balance(bool *balance_req, bool *balance_waitingoff, uint32_t *balance_timeon, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config, uint32_t msTicks);
 void _set_output(bool close_contactors, bool charger_on, uint32_t charge_voltage_mV, uint32_t charge_current_mA, BMS_OUTPUT_T *output);
 
 void Charge_Init(BMS_STATE_T *state) {
@@ -88,7 +91,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
                 _set_output(true, true, cc_charge_voltage_mV, cc_charge_current_mA, output);
             }
 
-            _calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
+            _calc_balance(output->balance_req, state->balance_waitingoff, state->balance_timeon, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config, input->msTicks);
 
             // if(!input->contactors_closed || !input->charger_on) { // [TODO] Think about this
             if(!input->contactors_closed) {
@@ -117,7 +120,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
                 }
             }
 
-            _calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config);
+            _calc_balance(output->balance_req, state->balance_waitingoff, state->balance_timeon, input->pack_status->cell_voltages_mV, input->pack_status->pack_cell_min_mV, state->pack_config, input->msTicks);
 
             if(!input->contactors_closed) {
                 _set_output(true, false, 0, 0, output);
@@ -127,7 +130,7 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 
         case BMS_CHARGE_BAL:
             _set_output(false, false, 0, 0, output);
-            bool balancing = _calc_balance(output->balance_req, input->pack_status->cell_voltages_mV, input->balance_mV, state->pack_config);
+            bool balancing = _calc_balance(output->balance_req, state->balance_waitingoff, state->balance_timeon, input->pack_status->cell_voltages_mV, input->balance_mV, state->pack_config, input->msTicks);
 
             // Done balancing
             if (!balancing) {
@@ -172,14 +175,33 @@ void Charge_Step(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *output) {
 // checks that each cell is within some threshold of the minimum cell
             //  voltage. uses two different thresholds based on whether 
             //  we were just balancing or not (account for hysteresis)
-bool _calc_balance(bool *balance_req, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config) {
+bool _calc_balance(bool *balance_req, bool *balance_waitingoff, uint32_t *balance_timeon, uint32_t *cell_voltages_mV, uint32_t balance_mV, PACK_CONFIG_T *config, uint32_t msTicks) {
     bool balancing = false;
     int i;
+    // HOW TO RESET
     for (i = 0; i < total_num_cells; i++) {
         if (balance_req[i]) {
             balance_req[i] = (cell_voltages_mV[i] > balance_mV + config->bal_off_thresh_mV);
+            // if we're turning it on and its been on for a while
+            if(balance_req[i] && msTicks - balance_timeon[i] > BALANCE_ON_THRESH_MS) {
+                balance_req[i] = false;
+                balance_timeon[i] = msTicks;
+                balance_waitingoff[i] = true;
+            }
         } else {
             balance_req[i] = (cell_voltages_mV[i] > balance_mV + config->bal_on_thresh_mV);
+            if(balance_req[i]) {
+                // DO NOT BAL if we are waiting off and waiting off hasn't expired
+                if(balance_waitingoff[i] && msTicks - balance_timeon[i] < BALANCE_OFF_WAITING_THRESH_MS) {
+                    balance_req[i] = false;
+                } else {
+                // if not waiting off or the waiting off timer expired, allow it to turn on, but start the counter
+                    balance_req[i] = true;
+                    balance_timeon[i] = msTicks;
+                    balance_waitingoff[i] = false;
+                }
+
+            }
         }
         if (balance_req[i]) balancing = true;
     }

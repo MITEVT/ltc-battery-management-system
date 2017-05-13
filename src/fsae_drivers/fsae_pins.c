@@ -78,6 +78,11 @@
 void Fsae_GPIO_Init(void) {
 
     // Fault Pin
+    Chip_GPIO_SetPinDIRInput(LPC_GPIO, FSAE_CTR_HIGH_SWTCH);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_CTR_HIGH_SWTCH, (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+
+    // Fault Pin
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAULT_GPIO,
             (IOCON_FUNC0 | IOCON_MODE_INACT));
@@ -164,6 +169,10 @@ void Fsae_Fault_Pin_Set(bool state) {
     Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAULT_GPIO, state);
 }
 
+bool Fsae_Contactor_Pin_Get(void) {
+    return Chip_GPIO_GetPinState(LPC_GPIO, FSAE_CTR_HIGH_SWTCH);
+}
+
 bool Fsae_Fault_Pin_Get(void) {
     return Chip_GPIO_GetPinState(LPC_GPIO, FSAE_FAULT_GPIO);
 }
@@ -177,7 +186,7 @@ bool Fsae_Charge_Enable_Get(void) {
 }
 
 void Fsae_Fan_Set(bool state) {
-    if (state) {
+    if (state && Fsae_Contactor_Pin_Get()) {
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_ON);
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_ON);
     } else {

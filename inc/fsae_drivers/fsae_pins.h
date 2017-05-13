@@ -18,6 +18,8 @@ void Fsae_GPIO_Init(void);
 void Fsae_Fault_Pin_Set(bool state);
 bool Fsae_Fault_Pin_Get(void);
 
+bool Fsae_Contactor_Pin_Get(void);
+
 void Fsae_Charge_Enable_Set(bool state);
 bool Fsae_Charge_Enable_Get(void);
 

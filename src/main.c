@@ -198,6 +198,13 @@ void Process_Keyboard(void) {
     }
 }
 
+// FSAE TODO
+//   Measure while in discharge
+//   cmd for cell stats (min/max/std/avg)
+//   Calibrate bias and temps
+//   Current sense measure integrate into BMS
+//
+//
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
 // [TODO] Reasonable way to change polling speeds       WHO:ALL

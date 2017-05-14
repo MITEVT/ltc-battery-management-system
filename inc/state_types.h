@@ -127,6 +127,8 @@ typedef struct BMS_STATE {
     BMS_CHARGE_MODE_T charge_state;
     BMS_DISCHARGE_MODE_T discharge_state;
 
+    uint32_t *balance_timeon;
+    bool *balance_waitingoff;
 } BMS_STATE_T;
 
 typedef struct BMS_INPUT {

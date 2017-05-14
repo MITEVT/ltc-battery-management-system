@@ -22,6 +22,8 @@ static char str[10];
 
 // memory allocation for BMS_OUTPUT_T
 static bool balance_reqs[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
+static bool balance_waitingoff[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
+static uint32_t balance_timeon[MAX_NUM_MODULES*MAX_CELLS_PER_MODULE];
 static BMS_CHARGE_REQ_T charge_req;
 static BMS_OUTPUT_T bms_output;
 
@@ -72,6 +74,10 @@ void Init_BMS_Structs(void) {
     bms_state.init_state = BMS_INIT_OFF;
     bms_state.charge_state = BMS_CHARGE_OFF;
     bms_state.discharge_state = BMS_DISCHARGE_OFF;
+    bms_state.balance_waitingoff = balance_waitingoff;
+    memset(balance_waitingoff, 0, sizeof(balance_waitingoff[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
+    bms_state.balance_timeon = balance_timeon;
+    memset(balance_timeon, 0, sizeof(balance_timeon[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
 
     charger_status.connected = false;
     charger_status.error = false;

@@ -1,8 +1,8 @@
 #include "charge.h"
 #include "bms_utils.h"
 
-#define BALANCE_ON_THRESH_MS 3000
-#define BALANCE_OFF_WAITING_THRESH_MS 3000
+#define BALANCE_ON_THRESH_MS 41000
+#define BALANCE_OFF_WAITING_THRESH_MS 188000
 
 static uint16_t total_num_cells;
 static uint32_t cc_charge_voltage_mV;

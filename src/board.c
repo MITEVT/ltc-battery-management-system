@@ -258,8 +258,7 @@ void Board_Contactors_Set(bool close_contactors) {
 #ifndef TEST_HARDWARE
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
-    // return Fsae_Fault_Pin_Get();
-    return Fsae_Contactor_Pin_Get();
+    return Fsae_Fault_Pin_Get();
 #else
     return false;
 #endif

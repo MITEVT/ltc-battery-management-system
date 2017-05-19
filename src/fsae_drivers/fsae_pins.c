@@ -186,7 +186,7 @@ bool Fsae_Charge_Enable_Get(void) {
 }
 
 void Fsae_Fan_Set(bool state) {
-    if (state && Fsae_Contactor_Pin_Get()) {
+    if (state) {
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_ON);
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_ON);
     } else {

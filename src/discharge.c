@@ -86,10 +86,15 @@ handler:
 
 #ifdef FSAE_DRIVERS
             // Handle fan logic
+            // TODO restore the temp logic when we have the OK from kevin and elliot
+            /*
             const int16_t curr_cell_temp = input->pack_status->max_cell_temp_dC;
             const int16_t fan_threshold_temp =
                     state->pack_config->fan_on_threshold_dC;
             output->fans_on = curr_cell_temp > fan_threshold_temp;
+            */
+            bool high_side_ctr_closed = Fsae_Contactor_Pin_Get();
+            output->fans_on = high_side_ctr_closed;
 
             // Handle VCU heartbeat logic
             uint32_t time_since_vcu_msg =

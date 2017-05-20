@@ -1,3 +1,3 @@
 mkdir logs
 make com | tee logs/$(date -d "today" +"%Y%m%d%H%M").log
-python scripts/parse_log.py logs/$(date -d "today" +"%Y%m%d%H%M").log logs/$(date -d "today" +"%Y%m%d%H%M")_voltages.csv logs/$(date -d "today" +"%Y%m%d%H%M")_temps.csv
+python scripts/parse_log.py logs/$(date -d "today" +"%Y%m%d%H%M").log logs/$(date -d "today" +"%Y%m%d%H%M")_voltages.csv logs/$(date -d "today" +"%Y%m%d%H%M")_temps.csv logs/$(date -d "today" +"%Y%m%d%H%M")_pack_current.csv logs/$(date -d "today" +"%Y%m%d%H%M")_pack_voltage.csv

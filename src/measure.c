@@ -3,9 +3,13 @@
 #include "measure.h"
 
 #define VOLTAGES_PRINT_PERIOD_ms 1000
-#define TEMPS_PRINT_PERIOD_ms 1000
+#define TEMPS_PRINT_PERIOD_ms 10000
+#define PACK_CURRENT_PRINT_PERIOD_ms 1000
+#define PACK_VOLTAGE_PRINT_PERIOD_ms 1000
 static uint32_t lastVoltagesPrintTime = 0;
 static uint32_t lastTempsPrintTime = 0;
+static uint32_t lastPackCurrentPrintTime = 0;
+static uint32_t lastPackVoltagePrintTime = 0;
 
 void Output_Measurements(
         CONSOLE_OUTPUT_T *console_output, 
@@ -64,20 +68,26 @@ void Output_Measurements(
             lastVoltagesPrintTime = msTicks;
         }
 
-        if(console_output->measure_packcurrent) {
+        bool printPackCurrent = (msTicks - lastPackCurrentPrintTime) > 
+                PACK_CURRENT_PRINT_PERIOD_ms;
+        if(console_output->measure_packcurrent && printPackCurrent) {
             utoa(msTicks, tempstr, 10); // print msTicks
             Board_Print_BLOCKING(tempstr);
             Board_Print_BLOCKING(",pcurr,");
             utoa(bms_input->pack_status->pack_current_mA, tempstr, 10);
             Board_Println_BLOCKING(tempstr); // print pack current
+            lastPackCurrentPrintTime = msTicks;
         }
 
-        if(console_output->measure_packvoltage) {
+        bool printPackVoltage = (msTicks - lastPackVoltagePrintTime) > 
+                PACK_VOLTAGE_PRINT_PERIOD_ms;
+        if(console_output->measure_packvoltage && printPackVoltage) {
             utoa(msTicks, tempstr, 10); // print msTicks
             Board_Print_BLOCKING(tempstr);
             Board_Print_BLOCKING(",pvolt,");
             utoa(bms_input->pack_status->pack_voltage_mV, tempstr, 10);
             Board_Println_BLOCKING(tempstr); // print pack voltage
+            lastPackVoltagePrintTime = msTicks;
         }
     }
 }

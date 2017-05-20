@@ -741,7 +741,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #endif // FSAE_DRIVERS
 }
 
-void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state, BMS_OUTPUT_T *bms_output) {
+void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
     Fsae_Can_Transmit(bms_input, bms_state, bms_output);
 #else // FSAE_DRIVERS

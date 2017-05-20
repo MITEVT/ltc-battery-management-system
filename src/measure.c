@@ -65,11 +65,19 @@ void Output_Measurements(
         }
 
         if(console_output->measure_packcurrent) {
-            Board_Println("Not implemented!");
+            utoa(msTicks, tempstr, 10); // print msTicks
+            Board_Print_BLOCKING(tempstr);
+            Board_Print_BLOCKING(",pcurr,");
+            utoa(bms_input->pack_status->pack_current_mA, tempstr, 10);
+            Board_Println_BLOCKING(tempstr); // print pack current
         }
 
         if(console_output->measure_packvoltage) {
-            Board_Println("Not implemented!");
+            utoa(msTicks, tempstr, 10); // print msTicks
+            Board_Print_BLOCKING(tempstr);
+            Board_Print_BLOCKING(",pvolt,");
+            utoa(bms_input->pack_status->pack_voltage_mV, tempstr, 10);
+            Board_Println_BLOCKING(tempstr); // print pack voltage
         }
     }
 }

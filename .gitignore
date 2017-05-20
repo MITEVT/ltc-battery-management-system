@@ -1,5 +1,6 @@
 bin/
 testbin/
+logs/
 */bin/
 *.o
 *.swp

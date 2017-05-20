@@ -57,8 +57,16 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Can_Vcu_BmsHeartbeat_T msg;
         Can_Vcu_BmsHeartbeat_Read(&msg);
         bms_input->last_vcu_msg_ms = bms_input->msTicks;
+    } else if (msgType == Can_CurrentSensor_Current_Msg) {
+        Can_CurrentSensor_Current_T msg;
+        Can_CurrentSensor_Current_Read(&msg);
+        bms_input->pack_status->pack_current_mA = msg.current_mA > 0 ? msg.current_mA : -msg.current_mA;
+    } else if (msgType == Can_CurrentSensor_Voltage_Msg) {
+        Can_CurrentSensor_Voltage_T msg;
+        Can_CurrentSensor_Voltage_Read(&msg);
+        bms_input->pack_status->pack_voltage_mV = msg.voltage_mV > 0 ? msg.voltage_mV : -msg.voltage_mV;
     } else {
-        // TODO handle current messages
+        // note other errors
     }
 }
 

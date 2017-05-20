@@ -274,7 +274,7 @@ static void config(const char * const * argv) {
 }
 
 static void measure(const char * const * argv) {
-    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY) { 
+    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY || bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) { 
         if (strcmp(argv[1],"on") == 0) {
             console_output->measure_on = true;
             Board_Println("Measure On!");
@@ -317,11 +317,9 @@ static void measure(const char * const * argv) {
 
         } else if (strcmp(argv[1],"packcurrent") == 0) {
             console_output->measure_packcurrent = !console_output->measure_packcurrent;
-            Board_Println("Not implemented yet!");
 
         } else if (strcmp(argv[1],"packvoltage") == 0) {
             console_output->measure_packvoltage = !console_output->measure_packvoltage;
-            Board_Println("Not implemented yet!");
 
         } else {
             Board_Println("Unrecognized command!");

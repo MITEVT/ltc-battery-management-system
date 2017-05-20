@@ -199,11 +199,13 @@ void Process_Keyboard(void) {
 }
 
 // FSAE TODO
-//   Measure while in discharge
+//   Measure while in discharge [In PR]
 //   cmd for cell stats (min/max/std/avg)
 //   Calibrate bias and temps
-//   Current sense measure integrate into BMS
-//
+//   Current sense measure integrate into BMS [In PR]
+//   contactor_closed dilemna to return state of contactors [For summer/fall clean-up]
+//   Clean up overheating board fix in charge SM and move that to board
+//   update CAN signatures to include msTicks for queueing fix...
 //
 // [TODO] Undervoltage (create error handler)           WHO:Erpo
 // [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo

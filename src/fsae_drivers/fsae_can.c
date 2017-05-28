@@ -178,12 +178,12 @@ void Send_Bms_CellTemps(BMS_PACK_STATUS_T * pack_status) {
  */
 void Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status) {
     Can_Bms_PackStatus_T canPackStatus;
-    canPackStatus.pack_voltage = pack_status->pack_voltage_mV;
-    canPackStatus.pack_current = pack_status->pack_current_mA;
+    canPackStatus.pack_voltage = pack_status->pack_voltage_mV / 1000;
+    canPackStatus.pack_current = pack_status->pack_current_mA / 1000;
     canPackStatus.avg_cell_voltage = 0; //TODO: get actual average cell voltage
-    canPackStatus.min_cell_voltage = pack_status->pack_cell_min_mV;
+    canPackStatus.min_cell_voltage = pack_status->pack_cell_min_mV / 10;
     canPackStatus.id_min_cell_voltage = 0; //TODO: get actual id min cell voltage
-    canPackStatus.max_cell_voltage = pack_status->pack_cell_max_mV;
+    canPackStatus.max_cell_voltage = pack_status->pack_cell_max_mV / 10;
     canPackStatus.id_max_cell_voltage = 0; //TODO: get actual id max cell voltage
 
     handle_can_error(Can_Bms_PackStatus_Write(&canPackStatus));

@@ -23,6 +23,10 @@ bool Fsae_Contactor_Pin_Get(void);
 void Fsae_Charge_Enable_Set(bool state);
 bool Fsae_Charge_Enable_Get(void);
 
+void Fsae_DC_DC_Enable_Set(bool enabled);
+
+bool Fsae_DC_DC_Fault_Get(void);
+
 void Fsae_Fan_Set(bool state);
 
 #endif //_FSAE_PINS_H_

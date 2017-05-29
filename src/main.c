@@ -60,8 +60,9 @@ void Init_BMS_Structs(void) {
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
     // FSAE specific BMS outputs
-#ifdef FSAE_DRIVERS 
+#ifdef FSAE_DRIVERS
     bms_output.fans_on = false;
+    bms_output.dc_dc_on = false;
 #endif //FSAE_DRIVERS
 
     charge_req.charger_on = 0;
@@ -117,7 +118,7 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_read_error = false;
 #ifdef FSAE_DRIVERS
     bms_input.last_vcu_msg_ms = 0;
-    bms_input.rtd_on = false;
+    bms_input.hv_enabled = false;
 #endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
@@ -162,6 +163,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
     Board_Contactors_Set(bms_output->close_contactors);
     Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
     Fsae_Fan_Set(bms_output->fans_on);
+    Fsae_DC_DC_Enable_Set(bms_output->dc_dc_on);
 #else
     if(bms_output->close_contactors) {
         Board_LED_On(LED2);

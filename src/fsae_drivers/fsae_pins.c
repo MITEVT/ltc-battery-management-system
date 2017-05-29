@@ -18,6 +18,14 @@
 #define FSAE_CHARGE_ENABLE_GPIO 3, 2
 #define FSAE_IOCON_CHARGE_ENABLE_GPIO IOCON_PIO3_2
 
+// DCDC Enable Pin
+#define FSAE_DC_DC_ENABLE_GPIO 2, 0
+#define FSAE_IOCON_DC_DC_ENABLE_GPIO IOCON_PIO2_0
+
+// DCDC Fault Pin
+#define FSAE_DC_DC_FAULT_GPIO 2, 6
+#define FSAE_IOCON_DC_DC_FAULT_GPIO IOCON_PIO2_6
+
 // Fan 1 Pin
 #define FSAE_FAN_1_PIN 1, 4
 #define FSAE_IOCON_FAN_1_PIN IOCON_PIO1_4
@@ -77,10 +85,9 @@
 
 void Fsae_GPIO_Init(void) {
 
-    // Fault Pin
+    // High Side Contactor Pin
     Chip_GPIO_SetPinDIRInput(LPC_GPIO, FSAE_CTR_HIGH_SWTCH);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_CTR_HIGH_SWTCH, (IOCON_FUNC0 | IOCON_MODE_INACT));
-
 
     // Fault Pin
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAULT_GPIO);
@@ -97,6 +104,19 @@ void Fsae_GPIO_Init(void) {
 
     // Charge Enable starts in off state
     Fsae_Charge_Enable_Set(false);
+
+    // DC DC Enable Pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_DC_DC_ENABLE_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_DC_DC_ENABLE_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // DC DC Enable starts in off state
+    Fsae_DC_DC_Enable_Set(false);
+
+    // DC DC Fault Pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_DC_DC_FAULT_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_DC_DC_FAULT_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
 
     // Fan pin config
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_1_PIN,
@@ -183,6 +203,23 @@ void Fsae_Charge_Enable_Set(bool state) {
 
 bool Fsae_Charge_Enable_Get(void) {
     return Chip_GPIO_GetPinState(LPC_GPIO, FSAE_CHARGE_ENABLE_GPIO);
+}
+
+void Fsae_DC_DC_Enable_Set(bool enabled) {
+    // LOW is enable, HIGH is disable.
+    // Not a typo.
+    bool pin_state = !enabled;
+
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_DC_DC_ENABLE_GPIO, pin_state);
+}
+
+bool Fsae_DC_DC_Fault_Get(void) {
+    bool pin_state = Chip_GPIO_GetPinState(LPC_GPIO, FSAE_DC_DC_FAULT_GPIO);
+
+    // LOW is fault, HIGH is no fault.
+    // Not a typo. Fuck the DCDC.
+    bool has_fault = !pin_state;
+    return has_fault;
 }
 
 void Fsae_Fan_Set(bool state) {

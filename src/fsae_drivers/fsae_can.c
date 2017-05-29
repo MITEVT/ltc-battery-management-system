@@ -68,7 +68,7 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     } else if (msgType == Can_Vcu_DashHeartbeat_Msg) {
         Can_Vcu_DashHeartbeat_T msg;
         Can_Vcu_DashHeartbeat_Read(&msg);
-        bms_input->rtd_on = msg.rtd_light;
+        bms_input->hv_enabled = msg.hv_light;
     } else {
         // note other errors
     }

@@ -149,7 +149,7 @@ typedef struct BMS_INPUT {
 
 #ifdef FSAE_DRIVERS
     uint32_t last_vcu_msg_ms;
-    bool rtd_on;
+    bool hv_enabled;
 #endif
 } BMS_INPUT_T;
 
@@ -174,6 +174,7 @@ typedef struct BMS_OUTPUT {
     // FSAE specific output variables
 #ifdef FSAE_DRIVERS
     bool fans_on;
+    bool dc_dc_on;
 #endif //FSAE_DRIVERS
 } BMS_OUTPUT_T;
 

@@ -95,8 +95,10 @@ handler:
             output->fans_on = curr_cell_temp > fan_threshold_temp;
             */
 
-            // Only turn fans on when we are ready to drive
-            output->fans_on = input->rtd_on;
+            // Only turn fans and dcdc on when contactors are closed
+            output->fans_on = input->hv_enabled;
+            output->dc_dc_on = input->hv_enabled;
+
             // Handle VCU heartbeat logic
             uint32_t time_since_vcu_msg =
                     input->msTicks - input->last_vcu_msg_ms;

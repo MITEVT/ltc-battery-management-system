@@ -75,7 +75,8 @@ handler:
                                     state->pack_config->pack_cells_p,
                                     input->pack_status->max_cell_temp_dC);
             if(input->pack_status->pack_current_mA > max_pack_current_mA) {
-                Error_Assert(ERROR_OVER_CURRENT, input->msTicks);
+                /* Error_Assert(ERROR_OVER_CURRENT, input->msTicks); */
+                Error_Pass(ERROR_OVER_CURRENT);
             } else {
                 Error_Pass(ERROR_OVER_CURRENT);
             }

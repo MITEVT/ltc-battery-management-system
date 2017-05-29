@@ -111,7 +111,8 @@ void Fsae_GPIO_Init(void) {
             (IOCON_FUNC0 | IOCON_MODE_INACT));
 
     // DC DC Enable starts in off state
-    Fsae_DC_DC_Enable_Set(false);
+    // TODO aheifetz when we actually use DCDC
+    // Fsae_DC_DC_Enable_Set(false);
 
     // DC DC Fault Pin
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_DC_DC_FAULT_GPIO);

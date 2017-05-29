@@ -21,7 +21,14 @@ uint32_t Calculate_Max_Current(
         uint32_t cell_capacity_cAh, uint32_t discharge_rating_cC,
         uint32_t pack_cells_p, uint16_t cell_temp_dC) {
     (void)(cell_temp_dC);
-    return cell_capacity_cAh * discharge_rating_cC * pack_cells_p / 10;
+    (void)(cell_capacity_cAh);
+    (void)(discharge_rating_cC);
+    (void)(pack_cells_p);
+    // TODO
+    //return cell_capacity_cAh * discharge_rating_cC * pack_cells_p * 10;
+
+    // This number (540 amps) was arrived at by Elliot, don't change.
+    return 540000;
 }
 
 void Discharge_Config(PACK_CONFIG_T *pack_config) {

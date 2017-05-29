@@ -93,9 +93,9 @@ handler:
                     state->pack_config->fan_on_threshold_dC;
             output->fans_on = curr_cell_temp > fan_threshold_temp;
             */
-            bool high_side_ctr_closed = Fsae_Contactor_Pin_Get();
-            output->fans_on = high_side_ctr_closed;
 
+            // Only turn fans on when we are ready to drive
+            output->fans_on = input->rtd_on;
             // Handle VCU heartbeat logic
             uint32_t time_since_vcu_msg =
                     input->msTicks - input->last_vcu_msg_ms;

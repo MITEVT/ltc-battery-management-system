@@ -45,8 +45,8 @@
 #define FAN_OFF_DUTY_RATIO -1
 #define FAN_TIMER_OFF (FAN_PWM_CYCLE - FAN_OFF_DUTY_RATIO)
 
-// Fan on means it runs at (Cycle - 10)ms, which happens here 10% of the time
-#define FAN_ON_DUTY_RATIO 10
+// Fan on means it starts its run at (Cycle - ratio)ms, which happens here 90% of the time
+#define FAN_ON_DUTY_RATIO 90
 #define FAN_TIMER_ON (FAN_PWM_CYCLE - FAN_ON_DUTY_RATIO)
 
 // Unused pins

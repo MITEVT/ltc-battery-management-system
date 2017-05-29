@@ -117,6 +117,7 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_read_error = false;
 #ifdef FSAE_DRIVERS
     bms_input.last_vcu_msg_ms = 0;
+    bms_input.rtd_on = false;
 #endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));

@@ -150,6 +150,7 @@ typedef struct BMS_INPUT {
 #ifdef FSAE_DRIVERS
     uint32_t last_vcu_msg_ms;
     bool hv_enabled;
+    bool dcdc_fault;
 #endif
 } BMS_INPUT_T;
 

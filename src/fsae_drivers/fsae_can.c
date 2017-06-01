@@ -18,7 +18,7 @@ static bool isResetting = false;
 
 void handle_can_error(Can_ErrorID_T err);
 
-void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state);
+void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output);
 void Send_Bms_Errors(uint32_t msTicks);
 void Send_Bms_CellTemps(BMS_PACK_STATUS_T * pack_status);
 void Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status);
@@ -79,7 +79,7 @@ void Fsae_Can_Transmit(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPU
     uint32_t msTicks = bms_input->msTicks;
     if ( (msTicks - last_bms_heartbeat_time) > BMS_HEARTBEAT_PERIOD) {
         last_bms_heartbeat_time = msTicks;
-        Send_Bms_Heartbeat(bms_input, bms_state);
+        Send_Bms_Heartbeat(bms_input, bms_state, bms_output);
     }
     if ( (msTicks - last_bms_errors_time) > BMS_ERRORS_PERIOD) {
         last_bms_errors_time = msTicks;
@@ -111,7 +111,7 @@ void handle_can_error(Can_ErrorID_T err) {
     }
 
 }
-void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {
+void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
     Can_Bms_Heartbeat_T bmsHeartbeat;
     Can_Bms_ErrorID_T error_type = get_error_status(bms_input->msTicks);
     if (error_type != CAN_BMS_ERROR_NONE) {
@@ -147,6 +147,9 @@ void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T * bms_state) {
 
     // TODO when we get SOC working
     bmsHeartbeat.soc = 0;
+    bmsHeartbeat.fan_enable = bms_output->fans_on;
+    bmsHeartbeat.dcdc_enable = bms_output->dc_dc_on;
+    bmsHeartbeat.dcdc_fault = bms_input->dcdc_fault;
 
     handle_can_error(Can_Bms_Heartbeat_Write(&bmsHeartbeat));
 }

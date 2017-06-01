@@ -119,6 +119,7 @@ void Init_BMS_Structs(void) {
 #ifdef FSAE_DRIVERS
     bms_input.last_vcu_msg_ms = 0;
     bms_input.hv_enabled = false;
+    bms_input.dcdc_fault = false;
 #endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
@@ -153,6 +154,11 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     }
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
+#ifndef TEST_HARDWARE
+#ifdef FSAE_DRIVERS
+    bms_input->dcdc_fault = Fsae_DC_DC_Fault_Get();
+#endif
+#endif
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
@@ -163,7 +169,6 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
     Board_Contactors_Set(bms_output->close_contactors);
     Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
     Fsae_Fan_Set(bms_output->fans_on);
-    // TODO aheifetz when we actually use DCDC
     Fsae_DC_DC_Enable_Set(bms_output->dc_dc_on);
 #else
     if(bms_output->close_contactors) {

@@ -111,29 +111,29 @@ void Fsae_GPIO_Init(void) {
             (IOCON_FUNC0 | IOCON_MODE_INACT));
 
     // DC DC Enable starts in off state
-    // TODO aheifetz when we actually use DCDC
     Fsae_DC_DC_Enable_Set(false);
 
     // DC DC Fault Pin
-    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_DC_DC_FAULT_GPIO);
+    Chip_GPIO_SetPinDIRInput(LPC_GPIO, FSAE_DC_DC_FAULT_GPIO);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_DC_DC_FAULT_GPIO,
             (IOCON_FUNC0 | IOCON_MODE_INACT));
 
     // Fan pin config
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_1_PIN);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_1_PIN,
-            (IOCON_FUNC2 | IOCON_MODE_INACT));
-    Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_2_PIN,
-            (IOCON_FUNC3 | IOCON_MODE_INACT));
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
 
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_2_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_2_PIN,
+            (IOCON_FUNC1 | IOCON_MODE_INACT));
+
+    /* Bring back if we ever want to PWM fan
     // Fan Timer
     Chip_TIMER_Init(LPC_TIMER32_1);
     Chip_TIMER_Reset(LPC_TIMER32_1);
     Chip_TIMER_PrescaleSet(LPC_TIMER32_1, FAN_TIMER_PRESCALE);
     Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE, FAN_PWM_CYCLE); 
     Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE);
-
-    // Fans start in off state
-    Fsae_Fan_Set(false);
 
     const uint8_t pwmControlRegister_TIMER32_1 = (ENABLE_PWM_FAN_1 | ENABLE_PWM_FAN_2);
     LPC_TIMER32_1->PWMC |= pwmControlRegister_TIMER32_1;
@@ -142,6 +142,10 @@ void Fsae_GPIO_Init(void) {
     Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
             MATCH_REGISTER_FAN_2);  
     Chip_TIMER_Enable(LPC_TIMER32_1);
+    */
+
+    // Fans start in off state
+    Fsae_Fan_Set(false);
 
     // Enable pull down resistors on unused pins
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_37);
@@ -224,6 +228,9 @@ bool Fsae_DC_DC_Fault_Get(void) {
 }
 
 void Fsae_Fan_Set(bool state) {
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_1_PIN, state);
+    Chip_GPIO_SetPinState(LPC_GPIO, FSAE_FAN_2_PIN, state);
+    /*
     if (state) {
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_ON);
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_ON);
@@ -231,4 +238,5 @@ void Fsae_Fan_Set(bool state) {
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_OFF);
         Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_OFF);
     }
+    */
 }

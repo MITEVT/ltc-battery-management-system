@@ -121,11 +121,11 @@ void Fsae_GPIO_Init(void) {
     // Fan pin config
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_1_PIN);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_1_PIN,
-            (IOCON_FUNC0 | IOCON_MODE_INACT));
+            (IOCON_FUNC0 | IOCON_MODE_INACT | IOCON_OPENDRAIN_EN));
 
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, FSAE_FAN_2_PIN);
     Chip_IOCON_PinMuxSet(LPC_IOCON, FSAE_IOCON_FAN_2_PIN,
-            (IOCON_FUNC1 | IOCON_MODE_INACT));
+            (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_OPENDRAIN_EN));
 
     /* Bring back if we ever want to PWM fan
     // Fan Timer

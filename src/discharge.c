@@ -103,7 +103,8 @@ handler:
             */
 
             // Only turn fans and dcdc on when contactors are closed
-            output->fans_on = input->hv_enabled;
+            bool fans_should_on = input->hv_enabled || input->fan_override;
+            output->fans_on = fans_should_on;
             output->dc_dc_on = input->hv_enabled;
 
             // Handle VCU heartbeat logic

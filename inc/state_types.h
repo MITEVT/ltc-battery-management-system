@@ -151,6 +151,7 @@ typedef struct BMS_INPUT {
     uint32_t last_vcu_msg_ms;
     bool hv_enabled;
     bool dcdc_fault;
+    bool fan_override;
 #endif
 } BMS_INPUT_T;
 

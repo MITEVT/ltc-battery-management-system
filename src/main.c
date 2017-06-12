@@ -120,6 +120,7 @@ void Init_BMS_Structs(void) {
     bms_input.last_vcu_msg_ms = 0;
     bms_input.hv_enabled = false;
     bms_input.dcdc_fault = false;
+    bms_input.fan_override = false;
 #endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));

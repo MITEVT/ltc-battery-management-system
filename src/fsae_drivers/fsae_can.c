@@ -69,6 +69,14 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Can_Vcu_DashHeartbeat_T msg;
         Can_Vcu_DashHeartbeat_Read(&msg);
         bms_input->hv_enabled = msg.hv_light;
+    } else if (msgType == Can_Dash_Request_Msg) {
+        Can_Dash_Request_T msg;
+        Can_Dash_Request_Read(&msg);
+        if (msg.type == CAN_DASH_REQUEST_FAN_ENABLE) {
+          bms_input->fan_override = true;
+        } else if (msg.type == CAN_DASH_REQUEST_FAN_DISABLE) {
+          bms_input->fan_override = false;
+        }
     } else {
         // note other errors
     }

@@ -4,6 +4,7 @@
 #include "board.h"
 #include "bms_utils.h"
 #include "microrl.h"
+#include "error_handler.h"
 #include "console_types.h"
 #include "error_handler.h"
 
@@ -395,7 +396,12 @@ static void config_def(const char * const * argv) {
     }
 }              
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def, measure};
+static void induce_error(const char * const * argv) {
+    UNUSED(argv);
+    Error_Assert(ERROR_CONTROL_FLOW, bms_input->msTicks);
+}              
+
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def, measure, induce_error};
 
 /***************************************
         Public Functions

@@ -4,7 +4,7 @@
 #define CELL_OVER_VOLTAGE_timeout_ms  	1000
 #define CELL_UNDER_VOLTAGE_timeout_ms  	1000
 #define OVER_CURRENT_timeout_ms 		500
-#define LTC6802_PEC_timeout_count  		10
+#define LTC6802_PEC_timeout_count  		100
 #define LTC6802_CVST_timeout_count 		2
 #define LTC6802_OWT_timeout_count  		10
 #define BRUSA_timeout_count  			5

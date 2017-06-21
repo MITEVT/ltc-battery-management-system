@@ -29,6 +29,10 @@ bool is_pack_error(Can_Bms_ErrorID_T errorType);
 
 void Fsae_Can_Init(uint32_t baud_rate) {
     Can_Init(baud_rate);
+    // Should match 0x050, 0x051, 0x070, 0x071 for VCU and Dash
+    CAN_SetMask1(0b11111011110, 0b00001010000);
+    // Should match 0x5** for CAN current sensor
+    CAN_SetMask2(0b11100000000, 0b10100000000);
 }
 
 void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {

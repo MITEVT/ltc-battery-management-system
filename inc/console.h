@@ -19,7 +19,8 @@ static const char * const commands[] = { "get",
                             "chrg",
                             "dis",
                             "config_def",
-                            "measure"
+                            "measure",
+                            "induce_error"
                                     };
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
@@ -30,7 +31,8 @@ static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
                         0 ,
                         0 ,
                         0 ,
-                        1};
+                        1 ,
+                        0};
 
 static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible options:", 
                             "Set a value. Possible options:", "Get help!", 
@@ -39,7 +41,8 @@ static const char * const helpstring[NUMCOMMANDS] = {"Get a value. Possible opti
                             "go into charge mode: chrg [on|off]",
                             "go into discharge mode: dis [on|off]",
                             "configure pack config defaults",
-                            "start measurement printout mode, four flags (pcurrent/pvoltage/cell temps/voltages): measure [print_flags|temps|voltages|packcurrent|packvoltage|on|off]"};
+                            "start measurement printout mode, four flags (pcurrent/pvoltage/cell temps/voltages): measure [print_flags|temps|voltages|packcurrent|packvoltage|on|off]",
+"induces a fake error"};
 
 static const char * const locstring[] =  {
                             "cell_min_mV",

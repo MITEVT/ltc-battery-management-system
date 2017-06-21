@@ -11,6 +11,7 @@ typedef enum {
     C_DIS,
     C_CONFIG_DEF,
     C_MEASURE,
+    C_INDUCE_ERROR,
     NUMCOMMANDS
 } command_label_t;
 

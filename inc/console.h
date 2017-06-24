@@ -65,8 +65,8 @@ static const char * const locstring[] =  {
                             "temps",
                             "pack_cell_max_mV",
                             "pack_cell_min_mV",
-                            "pack_current_mA",
-                            "pack_voltage_mV",
+                            "cur",
+                            "vol",
                             "max_temp",
                             "error"
 };

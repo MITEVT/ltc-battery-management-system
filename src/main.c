@@ -190,47 +190,8 @@ void Process_Keyboard(void) {
     }
 }
 
-// FSAE TODO
-//   Measure while in discharge [In PR]
-//   cmd for cell stats (min/max/std/avg)
-//   Calibrate bias and temps
-//   Current sense measure integrate into BMS [In PR]
-//   contactor_closed dilemna to return state of contactors [For summer/fall clean-up]
-//   Clean up overheating board fix in charge SM and move that to board
-//   update CAN signatures to include msTicks for queueing fix...
-//
-// [TODO] Undervoltage (create error handler)           WHO:Erpo
-// [TODO] SOC error (create error handler [CAN msg])    WHO:Erpo
-// [TODO] Reasonable way to change polling speeds       WHO:ALL
-// [TODO] Add current sense handling                    WHO:Jorge
-// [TODO] Add thermistor array handling                 WHO:Jorge
-// [TODO] CAN error handling for different CAN errors   WHO:Skanda/Rango
-// [TODO] Do heartbeats                           WHO:Rango
-// [TODO] Cleanup board                                 ALL
-// [TODO] Implement watchdog timer                      WHO:Erpo
-// 
-// In order of priority
-// [TODO] Open contactors if pack                       WHO:Jorge
-//        current goes above maximum and move to
-//        standby
-// [TODO] open contactors if the charge current is      WHO:Jorge
-//        above the charge C rating and move to standby
-// [TODO] make the BMS hang if the pack current is high 
-//        while the BMS is in standby, init, or balance
-// [TODO] make the BMS hang if the contactors are
-//        closed when the BMS is in standby, init, or
-//        balance
-// [TODO] Add print out leveling                        WHO:Erpo/Skanda
-//
-// [TODO at the end] Add console print handling **      WHO:Rango
-// [TODO at the end] Add console history                WHO:Rango
-// [TODO at the end] BRUSA error handling               WHO:Erpo
-//
-// [Not urgent]
-// [TODO] Send warnings through CAN                     WHO:Jorge
-// [TODO] implement logic that opens contactors if a    
-//        blown fuse is detected
-
+// SOLAR TODO
+// rip out FSAE code
 int main(void) {
 
     Init_BMS_Structs();

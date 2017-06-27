@@ -59,11 +59,8 @@ void Init_BMS_Structs(void) {
     memset(balance_reqs, 0, sizeof(balance_reqs[0])*MAX_NUM_MODULES*MAX_CELLS_PER_MODULE);
     bms_output.read_eeprom_packconfig = false;
     bms_output.check_packconfig_with_ltc = false;
-    // FSAE specific BMS outputs
-#ifdef FSAE_DRIVERS
     bms_output.fans_on = false;
     bms_output.dc_dc_on = false;
-#endif //FSAE_DRIVERS
 
     charge_req.charger_on = 0;
     charge_req.charge_current_mA = 0;
@@ -99,11 +96,9 @@ void Init_BMS_Structs(void) {
     pack_config.cell_discharge_c_rating_cC = 0; // at 27 degrees C
     pack_config.max_cell_temp_dC = 0;
     // FSAE specific pack configurations
-#ifdef FSAE_DRIVERS
     // TODO figure out these settings
     pack_config.min_cell_temp_dC = 0;
     pack_config.fan_on_threshold_dC = 0;
-#endif //FSAE_DRIVERS
 
     //assign bms_inputs
     bms_input.hard_reset_line = false;
@@ -116,12 +111,7 @@ void Init_BMS_Structs(void) {
     bms_input.eeprom_packconfig_read_done = false;
     bms_input.ltc_packconfig_check_done = false;
     bms_input.eeprom_read_error = false;
-#ifdef FSAE_DRIVERS
-    bms_input.last_vcu_msg_ms = 0;
-    bms_input.hv_enabled = false;
-    bms_input.dcdc_fault = false;
     bms_input.fan_override = false;
-#endif // FSAE_DRIVERS
 
     memset(cell_voltages, 0, sizeof(cell_voltages));
     memset(cell_temperatures, 0, sizeof(cell_temperatures));
@@ -132,12 +122,10 @@ void Init_BMS_Structs(void) {
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
-#ifdef FSAE_DRIVERS
     pack_status.min_cell_temp_dC = -100;
     pack_status.avg_cell_temp_dC = 0;
     pack_status.min_cell_temp_position = 0;
     pack_status.max_cell_temp_position = 0;
-#endif //FSAE_DRIVERS
 
 }
 
@@ -155,11 +143,6 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     }
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
-#ifndef TEST_HARDWARE
-#ifdef FSAE_DRIVERS
-    bms_input->dcdc_fault = Fsae_DC_DC_Fault_Get();
-#endif
-#endif
 }
 
 void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_T * bms_state) {
@@ -189,8 +172,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
         Set_EEPROM_Error(255); // magic # for no error
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
-        Board_LTC6804_DeInit(); 
-
+        Board_LTC6804_DeInit();
     } else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
     } else {

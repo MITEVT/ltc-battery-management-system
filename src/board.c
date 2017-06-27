@@ -172,8 +172,8 @@ void Board_UART_Init(uint32_t baudRateHz) {
     RingBuffer_Init(&uart_tx_ring, _uart_tx_ring, sizeof(uint8_t), UART_BUFFER_SIZE);
     RingBuffer_Flush(&uart_tx_ring);
 
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT));/* RXD */
-    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT));/* TXD */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_6, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* RXD */
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO1_7, (IOCON_FUNC1 | IOCON_MODE_INACT)); /* TXD */
  
     Chip_UART_Init(LPC_USART);
     Chip_UART_SetBaudFDR(LPC_USART, baudRateHz);
@@ -423,7 +423,6 @@ void Board_LTC6804_GetCellVoltages(BMS_PACK_STATUS_T* pack_status) {
 
 void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t num_modules) {
 #ifndef TEST_HARDWARE
-#ifdef FSAE_DRIVERS
     if ((msTicks - board_lastThermistorShiftTime_ms) > TIME_PER_THERMISTOR_MS) {
         board_lastThermistorShiftTime_ms = msTicks;
 
@@ -474,7 +473,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
             Error_Assert(ERROR_CONTROL_FLOW, msTicks);
         }
 
-        // shift bits into shift resgister
+        // shift bits into shift register
         int8_t i;
         for (i=7; i>=0; i--) {
             uint8_t addressBit = (thermistorAddress & (1<<i) ) >> i;
@@ -533,11 +532,6 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
     if (currentThermistor == THERMISTOR_GROUP_THREE_END) {
         CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status, num_modules);
     }
-    
-    #else 
-        UNUSED(pack_status);
-        UNUSED(num_modules);
-    #endif // FSAE_DRIVERS
 #else 
     UNUSED(pack_status);
     UNUSED(num_modules);
@@ -704,14 +698,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
             bms_input->balance_mV = console_output->balance_mV;
     }
     BMS_SSM_MODE_T can_mode_request = BMS_SSM_MODE_STANDBY;
-#ifdef FSAE_DRIVERS
-    // If the VCU is alive (and the pack is OK), we want to bring the fault pin high.
-    // This does NOT mean we want to be actively discharging the packs, just that
-    // the fault pin should be asserted.
-    if (bms_input->last_vcu_msg_ms != 0) {
-        can_mode_request = BMS_SSM_MODE_DISCHARGE;
-    }
-#endif
+
     if (console_mode_request == BMS_SSM_MODE_STANDBY) {
         bms_input->mode_request = can_mode_request;
         Error_Pass(ERROR_CONFLICTING_MODE_REQUESTS);

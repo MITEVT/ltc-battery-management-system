@@ -20,11 +20,8 @@ typedef struct {
     
     uint32_t cell_discharge_c_rating_cC; // at 27 degrees C
     uint32_t max_cell_temp_dC;
-    // FSAE specific configurations
-#ifdef FSAE_DRIVERS
     int16_t min_cell_temp_dC;
     int16_t fan_on_threshold_dC;
-#endif //FSAE_DRIVERS
 
     uint8_t *module_cell_count;
     // Total Size = 44 + 4 + 4 + 1= 53 bytes (not including fan_on_threshold)
@@ -39,15 +36,10 @@ typedef struct BMS_PACK_STATUS {
     uint32_t pack_current_mA;
     uint32_t pack_voltage_mV;
     int16_t max_cell_temp_dC;
-
-    //FSAE specific pack status variables
-#ifdef FSAE_DRIVERS
     int16_t min_cell_temp_dC;
     int16_t avg_cell_temp_dC;
     uint16_t max_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
     uint16_t min_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
-#endif //FSAE_DRIVERS
-
 } BMS_PACK_STATUS_T;
 
 typedef struct BMS_CHARGER_STATUS {
@@ -139,20 +131,12 @@ typedef struct BMS_INPUT {
     uint32_t msTicks;
     BMS_PACK_STATUS_T *pack_status;
     bool charger_on;
-    // [TODO] Add input charge connected
 
     // for bms initialization
     bool eeprom_packconfig_read_done;
     bool ltc_packconfig_check_done;
-
     bool eeprom_read_error;
-
-#ifdef FSAE_DRIVERS
-    uint32_t last_vcu_msg_ms;
-    bool hv_enabled;
-    bool dcdc_fault;
     bool fan_override;
-#endif
 } BMS_INPUT_T;
 
 /*
@@ -173,11 +157,8 @@ typedef struct BMS_OUTPUT {
     bool read_eeprom_packconfig;
     bool check_packconfig_with_ltc;
 
-    // FSAE specific output variables
-#ifdef FSAE_DRIVERS
     bool fans_on;
     bool dc_dc_on;
-#endif //FSAE_DRIVERS
 } BMS_OUTPUT_T;
 
 #endif

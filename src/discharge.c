@@ -91,8 +91,6 @@ handler:
             if(!input->contactors_closed) {
                 state->discharge_state = BMS_DISCHARGE_INIT;
             }
-
-#ifdef FSAE_DRIVERS
             // Handle fan logic
             // TODO restore the temp logic when we have the OK from kevin and elliot
             /*
@@ -103,18 +101,8 @@ handler:
             */
 
             // Only turn fans and dcdc on when contactors are closed
-            bool fans_should_on = input->hv_enabled || input->fan_override;
+            bool fans_should_on = input->fan_override || (input->pack_status->max_cell_temp_dC > state->pack_config->fan_on_threshold_dC);
             output->fans_on = fans_should_on;
-            output->dc_dc_on = input->hv_enabled;
-
-            // Handle VCU heartbeat logic
-            uint32_t time_since_vcu_msg =
-                    input->msTicks - input->last_vcu_msg_ms;
-            bool vcu_timeout = time_since_vcu_msg > VCU_HEARTBEAT_TIMEOUT;
-            if ((input->last_vcu_msg_ms != 0) && vcu_timeout) {
-                Error_Assert(ERROR_VCU_DEAD, input->msTicks);
-            }
-#endif //FSAE_DRIVERS
 
             break;
         case BMS_DISCHARGE_DONE:

@@ -3,7 +3,7 @@
 #include "board.h"
 
 #ifdef FSAE_DRIVERS
-    #include "fsae_can.h"
+    #include "solar_can.h"
 #endif
 
 static uint16_t total_num_cells;

@@ -1,0 +1,242 @@
+#include "solar_pins.h"
+
+#include "chip.h"
+
+// Low Side Contactor
+#define SEVT_CTR_LOW_SWTCH 2, 8
+#define SEVT_IOCON_CTR_LOW_SWTCH IOCON_PIO2_8
+
+// High Side Contactor
+#define SEVT_CTR_HIGH_SWTCH 2, 7
+#define SEVT_IOCON_CTR_HIGH_SWTCH IOCON_PIO2_7
+
+// Fault Pin
+#define SEVT_FAULT_GPIO 3, 0
+#define SEVT_IOCON_FAULT_GPIO IOCON_PIO3_0
+
+// Charge Enable Pin
+#define SEVT_CHARGE_ENABLE_GPIO 3, 2
+#define SEVT_IOCON_CHARGE_ENABLE_GPIO IOCON_PIO3_2
+
+// DCDC Enable Pin
+#define SEVT_DC_DC_ENABLE_GPIO 2, 0
+#define SEVT_IOCON_DC_DC_ENABLE_GPIO IOCON_PIO2_0
+
+// DCDC Fault Pin
+#define SEVT_DC_DC_FAULT_GPIO 2, 6
+#define SEVT_IOCON_DC_DC_FAULT_GPIO IOCON_PIO2_6
+
+// Fan 1 Pin
+#define SEVT_FAN_1_PIN 1, 4
+#define SEVT_IOCON_FAN_1_PIN IOCON_PIO1_4
+
+// Fan 1 is timer 3
+#define MATCH_REGISTER_FAN_1 3
+#define ENABLE_PWM_FAN_1 (1 << MATCH_REGISTER_FAN_1)
+
+// Fan 2 Pin
+#define SEVT_FAN_2_PIN 1, 3
+#define SEVT_IOCON_FAN_2_PIN IOCON_PIO1_3
+
+// Fan 2 is timer 2
+#define MATCH_REGISTER_FAN_2 2
+#define ENABLE_PWM_FAN_2 (1 << MATCH_REGISTER_FAN_2)
+
+// Mystery magic numbers, talk to Jorge if curious
+#define FAN_TIMER_PRESCALE 18
+#define MATCH_REGISTER_FAN_PWM_CYCLE 0
+
+// Cycle time for PWM
+#define FAN_PWM_CYCLE 100
+
+// Fan off means it runs at (Cycle + 1)ms, which never happens
+#define FAN_OFF_DUTY_RATIO -1
+#define FAN_TIMER_OFF (FAN_PWM_CYCLE - FAN_OFF_DUTY_RATIO)
+
+// Fan on means it starts its run at (Cycle - ratio)ms, which happens here 90% of the time
+#define FAN_ON_DUTY_RATIO 90
+#define FAN_TIMER_ON (FAN_PWM_CYCLE - FAN_ON_DUTY_RATIO)
+
+// Unused pins
+#define PIN_37 3, 1
+#define PIN_37_IOCON IOCON_PIO3_1
+#define PIN_37_PIO_FUNC IOCON_FUNC0
+#define PIN_35 1, 2
+#define PIN_35_IOCON IOCON_PIO1_2
+#define PIN_35_PIO_FUNC IOCON_FUNC1
+#define PIN_34 1, 1
+#define PIN_34_IOCON IOCON_PIO1_1
+#define PIN_34_PIO_FUNC IOCON_FUNC1
+#define PIN_33 1, 0
+#define PIN_33_IOCON IOCON_PIO1_0
+#define PIN_33_PIO_FUNC IOCON_FUNC1
+#define PIN_32 0, 11
+#define PIN_32_IOCON IOCON_PIO0_11
+#define PIN_32_PIO_FUNC IOCON_FUNC1
+#define PIN_31 2, 11
+#define PIN_31_IOCON IOCON_PIO2_11
+#define PIN_31_PIO_FUNC IOCON_FUNC0
+#define PIN_30 1, 10
+#define PIN_30_IOCON IOCON_PIO1_10
+#define PIN_30_PIO_FUNC IOCON_FUNC0
+#define PIN_29 0, 10
+#define PIN_29_IOCON IOCON_PIO0_10
+#define PIN_29_PIO_FUNC IOCON_FUNC1
+
+void Solar_GPIO_Init(void) {
+
+    // High Side Contactor Pin
+    Chip_GPIO_SetPinDIRInput(LPC_GPIO, SEVT_CTR_HIGH_SWTCH);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_CTR_HIGH_SWTCH, (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // Fault Pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, SEVT_FAULT_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_FAULT_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // Fault starts in off state (so shutdown loop is open)
+    Solar_Fault_Pin_Set(false);
+
+    // Charge Enable Pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, SEVT_CHARGE_ENABLE_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_CHARGE_ENABLE_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // Charge Enable starts in off state
+    Solar_Charge_Enable_Set(false);
+
+    // DC DC Enable Pin
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, SEVT_DC_DC_ENABLE_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_DC_DC_ENABLE_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // DC DC Enable starts in off state
+    Solar_DC_DC_Enable_Set(false);
+
+    // DC DC Fault Pin
+    Chip_GPIO_SetPinDIRInput(LPC_GPIO, SEVT_DC_DC_FAULT_GPIO);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_DC_DC_FAULT_GPIO,
+            (IOCON_FUNC0 | IOCON_MODE_INACT));
+
+    // Fan pin config
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, SEVT_FAN_1_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_FAN_1_PIN,
+            (IOCON_FUNC0 | IOCON_MODE_INACT | IOCON_OPENDRAIN_EN));
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, SEVT_FAN_2_PIN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, SEVT_IOCON_FAN_2_PIN,
+            (IOCON_FUNC1 | IOCON_MODE_INACT | IOCON_OPENDRAIN_EN));
+
+    /* Bring back if we ever want to PWM fan
+    // Fan Timer
+    Chip_TIMER_Init(LPC_TIMER32_1);
+    Chip_TIMER_Reset(LPC_TIMER32_1);
+    Chip_TIMER_PrescaleSet(LPC_TIMER32_1, FAN_TIMER_PRESCALE);
+    Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE, FAN_PWM_CYCLE); 
+    Chip_TIMER_ResetOnMatchEnable(LPC_TIMER32_1, MATCH_REGISTER_FAN_PWM_CYCLE);
+
+    const uint8_t pwmControlRegister_TIMER32_1 = (ENABLE_PWM_FAN_1 | ENABLE_PWM_FAN_2);
+    LPC_TIMER32_1->PWMC |= pwmControlRegister_TIMER32_1;
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_1);  
+    Chip_TIMER_ExtMatchControlSet(LPC_TIMER32_1, 0, TIMER_EXTMATCH_TOGGLE, 
+            MATCH_REGISTER_FAN_2);  
+    Chip_TIMER_Enable(LPC_TIMER32_1);
+    */
+
+    // Fans start in off state
+    Solar_Fan_Set(false);
+
+    // Enable pull down resistors on unused pins
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_37);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_37_IOCON, 
+        (PIN_37_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_37, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_35);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_35_IOCON, 
+        (PIN_35_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_35, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_34);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_34_IOCON, 
+        (PIN_34_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_34, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_33);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_33_IOCON, 
+        (PIN_33_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_33, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_32);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_32_IOCON, 
+        (PIN_32_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_32, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_31);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_31_IOCON, 
+        (PIN_31_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_31, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_30);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_30_IOCON, 
+        (PIN_30_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_30, false);
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, PIN_29);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, PIN_29_IOCON, 
+        (PIN_29_PIO_FUNC | IOCON_MODE_PULLDOWN) );
+    Chip_GPIO_SetPinState(LPC_GPIO, PIN_29, false);
+
+}
+
+void Solar_Fault_Pin_Set(bool state) {
+    Chip_GPIO_SetPinState(LPC_GPIO, SEVT_FAULT_GPIO, state);
+}
+
+bool Solar_Contactor_Pin_Get(void) {
+    return Chip_GPIO_GetPinState(LPC_GPIO, SEVT_CTR_HIGH_SWTCH);
+}
+
+bool Solar_Fault_Pin_Get(void) {
+    return Chip_GPIO_GetPinState(LPC_GPIO, SEVT_FAULT_GPIO);
+}
+
+void Solar_Charge_Enable_Set(bool state) {
+    Chip_GPIO_SetPinState(LPC_GPIO, SEVT_CHARGE_ENABLE_GPIO, state);
+}
+
+bool Solar_Charge_Enable_Get(void) {
+    return Chip_GPIO_GetPinState(LPC_GPIO, SEVT_CHARGE_ENABLE_GPIO);
+}
+
+void Solar_DC_DC_Enable_Set(bool enabled) {
+    // LOW is enable, HIGH is disable.
+    // Not a typo.
+    bool pin_state = !enabled;
+
+    Chip_GPIO_SetPinState(LPC_GPIO, SEVT_DC_DC_ENABLE_GPIO, pin_state);
+}
+
+bool Solar_DC_DC_Fault_Get(void) {
+    bool pin_state = Chip_GPIO_GetPinState(LPC_GPIO, SEVT_DC_DC_FAULT_GPIO);
+
+    // LOW is fault, HIGH is no fault.
+    // Not a typo. Fuck the DCDC.
+    bool has_fault = !pin_state;
+    return has_fault;
+}
+
+void Solar_Fan_Set(bool state) {
+    Chip_GPIO_SetPinState(LPC_GPIO, SEVT_FAN_1_PIN, state);
+    Chip_GPIO_SetPinState(LPC_GPIO, SEVT_FAN_2_PIN, state);
+    /*
+    if (state) {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_ON);
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_ON);
+    } else {
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_1, FAN_TIMER_OFF);
+        Chip_TIMER_SetMatch(LPC_TIMER32_1, MATCH_REGISTER_FAN_2, FAN_TIMER_OFF);
+    }
+    */
+}

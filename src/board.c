@@ -8,7 +8,7 @@
 
 #ifdef FSAE_DRIVERS
 
-    #include "fsae_can.h"
+    #include "solar_can.h"
     #include "cell_temperatures.h"
 
 #else // FSAE_DRIVERS
@@ -191,7 +191,7 @@ void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
 
 #ifdef FSAE_DRIVERS
-    Fsae_Can_Init(baudRateHz);
+    Solar_Can_Init(baudRateHz);
 #else // FSAE_DRIVERS
     Evt_Can_Init(baudRateHz);
 #endif // FSAE_DRIVERS
@@ -252,7 +252,7 @@ void Board_Contactors_Set(bool close_contactors) {
 
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
-    return Fsae_Fault_Pin_Get();
+    return Solar_Fault_Pin_Get();
 #else
     return false;
 #endif
@@ -719,7 +719,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
 // [TODO] Refactor to case
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
-    Fsae_Can_Receive(bms_input, bms_output);
+    Solar_Can_Receive(bms_input, bms_output);
 #else // FSAE_DRIVERS
     Evt_Can_Receive(bms_input, bms_output);
 #endif // FSAE_DRIVERS
@@ -727,7 +727,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
 #ifdef FSAE_DRIVERS
-    Fsae_Can_Transmit(bms_input, bms_state, bms_output);
+    Solar_Can_Transmit(bms_input, bms_state, bms_output);
 #else // FSAE_DRIVERS
     Evt_Can_Transmit(bms_input, bms_state, bms_output);
 #endif // FSAE_DRIVERS

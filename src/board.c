@@ -18,7 +18,7 @@
 
 #endif // FSAE_DRIVERS
 
-const uint32_t OscRateIn = 0;
+const uint32_t OscRateIn = 24000000;
 
 #define UART_BUFFER_SIZE 100
 #define DEBUG_Print(str) Chip_UART_SendBlocking(LPC_USART, str, strlen(str))

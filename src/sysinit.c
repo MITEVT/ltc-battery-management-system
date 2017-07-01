@@ -114,13 +114,13 @@
 */
 #define CLOCK_SETUP        1
 #define SYSCLK_SETUP          1
-#define SYSOSC_SETUP          0
-#define SYSOSCCTRL_Val      0x0
+#define SYSOSC_SETUP          1
+#define SYSOSCCTRL_Val      0x2 /* 24 Mhz Crystal, no bypass */
 #define WDTOSC_SETUP          0
 #define WDTOSCCTRL_Val      0xA0
-#define SYSPLLCLKSEL_Val      0x0
+#define SYSPLLCLKSEL_Val      0x1 /* System oscillator */
 #define SYSPLL_SETUP          1
-#define SYSPLLCTRL_Val      0x23
+#define SYSPLLCTRL_Val      0x21 /* PSEL = 1, MSEL = 1 -> P = 2, M = 2 */
 #define MAINCLKSEL_Val      0x3
 #define SYSAHBCLKDIV_Val      0x1
 #define AHBCLKCTRL_Val      0x1005F

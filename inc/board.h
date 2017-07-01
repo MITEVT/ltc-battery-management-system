@@ -34,9 +34,8 @@
 
 #define UART_BUFFER_SIZE 100 // may need to change based on number of BMS size, Rx and Tx size
 
-#define CONTACTOR_P 2, 8
-#define CONTACTOR_N 2, 7
-#define CONTACTOR_PRE 2, 1
+#define CONTACTOR_P 2, 0
+#define CONTACTOR_PRE 2, 6
 
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
@@ -77,8 +76,6 @@ void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin);
 void Board_Headroom_Toggle(void);
 
 void Board_BlockingDelay(uint32_t dlyTicks);
-
-bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin);
 
 void Board_CAN_Init(uint32_t baudRateHz);
 

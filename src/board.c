@@ -236,26 +236,20 @@ void Board_Headroom_Toggle(void){
 #endif // TEST_HARDWARE
 }
 
-bool Board_Switch_Read(uint8_t gpio_port, uint8_t pin) {
-#ifndef TEST_HARDWARE
-    return Chip_GPIO_GetPinState(LPC_GPIO, gpio_port, pin);
-#else
-    UNUSED(gpio_port); UNUSED(pin);
-    return true; // Modifiy to simulate switch behavior
-#endif
-}
 
-#ifndef TEST_HARDWARE
 void Board_Contactors_Set(bool close_contactors) {
-#ifdef FSAE_DRIVERS
-    Fsae_Fault_Pin_Set(close_contactors);
-#else
-    UNUSED(close_contactors);
-#endif
+    if (close_contactors /* && voltage is acceptable */) {
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, true);
+    } else if (close_contactors /* && voltage is not acceptable */) {
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+    } else { // Close contactor is false
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, false);
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+    }
 }
-#endif // TEST_HARDWARE
 
-#ifndef TEST_HARDWARE
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
     return Fsae_Fault_Pin_Get();
@@ -263,7 +257,6 @@ bool Board_Contactors_Closed(void) {
     return false;
 #endif
 }
-#endif // TEST_HARDARE
 
 void Board_GPIO_Init(void) {
 #ifndef TEST_HARDWARE
@@ -294,11 +287,15 @@ void Board_GPIO_Init(void) {
     Chip_IOCON_PinLocSel(LPC_IOCON, IOCON_SCKLOC_PIO0_6);
 
     // device-specific pins initalized here
-#ifdef FSAE_DRIVERS
-    Fsae_GPIO_Init();
-#else // FSAE_DRIVERS
-    Evt_GPIO_Init();
-#endif //FSAE_DRIVERS
+
+    // Contactor GPIOs
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_6, (IOCON_FUNC0 | IOCON_MODE_INACT)); /* Pre-charge enable */
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, CONTACTOR_PRE);
+    Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, false);
+
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_0, (IOCON_FUNC0 | IOCON_MODE_INACT)); /* Main contactor enable */
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, CONTACTOR_P);
+    Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
 
 #endif // TEST_HARDWARE
 }

@@ -60,7 +60,6 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         // even though the contents of the message are unused.
         Can_Vcu_BmsHeartbeat_T msg;
         Can_Vcu_BmsHeartbeat_Read(&msg);
-        bms_input->last_vcu_msg_ms = bms_input->msTicks;
     } else if (msgType == Can_CurrentSensor_Current_Msg) {
         Can_CurrentSensor_Current_T msg;
         Can_CurrentSensor_Current_Read(&msg);
@@ -72,7 +71,6 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     } else if (msgType == Can_Vcu_DashHeartbeat_Msg) {
         Can_Vcu_DashHeartbeat_T msg;
         Can_Vcu_DashHeartbeat_Read(&msg);
-        bms_input->hv_enabled = msg.hv_light;
     } else if (msgType == Can_Dash_Request_Msg) {
         Can_Dash_Request_T msg;
         Can_Dash_Request_Read(&msg);
@@ -161,7 +159,6 @@ void Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTP
     bmsHeartbeat.soc = 0;
     bmsHeartbeat.fan_enable = bms_output->fans_on;
     bmsHeartbeat.dcdc_enable = bms_output->dc_dc_on;
-    bmsHeartbeat.dcdc_fault = bms_input->dcdc_fault;
 
     handle_can_error(Can_Bms_Heartbeat_Write(&bmsHeartbeat));
 }

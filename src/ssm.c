@@ -127,20 +127,20 @@ static void Check_Error(BMS_INPUT_T *input, BMS_STATE_T *state, BMS_OUTPUT_T *ou
             Error_Pass(ERROR_CELL_OVER_VOLTAGE);
         }
 
-        if (input->pack_status->max_cell_temp_dC > max_cell_temp_thres_dC) {
-            Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
-        } else {
-            Error_Pass(ERROR_CELL_OVER_TEMP);
-        }
+        // if (input->pack_status->max_cell_temp_dC > max_cell_temp_thres_dC) {
+        //     Error_Assert(ERROR_CELL_OVER_TEMP, input->msTicks);
+        // } else {
+        //     Error_Pass(ERROR_CELL_OVER_TEMP);
+        // }
 
 #ifdef FSAE_DRIVERS
 
-        int16_t min_cell_temp_thres_dC = state->pack_config->min_cell_temp_dC;
-        if (input->pack_status->min_cell_temp_dC < min_cell_temp_thres_dC) {
-            Error_Assert(ERROR_CELL_UNDER_TEMP, input->msTicks);
-        } else {
-            Error_Pass(ERROR_CELL_UNDER_TEMP);
-        }
+        // int16_t min_cell_temp_thres_dC = state->pack_config->min_cell_temp_dC;
+        // if (input->pack_status->min_cell_temp_dC < min_cell_temp_thres_dC) {
+        //     Error_Assert(ERROR_CELL_UNDER_TEMP, input->msTicks);
+        // } else {
+        //     Error_Pass(ERROR_CELL_UNDER_TEMP);
+        // }
 
 #endif
     }

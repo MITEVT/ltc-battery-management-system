@@ -39,7 +39,7 @@
 
 #define Hertz2Ticks(freq) SystemCoreClock / freq
 
-#define TIME_PER_THERMISTOR_MS 40
+#define TIME_PER_THERMISTOR_MS 1000
 
 // ltc6804 constants
 #define LTC6804_SHIFT_REGISTER_DATA_IN 4

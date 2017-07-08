@@ -8,7 +8,6 @@
 
 #ifdef FSAE_DRIVERS
 
-    #include "fsae_can.h"
     #include "cell_temperatures.h"
 
 #else // FSAE_DRIVERS
@@ -189,13 +188,7 @@ void Board_UART_Init(uint32_t baudRateHz) {
 
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
-
-#ifdef FSAE_DRIVERS
-    Fsae_Can_Init(baudRateHz);
-#else // FSAE_DRIVERS
-    Evt_Can_Init(baudRateHz);
-#endif // FSAE_DRIVERS
-
+CAN_Init(baudRateHz);
 #else
     UNUSED(baudRateHz);
 #endif
@@ -252,7 +245,8 @@ void Board_Contactors_Set(bool close_contactors) {
 
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
-    return Fsae_Fault_Pin_Get();
+    // [TODO] via can messages from the MC
+    // return Fsae_Fault_Pin_Get();
 #else
     return false;
 #endif
@@ -438,67 +432,25 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
 
     }
 
-     LTC6804_STATUS_T status;
+    LTC6804_STATUS_T status;
 
     // set multiplexer address 
     // if flag is not true, skip this step
     if (ltc6804_setMultiplexerAddressFlag) {
-
-        // initalize CLOCK and LATCH input to the shift register
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
+        // [TODO] send bit vector of updated GPIO
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 2, currentThermistor & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
-        Board_HandleLtc6804Status(status);
-        if (status != LTC6804_PASS) return;
-        
-        // Get thermistor address
-        uint8_t thermistorAddress = 0;
-        if (currentThermistor <= THERMISTOR_GROUP_ONE_END) {
-            thermistorAddress = currentThermistor + THERMISTOR_GROUP_ONE_OFFSET;
-        } else if ((THERMISTOR_GROUP_TWO_START <= currentThermistor) && 
-                (currentThermistor <= THERMISTOR_GROUP_TWO_END)) {
-            thermistorAddress = currentThermistor + THERMISTOR_GROUP_TWO_OFFSET;
-        } else if ((THERMISTOR_GROUP_THREE_START <= currentThermistor) && 
-                (currentThermistor <= THERMISTOR_GROUP_THREE_END)) {
-            thermistorAddress = currentThermistor + THERMISTOR_GROUP_THREE_OFFSET;
-        } else {
-            Board_Println("Invalid value of currentThermistor. You should never reach here");
-            Error_Assert(ERROR_CONTROL_FLOW, msTicks);
-        }
-
-        // shift bits into shift register
-        int8_t i;
-        for (i=7; i>=0; i--) {
-            uint8_t addressBit = (thermistorAddress & (1<<i) ) >> i;
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
-                    LTC6804_SHIFT_REGISTER_DATA_IN, addressBit, msTicks);
-            Board_HandleLtc6804Status(status);
-            if (status != LTC6804_PASS) return;
-
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_CLOCK, 1, msTicks);
-            Board_HandleLtc6804Status(status);
-            if (status != LTC6804_PASS) return;
-
-            status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state,
-                    LTC6804_SHIFT_REGISTER_CLOCK, 0, msTicks);
-            Board_HandleLtc6804Status(status);
-            if (status != LTC6804_PASS) return;
-
-        }
-
-        // Latch the outputs
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
-                LTC6804_SHIFT_REGISTER_LATCH, 1, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 3, (currentThermistor >> 1) & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 
-                LTC6804_SHIFT_REGISTER_LATCH, 0, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 4, (currentThermistor >> 2) & 1, msTicks);
+        Board_HandleLtc6804Status(status);
+        if (status != LTC6804_PASS) return;
+
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 5, (currentThermistor >> 3) & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
@@ -515,8 +467,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
     }
     
     uint32_t gpioVoltages[MAX_NUM_MODULES * LTC6804_GPIO_COUNT];
-    status = LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, 
-            msTicks);
+    status = LTC6804_GetGPIOVoltages(&ltc6804_config, &ltc6804_state, gpioVoltages, msTicks);
     Board_HandleLtc6804Status(status);
     if (status != LTC6804_PASS) return;
 
@@ -526,7 +477,7 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
     // Finished getting thermistor voltages. Reset flag
     ltc6804_getThermistorVoltagesFlag = false;
 
-    if (currentThermistor == THERMISTOR_GROUP_THREE_END) {
+    if (currentThermistor == MAX_THERMISTORS_PER_MODULE - 1) {
         CellTemperatures_UpdateMaxMinAvgCellTemperatures(pack_status, num_modules);
     }
 #else 
@@ -718,18 +669,10 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  */
 // [TODO] Refactor to case
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
-#ifdef FSAE_DRIVERS
-    Fsae_Can_Receive(bms_input, bms_output);
-#else // FSAE_DRIVERS
-    Evt_Can_Receive(bms_input, bms_output);
-#endif // FSAE_DRIVERS
+    UNUSED(bms_input); UNUSED(bms_output);
 }
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
-#ifdef FSAE_DRIVERS
-    Fsae_Can_Transmit(bms_input, bms_state, bms_output);
-#else // FSAE_DRIVERS
-    Evt_Can_Transmit(bms_input, bms_state, bms_output);
-#endif // FSAE_DRIVERS
+    UNUSED(bms_input); UNUSED(bms_state); UNUSED(bms_output);
 }
 #endif // TEST_HARDWARE

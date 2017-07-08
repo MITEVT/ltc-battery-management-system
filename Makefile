@@ -46,27 +46,15 @@ LD_SCRIPT = gcc.ld
 # output folder (absolute or relative path, leave empty for in-tree compilation)
 OUT_DIR = bin
 
-ifeq ($(EVT),1)
-	# include directories (absolute or relative paths to additional folders with
-	# headers, current folder is always included)
-	SRCS_DIRS = src/ src/evt_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/
+# include directories (absolute or relative paths to additional folders with
+# headers, current folder is always included)
+INC_DIRS_CROSS = inc/ inc/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
 
-	# additional directories with source files (absolute or relative paths to
-	# folders with source files, current folder is always included)
-	INC_DIRS_CROSS = inc/ inc/evt_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
+# additional directories with source files (absolute or relative paths to
+# folders with source files, current folder is always included)
+SRCS_DIRS = src/ src/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/
 
-	SPECIAL_FSAE_FLAGS =
-else
-	# include directories (absolute or relative paths to additional folders with
-	# headers, current folder is always included)
-	INC_DIRS_CROSS = inc/ inc/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/ ../MY17/lib/MY17_Can_Library/
-
-	# additional directories with source files (absolute or relative paths to
-	# folders with source files, current folder is always included)
-	SRCS_DIRS = src/ src/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ../lpc11cx4-library/evt_lib/src/ ../MY17/lib/MY17_Can_Library/
-
-	SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHITECTURE_ARM
-endif
+SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHITECTURE_ARM
 
 # C definitions
 C_DEFS = -DCORE_M0 -DDEBUG_ENABLE $(SPECIAL_FSAE_FLAGS)

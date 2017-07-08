@@ -2,10 +2,6 @@
 
 #include "board.h"
 
-#ifdef FSAE_DRIVERS
-    #include "fsae_can.h"
-#endif
-
 static uint16_t total_num_cells;
 static uint32_t min_cell_voltage_mV;
 static uint32_t max_pack_current_mA;

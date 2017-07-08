@@ -7,7 +7,6 @@
 
 
 #ifdef FSAE_DRIVERS
-
     #include "cell_temperatures.h"
 
 #else // FSAE_DRIVERS
@@ -188,7 +187,7 @@ void Board_UART_Init(uint32_t baudRateHz) {
 
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
-CAN_Init(baudRateHz);
+    CAN_Init(baudRateHz);
 #else
     UNUSED(baudRateHz);
 #endif
@@ -245,8 +244,7 @@ void Board_Contactors_Set(bool close_contactors) {
 
 bool Board_Contactors_Closed(void) {
 #ifdef FSAE_DRIVERS
-    // [TODO] via can messages from the MC
-    // return Fsae_Fault_Pin_Get();
+    // TODO Implement
 #else
     return false;
 #endif

@@ -56,6 +56,7 @@ SRCS_DIRS = src/ src/fsae_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/src ..
 
 SPECIAL_FSAE_FLAGS = -DFSAE_DRIVERS -DCAN_ARCHITECTURE_ARM
 
+
 # C definitions
 C_DEFS = -DCORE_M0 -DDEBUG_ENABLE $(SPECIAL_FSAE_FLAGS)
 

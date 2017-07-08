@@ -10,9 +10,7 @@
 #include "error_handler.h"
 #include "brusa.h"
 
-#ifdef FSAE_DRIVERS
-    #include "fsae_pins.h"
-#endif
+
 
 #define EEPROM_CS_PIN 0, 7
 

@@ -131,10 +131,12 @@ static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint3
 }
 
 static ERROR_HANDLER_STATUS_T _Reset_CAN(ERROR_STATUS_T* er_stat, uint32_t* msTicks, uint32_t timeout_num){
-    UNUSED(er_stat);
-    UNUSED(timeout_num);
-    CAN_ResetPeripheral();
-    CAN_Init(CAN_BAUD, msTicks);
+    if(CAN_ResetPeripheral()){
+        CAN_Init(CAN_BAUD);
+    } else {
+        er_stat->count-=1;
+    }
+    
     return HANDLER_FINE;
 }
 

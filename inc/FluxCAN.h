@@ -57,7 +57,7 @@
 
 //2 bytes - array deci-amps
 //2 bytes - array deci-amp-hours
-#define ARRAY_EMETER_MSG_ID			0b00100000010 
+#define ARRAY_EMETER_MSG_ID			0x700 
 #define ARRAY_EMETER_MSG_DLC		4
 
 //battery messages

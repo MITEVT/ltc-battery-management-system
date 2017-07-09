@@ -194,10 +194,9 @@ void Board_UART_Init(uint32_t baudRateHz) {
 
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
-    CAN_Init(baudRateHz, &msTicks);
+    CAN_Init(baudRateHz);
     CAN_SetMask1(0, 0x7FF); // Don't accept messages
     CAN_SetMask2(0, 0); // Accept all messages
-    DEBUG_Print("CAN Is Up\n\r");
 #else
     UNUSED(baudRateHz);
 #endif
@@ -686,7 +685,8 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         // We have something to preocess
         Error_Pass(ERROR_CAN);
     } else if (can_status == NO_RX_CAN_MESSAGE) {
-
+        Error_Pass(ERROR_CAN);
+        return;
     } else { //CAN ERRROR. Note this, 
         DEBUG_Print("CAN Error (Rx): ");
         itoa(can_status, str, 2);
@@ -695,6 +695,9 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Error_Assert(ERROR_CAN, msTicks);
         return;
     }
+    DEBUG_Print("We got something \r\n");
+    int i = 0;
+
     switch (rx_msg.mode_id) {
         //4bytes - bus current
         //4bytes - bus voltage
@@ -702,7 +705,19 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             bms_input->pack_status->car_bus_V = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
             break;
         case ARRAY_EMETER_MSG_ID:
-            //do a thing to get pack voltage and curreent
+            if (rx_msg.dlc ==8) {
+                DEBUG_Print("got it\r\n");
+                for ( i = 7; i >=0; --i)
+                {
+                    itoa(rx_msg.data[i],str,16);
+                    DEBUG_Print(str);
+                    DEBUG_Print(" ");
+                }
+                DEBUG_Print(" ");
+               
+            } else {
+                DEBUG_Print("AHH");
+            }
             break;
     }
 }
@@ -715,7 +730,13 @@ void _handle_can_error(CAN_ERROR_T err) {
         return;
     }
     else {
+        DEBUG_Print("Asdf (tx): ");
+        itoa(CAN_GetTxErrorCount(), str, 10);
+        DEBUG_Print(str);
+        DEBUG_Print("\r\n");
         Error_Assert(ERROR_CAN, msTicks);
+        return;
+        
     }
 
 }

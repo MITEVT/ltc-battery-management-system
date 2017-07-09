@@ -27,6 +27,8 @@ typedef enum error {
     ERROR_NUM_ERRORS
 } ERROR_T;
 
+#define ERROR_NO_ERRORS ERROR_NUM_ERRORS
+
 static const char * const ERROR_NAMES[ERROR_NUM_ERRORS] = {
     "ERROR_LTC6804_PEC",
     "ERROR_LTC6804_CVST",
@@ -72,10 +74,11 @@ typedef struct error_status {
     uint32_t    time_stamp;
 } ERROR_STATUS_T;
 
-typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER_FUNC)(ERROR_STATUS_T* , const uint32_t, const uint32_t);
+typedef  ERROR_HANDLER_STATUS_T (*ERROR_HANDLER_FUNC)(ERROR_STATUS_T* , uint32_t*, const uint32_t);
 
 typedef struct ERROR_HANDLER {
 	ERROR_HANDLER_FUNC handler;
+    ERROR_HANDLER_FUNC cleanup;
 	const uint32_t timeout;
 } ERROR_HANDLER;
 
@@ -87,8 +90,11 @@ void Error_Pass(ERROR_T er_t);
 void Error_HB(HBEAT_T hb);
 
 const ERROR_STATUS_T *  Error_GetStatus(ERROR_T er_t);
-bool Error_ShouldHalt(ERROR_T er_t, uint32_t msTicks);
-ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks);
+bool Error_ShouldHalt(ERROR_T er_t, uint32_t *msTicks);
+
+ERROR_T Error_ShouldHalt_Status(uint32_t msTicks);
+
+ERROR_HANDLER_STATUS_T Error_Handle(uint32_t *msTicks);
 
 const ERROR_STATUS_T * Error_HB_GetStatus(HBEAT_T hb);
 ERROR_HANDLER_STATUS_T Error_HB_Handle(uint32_t msTicks);

@@ -1,5 +1,7 @@
 #include "error_handler.h"
 #include "eeprom_config.h"
+#include "can.h"
+#include "config.h"
 
 #define CELL_OVER_VOLTAGE_timeout_ms  	1000
 #define CELL_UNDER_VOLTAGE_timeout_ms  	1000
@@ -27,27 +29,30 @@
 
 static ERROR_STATUS_T error_vector[ERROR_NUM_ERRORS];
 
-static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_ms);
-static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_num);
+static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t *msTicks, uint32_t timeout_ms);
+static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint32_t *msTicks, uint32_t timeout_num);
+static ERROR_HANDLER_STATUS_T _Reset_CAN(ERROR_STATUS_T* er_stat, uint32_t *msTicks, uint32_t timeout_num);
+
+
 
 static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
-                            {_Error_Handle_Count, 	LTC6802_PEC_timeout_count},
-                            {_Error_Handle_Count,	LTC6802_CVST_timeout_count},
-                            {_Error_Handle_Count,	LTC6802_OWT_timeout_count},
-                            {_Error_Handle_Count,	EEPROM_timeout_count},	
-                            {_Error_Handle_Timeout, CELL_UNDER_VOLTAGE_timeout_ms},
-                            {_Error_Handle_Timeout,	CELL_OVER_VOLTAGE_timeout_ms},
+                            {_Error_Handle_Count, 	NULL, LTC6802_PEC_timeout_count},
+                            {_Error_Handle_Count,	NULL, LTC6802_CVST_timeout_count},
+                            {_Error_Handle_Count,	NULL, LTC6802_OWT_timeout_count},
+                            {_Error_Handle_Count,	NULL, EEPROM_timeout_count},	
+                            {_Error_Handle_Timeout, NULL, CELL_UNDER_VOLTAGE_timeout_ms},
+                            {_Error_Handle_Timeout,	NULL, CELL_OVER_VOLTAGE_timeout_ms},
 #ifdef FSAE_DRIVERS
-                            {_Error_Handle_Timeout, CELL_UNDER_TEMP_timeout_ms},
+                            {_Error_Handle_Timeout, NULL, CELL_UNDER_TEMP_timeout_ms},
 #endif
-                            {_Error_Handle_Timeout, CELL_OVER_TEMP_timeout_ms},
-                            {_Error_Handle_Timeout, OVER_CURRENT_timeout_ms},
-                            {_Error_Handle_Count, 	BRUSA_timeout_count},
-                            {_Error_Handle_Count, 	CAN_timeout_count},
-                            {_Error_Handle_Count,   CONFLICTING_MODE_REQUESTS_count}
+                            {_Error_Handle_Timeout, NULL, CELL_OVER_TEMP_timeout_ms},
+                            {_Error_Handle_Timeout, NULL, OVER_CURRENT_timeout_ms},
+                            {_Error_Handle_Count, 	NULL, BRUSA_timeout_count},
+                            {_Error_Handle_Count, 	_Reset_CAN, CAN_timeout_count},
+                            {_Error_Handle_Count,   NULL, CONFLICTING_MODE_REQUESTS_count}
 #ifdef FSAE_DRIVERS
-                            ,{_Error_Handle_Count,  VCU_DEAD_count}
-                            ,{_Error_Handle_Count,  CONTROL_FLOW_count}
+                            ,{_Error_Handle_Count,  NULL, VCU_DEAD_count}
+                            ,{_Error_Handle_Count,  NULL, CONTROL_FLOW_count}
 #endif //FSAE_DRIVERS
                             };
 
@@ -94,13 +99,13 @@ void Error_Pass(ERROR_T er_t) {
     //    break;
     // }
 }
-static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_ms) {
+static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t* msTicks, uint32_t timeout_ms) {
 	if (er_stat->error == false) {
 		er_stat->handling = false;
 		return HANDLER_FINE;
 	} else {
 		//[TODO] magic numbers changem
-		if (msTicks - er_stat->time_stamp < timeout_ms) {
+		if (*msTicks - er_stat->time_stamp < timeout_ms) {
 			er_stat->handling = true;
 			return HANDLER_FINE;
 		} else {
@@ -109,8 +114,8 @@ static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uin
 	}
 }
 
-static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint32_t msTicks, uint32_t timeout_num) {
-	(void)(msTicks);
+static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint32_t* msTicks, uint32_t timeout_num) {
+	(void)(&msTicks);
 	if (!er_stat->error) {
 		er_stat->handling = false;
 		return HANDLER_FINE;
@@ -123,10 +128,17 @@ static ERROR_HANDLER_STATUS_T _Error_Handle_Count(ERROR_STATUS_T* er_stat, uint3
 			return HANDLER_HALT;
 		}
 	}
-
 }
 
-ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
+static ERROR_HANDLER_STATUS_T _Reset_CAN(ERROR_STATUS_T* er_stat, uint32_t* msTicks, uint32_t timeout_num){
+    UNUSED(er_stat);
+    UNUSED(timeout_num);
+    CAN_ResetPeripheral();
+    CAN_Init(CAN_BAUD, msTicks);
+    return HANDLER_FINE;
+}
+
+ERROR_HANDLER_STATUS_T Error_Handle(uint32_t *msTicks) {
     ERROR_T i;
     for (i = 0; i < ERROR_NUM_ERRORS; ++i) {
         if (Error_ShouldHalt(i, msTicks)) {
@@ -139,16 +151,33 @@ ERROR_HANDLER_STATUS_T Error_Handle(uint32_t msTicks) {
     return HANDLER_FINE;
 }
 
-bool Error_ShouldHalt(ERROR_T i, uint32_t msTicks) {
+bool Error_ShouldHalt(ERROR_T i, uint32_t *msTicks) {
     if (error_vector[i].error || error_vector[i].handling) {
         if (error_handler_vector[i].handler(&error_vector[i], msTicks,error_handler_vector[i].timeout) 
                 == HANDLER_HALT) {
             return true;
         }
+        else if (error_handler_vector[i].cleanup != NULL) {
+            error_handler_vector[i].cleanup(&error_vector[i], msTicks,error_handler_vector[i].timeout);
+
+        }
     }
     return false;
+}
+
+ERROR_T Error_ShouldHalt_Status(uint32_t msTicks){
+    uint8_t errorType;
+    for (errorType=ERROR_LTC6804_PEC; errorType<(ERROR_NUM_ERRORS); errorType++) {
+        bool has_error = Error_ShouldHalt(errorType, &msTicks);
+        if (has_error) {
+            return errorType;
+        }
+    }
+    return ERROR_NO_ERRORS;
 }
 
 const ERROR_STATUS_T * Error_GetStatus(ERROR_T er_t) {
 	return &error_vector[er_t];
 }
+
+

@@ -1,6 +1,8 @@
 // ltc-battery-management-system
 #include "board.h"
 #include "error_handler.h"
+#include "can.h"
+#include "FluxCAN.h"
 
 // C libraries
 #include <string.h>
@@ -68,6 +70,11 @@ static bool ltc6804_getThermistorVoltagesFlag = false;
 #endif // TEST_HARDWARE
 
 volatile uint32_t msTicks;
+static uint32_t last_bms_heartbeat_time = 0;
+static uint32_t last_bms_errors_time = 0;
+static uint32_t last_bms_cellTemps_time = 0;
+static uint32_t last_bms_packStatus_time = 0;
+
 
 #ifndef TEST_HARDWARE
 
@@ -187,7 +194,10 @@ void Board_UART_Init(uint32_t baudRateHz) {
 
 void Board_CAN_Init(uint32_t baudRateHz){
 #ifndef TEST_HARDWARE
-    CAN_Init(baudRateHz);
+    CAN_Init(baudRateHz, &msTicks);
+    CAN_SetMask1(0, 0x7FF); // Don't accept messages
+    CAN_SetMask2(0, 0); // Accept all messages
+    DEBUG_Print("CAN Is Up\n\r");
 #else
     UNUSED(baudRateHz);
 #endif
@@ -637,6 +647,8 @@ bool Board_LTC6804_OpenWireTest(void) {
 
 #ifndef TEST_HARDWARE
 
+
+//[TODO] change to just go into drive and mvoe out of drive on off
 void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* bms_input) {
     BMS_SSM_MODE_T console_mode_request = BMS_SSM_MODE_STANDBY;
     if (console_output -> valid_mode_request) {
@@ -665,12 +677,140 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  * 
  * @param bms_input data strcuture representing BMS inputs
  */
-// [TODO] Refactor to case
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
     UNUSED(bms_input); UNUSED(bms_output);
+    CCAN_MSG_OBJ_T rx_msg;
+    CAN_ERROR_T can_status;
+    can_status = CAN_Receive(&rx_msg);
+    if(can_status == NO_CAN_ERROR) {
+        // We have something to preocess
+        Error_Pass(ERROR_CAN);
+    } else if (can_status == NO_RX_CAN_MESSAGE) {
+
+    } else { //CAN ERRROR. Note this, 
+        DEBUG_Print("CAN Error (Rx): ");
+        itoa(can_status, str, 2);
+        DEBUG_Print(str);
+        DEBUG_Print("\r\n");
+        Error_Assert(ERROR_CAN, msTicks);
+        return;
+    }
+    switch (rx_msg.mode_id) {
+        //4bytes - bus current
+        //4bytes - bus voltage
+        case MOTORDATAAV_MSG_ID_2: 
+            bms_input->pack_status->car_bus_V = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
+            break;
+        case ARRAY_EMETER_MSG_ID:
+            //do a thing to get pack voltage and curreent
+            break;
+    }
+}
+
+
+void _handle_can_error(CAN_ERROR_T err) {
+    if (err == NO_CAN_ERROR || err == NO_RX_CAN_MESSAGE) {
+        // Neither of these are real errors
+        Error_Pass(ERROR_CAN);
+        return;
+    }
+    else {
+        Error_Assert(ERROR_CAN, msTicks);
+    }
+
+}
+
+void _Send_Bms_Errors(uint32_t msTicks) {
+    uint8_t error_msg[1];
+    error_msg[0] = Error_ShouldHalt_Status(msTicks);
+    _handle_can_error(CAN_Transmit(0x260, error_msg,1));
+}
+
+/**
+ * @details Sends cell temperatures over Can
+ *
+ * @param pack_status datatype containing average cell temperature, maximum cell
+ * temperature, max cell temperature id, minimum cell temperature, and minimum
+ * cell temperature id
+ */
+void _Send_Bms_CellTemps(BMS_PACK_STATUS_T * pack_status) {
+    uint8_t cellTemps[8];
+
+    cellTemps[0] = pack_status->avg_cell_temp_dC & 0xFF;
+    cellTemps[1] = (pack_status->avg_cell_temp_dC >> 8) & 0xFF;
+
+
+    cellTemps[2] = pack_status->min_cell_temp_dC & 0xFF;
+    cellTemps[3] = (pack_status->min_cell_temp_dC >> 8) & 0xFF;
+
+    cellTemps[4] = pack_status->min_cell_temp_position & 0xFF;
+
+    cellTemps[5] = pack_status->max_cell_temp_dC & 0xFF;
+    cellTemps[6] = (pack_status->max_cell_temp_dC >> 8) & 0xFF;
+
+    cellTemps[7] = pack_status->max_cell_temp_position & 0xFF;
+
+    _handle_can_error(CAN_Transmit(0x160,cellTemps,8));
+}
+
+/**
+ * @details Sends pack status can message (details in fsae can spec)
+ *
+ * @param pack_status datatype containing information about the status of the pack
+ */
+void _Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status) {
+    uint8_t canPackStatus[8];
+
+
+    canPackStatus[0] = 0; //TODO: get actual average cell voltage
+    canPackStatus[1] = 0;
+    canPackStatus[2] = (pack_status->pack_cell_min_mV) & 0xFF;
+    canPackStatus[3] = (pack_status->pack_cell_min_mV >> 8) & 0xFF;
+    canPackStatus[4] = 0; //TODO: get actual id min cell voltage
+    canPackStatus[5] = (pack_status->pack_cell_max_mV) & 0xFF;
+    canPackStatus[6] = (pack_status->pack_cell_max_mV >> 8) & 0xFF;
+    canPackStatus[7] = 0; //TODO: get actual id max cell voltage
+
+    _handle_can_error(CAN_Transmit(0x161, canPackStatus,8));
+}
+
+
+void _Send_Bms_Heartbeat(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
+    UNUSED(bms_output);
+    uint8_t bmsHeartbeat[1];
+    ERROR_T error = Error_ShouldHalt_Status(bms_input->msTicks);
+    bmsHeartbeat[0] = 0;
+    bmsHeartbeat[0] |= (error==ERROR_NO_ERRORS?(bms_state->curr_mode):0x05);
+    _handle_can_error(CAN_Transmit(0x060,bmsHeartbeat,1));
 }
 
 void Board_CAN_ProcessOutput(BMS_INPUT_T *bms_input, BMS_STATE_T *bms_state, BMS_OUTPUT_T *bms_output) {
-    UNUSED(bms_input); UNUSED(bms_state); UNUSED(bms_output);
+    UNUSED(bms_output);
+
+    UNUSED(bms_output);
+    uint32_t msTicks = bms_input->msTicks;
+    if ( (msTicks - last_bms_heartbeat_time) > BMS_HEARTBEAT_PERIOD) {
+        last_bms_heartbeat_time = msTicks;
+        _Send_Bms_Heartbeat(bms_input, bms_state, bms_output);
+    }
+    if ( (msTicks - last_bms_errors_time) > BMS_ERRORS_PERIOD) {
+        last_bms_errors_time = msTicks;
+        _Send_Bms_Errors(msTicks);
+    }
+    if ( (msTicks - last_bms_cellTemps_time) > BMS_CELL_TEMPS_PERIOD) {
+        last_bms_cellTemps_time = msTicks;
+        _Send_Bms_CellTemps(bms_input->pack_status);
+    }
+    if ( (msTicks - last_bms_packStatus_time) > BMS_PACK_STATUS_PERIOD) {
+        last_bms_packStatus_time = msTicks;
+        _Send_Bms_PackStatus(bms_input->pack_status);
+    }
+
 }
+
+
+
+
 #endif // TEST_HARDWARE
+
+

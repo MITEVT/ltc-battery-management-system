@@ -124,6 +124,7 @@ void Init_BMS_Structs(void) {
     pack_status.avg_cell_temp_dC = 0;
     pack_status.min_cell_temp_position = 0;
     pack_status.max_cell_temp_position = 0;
+    pack_status.car_bus_V = 0;
 
 }
 
@@ -226,7 +227,7 @@ int main(void) {
         Process_Output(&bms_input, &bms_output, &bms_state);
         Output_Measurements(&console_output, &bms_input, &bms_state, msTicks);
 
-        if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
+        if (Error_Handle(&bms_input.msTicks) == HANDLER_HALT) {
             break; // Handler requested a Halt
         }
         

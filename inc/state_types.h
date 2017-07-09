@@ -40,6 +40,7 @@ typedef struct BMS_PACK_STATUS {
     int16_t avg_cell_temp_dC;
     uint16_t max_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
     uint16_t min_cell_temp_position; //range: 0-MAX_NUM_MODULES*MAX_THERMISTORS_PER_MODULE
+    uint32_t car_bus_V;
 } BMS_PACK_STATUS_T;
 
 typedef struct BMS_CHARGER_STATUS {

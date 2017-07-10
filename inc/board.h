@@ -181,7 +181,7 @@ bool Board_LTC6804_OpenWireTest(void);
  *
  * @param close_contactors true if contactors should be closed, false otherwise
  */
-void Board_Contactors_Set(bool close_contactors);
+void Board_Contactors_Set(bool close_contactors, BMS_PACK_STATUS_T *status);
 
 /**
  * @details get the status of the contactors

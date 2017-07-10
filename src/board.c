@@ -238,11 +238,12 @@ void Board_Headroom_Toggle(void){
 }
 
 
-void Board_Contactors_Set(bool close_contactors) {
-    if (close_contactors /* && voltage is acceptable */) {
+void Board_Contactors_Set(bool close_contactors, BMS_PACK_STATUS_T *status) {
+    if (close_contactors && (int32_t)(status->pack_voltage_mV*9/10000) - (int32_t)status->car_bus_V < 0) {
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
-        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, true);
-    } else if (close_contactors /* && voltage is not acceptable */) {
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+        Board_Println("Precharge Done");
+    } else if (close_contactors) {
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
     } else { // Close contactor is false
@@ -252,11 +253,7 @@ void Board_Contactors_Set(bool close_contactors) {
 }
 
 bool Board_Contactors_Closed(void) {
-#ifdef FSAE_DRIVERS
-    // TODO Implement
-#else
     return false;
-#endif
 }
 
 void Board_GPIO_Init(void) {
@@ -695,7 +692,6 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Error_Assert(ERROR_CAN, msTicks);
         return;
     }
-    DEBUG_Print("We got something \r\n");
     int i = 0;
 
     switch (rx_msg.mode_id) {
@@ -703,17 +699,19 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         //4bytes - bus voltage
         case MOTORDATAAV_MSG_ID_2: 
             bms_input->pack_status->car_bus_V = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
+            Board_Println("got bus voltage");
             break;
         case ARRAY_EMETER_MSG_ID:
             if (rx_msg.dlc ==8) {
-                DEBUG_Print("got it\r\n");
-                for ( i = 7; i >=0; --i)
-                {
-                    itoa(rx_msg.data[i],str,16);
-                    DEBUG_Print(str);
-                    DEBUG_Print(" ");
-                }
-                DEBUG_Print(" ");
+                bms_input->pack_status->pack_voltage_mV = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
+                DEBUG_Print("got pack voltage\r\n");
+                // for ( i = 7; i >=0; --i)
+                // {
+                //     itoa(rx_msg.data[i],str,16);
+                //     DEBUG_Print(str);
+                //     DEBUG_Print(" ");
+                // }
+                // DEBUG_Print(" ");
                
             } else {
                 DEBUG_Print("AHH");

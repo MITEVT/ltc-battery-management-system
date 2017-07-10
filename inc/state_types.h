@@ -33,7 +33,7 @@ typedef struct BMS_PACK_STATUS {
     int16_t *cell_temperatures_dC; // array size = #modules * thermistors/module
     uint32_t pack_cell_max_mV;
     uint32_t pack_cell_min_mV;
-    uint32_t pack_current_mA;
+    int32_t pack_current_mA;
     uint32_t pack_voltage_mV;
     int16_t max_cell_temp_dC;
     int16_t min_cell_temp_dC;

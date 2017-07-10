@@ -148,18 +148,11 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
     // If SSM changed state, output appropriate visual indicators
     // Carry out appropriate hardware output requests (CAN messages, charger requests, etc.)
     //
-#ifdef FSAE_DRIVERS
-    Board_Contactors_Set(bms_output->close_contactors);
+    Board_Contactors_Set(bms_output->close_contactors, bms_input->pack_status);
     // Fsae_Charge_Enable_Set(bms_output->charge_req->charger_on);
     // Fsae_Fan_Set(bms_output->fans_on);
     // Fsae_DC_DC_Enable_Set(bms_output->dc_dc_on);
-#else
-    if(bms_output->close_contactors) {
-        Board_LED_On(LED2);
-    } else {
-        Board_LED_Off(LED2);
-    }
-#endif //FSAE_DRIVERS
+
 
     if (bms_output->read_eeprom_packconfig){
         if(console_output.config_default){

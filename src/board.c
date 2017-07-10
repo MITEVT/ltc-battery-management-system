@@ -688,10 +688,10 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Error_Pass(ERROR_CAN);
         return;
     } else { //CAN ERRROR. Note this, 
-        DEBUG_Print("CAN Error (Rx): ");
-        itoa(can_status, str, 2);
-        DEBUG_Print(str);
-        DEBUG_Print("\r\n");
+        // DEBUG_Print("CAN Error (Rx): ");
+        // itoa(can_status, str, 2);
+        // DEBUG_Print(str);
+        // DEBUG_Print("\r\n");
         Error_Assert(ERROR_CAN, msTicks);
         return;
     }
@@ -707,6 +707,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         case ARRAY_EMETER_MSG_ID:
             if (rx_msg.dlc ==8) {
                 DEBUG_Print("got it\r\n");
+                
                 for ( i = 7; i >=0; --i)
                 {
                     itoa(rx_msg.data[i],str,16);
@@ -730,10 +731,6 @@ void _handle_can_error(CAN_ERROR_T err) {
         return;
     }
     else {
-        DEBUG_Print("Asdf (tx): ");
-        itoa(CAN_GetTxErrorCount(), str, 10);
-        DEBUG_Print(str);
-        DEBUG_Print("\r\n");
         Error_Assert(ERROR_CAN, msTicks);
         return;
         

@@ -240,7 +240,8 @@ static void Load_PackConfig_Defaults(PACK_CONFIG_T *pack_config) {
 #endif //FSAE_DRIVERS
 
     uint8_t i;
-    for(i = 0; i < MAX_NUM_MODULES; i++) {
+    pack_config->module_cell_count[0] = 7;
+    for(i = 1; i < MAX_NUM_MODULES; i++) {
         pack_config->module_cell_count[i] = MODULE_CELL_COUNT;
     }
 }

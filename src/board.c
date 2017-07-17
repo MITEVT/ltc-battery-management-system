@@ -49,6 +49,7 @@ static uint32_t _ltc6804_gcv_tick_time;
 static bool _ltc6804_owt;
 static uint32_t _ltc6804_last_owt;
 static uint32_t _ltc6804_owt_tick_time;
+static uint32_t _precharge_event = 0;
 
 static bool _ltc6804_initialized;
 static LTC6804_INIT_STATE_T _ltc6804_init_state;
@@ -239,16 +240,23 @@ void Board_Headroom_Toggle(void){
 
 
 void Board_Contactors_Set(bool close_contactors, BMS_PACK_STATUS_T *status) {
-    if (close_contactors && (int32_t)(status->pack_voltage_mV*9/10000) - (int32_t)status->car_bus_V < 0) {
+    // if (close_contactors && (int32_t)(status->pack_voltage_mV*9/10000) - (int32_t)status->car_bus_V < 0) {
+    //     Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
+    //     Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+    //     Board_Println("Precharge Done");
+    // } else
+    if (close_contactors && (msTicks - _precharge_event > PRECHARGE_TIME)) {
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
-        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
-        Board_Println("Precharge Done");
+        Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, true);
+        // Board_Println("Precharge Done");
     } else if (close_contactors) {
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, true);
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+        // Board_Println("Precharge");
     } else { // Close contactor is false
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_PRE, false);
         Chip_GPIO_SetPinState(LPC_GPIO, CONTACTOR_P, false);
+        _precharge_event = msTicks;
     }
 }
 
@@ -442,19 +450,19 @@ void Board_LTC6804_GetCellTemperatures(BMS_PACK_STATUS_T * pack_status, uint8_t 
     // if flag is not true, skip this step
     if (ltc6804_setMultiplexerAddressFlag) {
         // [TODO] send bit vector of updated GPIO
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 2, currentThermistor & 1, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 4, currentThermistor & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 3, (currentThermistor >> 1) & 1, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 5, (currentThermistor >> 1) & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 4, (currentThermistor >> 2) & 1, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 2, (currentThermistor >> 2) & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
-        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 5, (currentThermistor >> 3) & 1, msTicks);
+        status = LTC6804_SetGPIOState(&ltc6804_config, &ltc6804_state, 3, (currentThermistor >> 3) & 1, msTicks);
         Board_HandleLtc6804Status(status);
         if (status != LTC6804_PASS) return;
 
@@ -612,13 +620,20 @@ bool Board_LTC6804_OpenWireTest(void) {
 
     switch (res) {
         case LTC6804_FAIL:
-            Board_Print("OWT FAIL, mod=");
-            itoa(ltc6804_owt_res.failed_module, str, 10);
-            Board_Print(str);
-            Board_Print(" wire=");
-            itoa(ltc6804_owt_res.failed_wire, str, 10);
-            Board_Println(str);
-            Error_Assert(ERROR_LTC6804_OWT, msTicks);
+            if (ltc6804_owt_res.failed_module == 0 && ltc6804_owt_res.failed_wire == 12) {
+                Error_Pass(ERROR_LTC6804_OWT);
+                _ltc6804_owt = false;
+                _ltc6804_last_owt = msTicks;
+                return true;
+             } else {
+                Board_Print("OWT FAIL, mod=");
+                itoa(ltc6804_owt_res.failed_module, str, 10);
+                Board_Print(str);
+                Board_Print(" wire=");
+                itoa(ltc6804_owt_res.failed_wire, str, 10);
+                Board_Println(str);
+                Error_Assert(ERROR_LTC6804_OWT, msTicks);
+            }
             return false;
         case LTC6804_PEC_ERROR:
             Board_Println("OWT PEC_ERROR");
@@ -685,10 +700,10 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Error_Pass(ERROR_CAN);
         return;
     } else { //CAN ERRROR. Note this, 
-        // DEBUG_Print("CAN Error (Rx): ");
-        // itoa(can_status, str, 2);
-        // DEBUG_Print(str);
-        // DEBUG_Print("\r\n");
+        DEBUG_Print("CAN Error (Rx): ");
+        itoa(can_status, str, 2);
+        DEBUG_Print(str);
+        DEBUG_Print("\r\n");
         Error_Assert(ERROR_CAN, msTicks);
         return;
     }
@@ -704,7 +719,7 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             if (rx_msg.dlc ==8) {
                 bms_input->pack_status->pack_voltage_mV = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
                 bms_input->pack_status->pack_current_mA = rx_msg.data[4] | rx_msg.data[5]<<8 | rx_msg.data[6]<<16 | rx_msg.data[7]<<24;
-                DEBUG_Print("got pack voltage\r\n");
+                // DEBUG_Print("got pack voltage\r\n");
                 // for ( i = 7; i >=0; --i)
                 // {
                 //     itoa(rx_msg.data[i],str,16);
@@ -713,6 +728,13 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
                 // }
                 // DEBUG_Print(" ");
                
+            } else {
+                DEBUG_Print("AHH");
+            }
+            break;
+        case DC_CAN_BASE:
+            if(rx_msg.dlc ==2) {
+                //determine if we should put in a mode request
             } else {
                 DEBUG_Print("AHH");
             }

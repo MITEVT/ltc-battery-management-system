@@ -17,10 +17,10 @@
 #define ERROR_BYTESIZE 1
 
 // Default Pack Configuration
-#define CELL_MIN_mV 0 // from datasheet, contact elliot
-#define CELL_MAX_mV 5000 // from datas,eet, contact elliot
+#define CELL_MIN_mV 2700 // from datasheet, contact elliot
+#define CELL_MAX_mV 4100 // from datas,eet, contact elliot
 #define CELL_CAPACITY_cAh 250
-#define NUM_MODULES 1
+#define NUM_MODULES 3
 #define CELL_CHARGE_C_RATING_cC 5
 #define BALANCE_ON_THRESHOLD_mV 4
 #define BALANCE_OFF_THRESHOLD_mV 1

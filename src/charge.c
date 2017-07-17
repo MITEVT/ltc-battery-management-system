@@ -183,25 +183,25 @@ bool _calc_balance(bool *balance_req, bool *balance_waitingoff, uint32_t *balanc
         if (balance_req[i]) {
             balance_req[i] = (cell_voltages_mV[i] > balance_mV + config->bal_off_thresh_mV);
             // if we're turning it on and its been on for a while
-            if(balance_req[i] && msTicks - balance_timeon[i] > BALANCE_ON_THRESH_MS) {
-                balance_req[i] = false;
-                balance_timeon[i] = msTicks;
-                balance_waitingoff[i] = true;
-            }
+            // if(balance_req[i] && msTicks - balance_timeon[i] > BALANCE_ON_THRESH_MS) {
+            //     balance_req[i] = false;
+            //     balance_timeon[i] = msTicks;
+            //     balance_waitingoff[i] = true;
+            // }
         } else {
             balance_req[i] = (cell_voltages_mV[i] > balance_mV + config->bal_on_thresh_mV);
-            if(balance_req[i]) {
-                // DO NOT BAL if we are waiting off and waiting off hasn't expired
-                if(balance_waitingoff[i] && msTicks - balance_timeon[i] < BALANCE_OFF_WAITING_THRESH_MS) {
-                    balance_req[i] = false;
-                } else {
-                // if not waiting off or the waiting off timer expired, allow it to turn on, but start the counter
-                    balance_req[i] = true;
-                    balance_timeon[i] = msTicks;
-                    balance_waitingoff[i] = false;
-                }
+            // if(balance_req[i]) {
+            //     // DO NOT BAL if we are waiting off and waiting off hasn't expired
+            //     if(balance_waitingoff[i] && msTicks - balance_timeon[i] < BALANCE_OFF_WAITING_THRESH_MS) {
+            //         balance_req[i] = false;
+            //     } else {
+            //     // if not waiting off or the waiting off timer expired, allow it to turn on, but start the counter
+            //         balance_req[i] = true;
+            //         balance_timeon[i] = msTicks;
+            //         balance_waitingoff[i] = false;
+            //     }
 
-            }
+            // }
         }
         if (balance_req[i]) balancing = true;
     }

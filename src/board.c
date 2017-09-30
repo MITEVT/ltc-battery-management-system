@@ -689,7 +689,7 @@ void Board_GetModeRequest(const CONSOLE_OUTPUT_T * console_output, BMS_INPUT_T* 
  * @param bms_input data strcuture representing BMS inputs
  */
 void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
-    UNUSED(bms_input); UNUSED(bms_output);
+    UNUSED(bms_output);
     CCAN_MSG_OBJ_T rx_msg;
     CAN_ERROR_T can_status;
     can_status = CAN_Receive(&rx_msg);
@@ -710,7 +710,8 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
 
     switch (rx_msg.mode_id) {
         //4bytes - bus current
-        //4bytes - bus voltage
+        //4bytes - bus voltage            
+
         case MOTORDATAAV_MSG_ID_2: 
             bms_input->pack_status->car_bus_V = rx_msg.data[0] | rx_msg.data[1]<<8 | rx_msg.data[2]<<16 | rx_msg.data[3]<<24;
             Board_Println("got bus voltage");
@@ -734,7 +735,13 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
             break;
         case DC_CAN_BASE:
             if(rx_msg.dlc ==2) {
-                //determine if we should put in a mode request
+                if (rx_msg.data[0] == 0) {
+                bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+                } else {
+                    bms_input->mode_request = BMS_SSM_MODE_CHARGE;
+                }
+                
+                break;
             } else {
                 DEBUG_Print("AHH");
             }

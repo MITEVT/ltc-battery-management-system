@@ -55,12 +55,15 @@ typedef enum hbeats {
     HBEAT_MI
 } HBEAT_T;
 
+// [TODO] a use the HB errors
+// on every HB, clear then create an HB error
+// error out if error time is reater than threshold
+// warning if time is less than threshold
 
 static const char * const ERROR__HB_NAMES[ERROR_NUM_ERRORS] = {
     "HBEAT_DI",
     "HBEAT_MI"
 };
-
 
 typedef enum error_handler_status {
     HANDLER_FINE,

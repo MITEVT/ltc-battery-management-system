@@ -153,6 +153,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         Board_GetModeRequest(&console_output, bms_input);
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
+    SOC_Estimate(bms_input,msTicks);
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
 #ifndef TEST_HARDWARE
@@ -272,7 +273,7 @@ int main(void) {
     console_init(&bms_input, &bms_state, &console_output);
 
     Board_Println("Applications Up");
-
+    SOC_Init(msTicks);
     uint32_t last_count = msTicks;
 
     while(1) {

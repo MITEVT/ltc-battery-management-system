@@ -53,7 +53,7 @@ ifeq ($(EVT),1)
 
 	# additional directories with source files (absolute or relative paths to
 	# folders with source files, current folder is always included)
-	INC_DIRS_CROSS = inc/ inc/evt_drivers/ ../Opel_EE/lpc11cx4-library/lpc_chip_11cxx_lib/inc ../Opel_EE/lpc11cx4-library/evt_lib/inc/
+	INC_DIRS_CROSS = inc/ inc/evt_drivers/ ../lpc11cx4-library/lpc_chip_11cxx_lib/inc ../lpc11cx4-library/evt_lib/inc/
 
 	SPECIAL_FSAE_FLAGS =
 else

@@ -132,6 +132,7 @@ void Init_BMS_Structs(void) {
     pack_status.pack_current_mA = 0;
     pack_status.pack_voltage_mV = 0;
     pack_status.max_cell_temp_dC = 0;
+    pack_status.state_of_charge = 0;
 #ifdef FSAE_DRIVERS
     pack_status.min_cell_temp_dC = -100;
     pack_status.avg_cell_temp_dC = 0;
@@ -153,6 +154,7 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         Board_GetModeRequest(&console_output, bms_input);
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
+    Board_PrintNum(SOC_Estimate(bms_input),10);
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
 #ifndef TEST_HARDWARE
@@ -272,7 +274,7 @@ int main(void) {
     console_init(&bms_input, &bms_state, &console_output);
 
     Board_Println("Applications Up");
-
+    SOC_Init();
     uint32_t last_count = msTicks;
 
     while(1) {

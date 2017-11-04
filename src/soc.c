@@ -1,11 +1,38 @@
 #include "eeprom_config.h"
 #include "board.h"
+#include "state_types.h"
 
-void SOC_Init(void) {
-    // EEPROM_WriteCCPage_Num(0,18);
+static uint32_t soc, init_soc;
+
+
+#define MAX_CHARGE 10000000
+
+void SOC_Init(/*fullycharged?,*/) {
+	// if(/*fully_charged*/){
+	// 	init_soc = MAX_CHARGE;
+	// 	soc = init_soc;
+	// 	/*fully_charged = false;*/
+	// 	last_tick_soc = ms_ticks;
+	// } else {
+		soc = EEPROM_LoadCCPage_Num(0);
+		init_soc = soc;
+	//}
 }
 
-uint32_t SOC_Estimate(void) {
-    // return EEPROM_LoadCCPage_Num(0);
-    return 0;
+uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
+
+	soc = init_soc - bms_input->pack_status->pack_energy;
+	
+	if(soc>MAX_CHARGE){ 
+		soc = MAX_CHARGE;
+		Board_Println("OVERCHARGED!");
+	}
+
+	//write soc to eeprom
+	EEPROM_WriteCCPage_Num(0,soc);
+	bms_input->pack_status->state_of_charge = soc;
+    
+    return soc;
 }
+
+

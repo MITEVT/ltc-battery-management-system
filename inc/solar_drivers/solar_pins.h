@@ -13,6 +13,10 @@
 #define IOCON_LED2 IOCON_PIO2_10
 #define IOCON_LED2_FUNC IOCON_FUNC0
 
+#define OFF_IN 3,3
+#define IOCON_OFF_IN IOCON_PIO3_3
+#define IOCON_OFF_IN_FUNC IOCON_FUNC0
+
 void Solar_GPIO_Init(void);
 
 void Solar_Fault_Pin_Set(bool state);

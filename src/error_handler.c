@@ -10,9 +10,10 @@
 #define LTC6802_CVST_timeout_count 		2
 #define LTC6802_OWT_timeout_count  		10
 #define BRUSA_timeout_count  			5
-#define CAN_timeout_count 				5
+#define CAN_timeout_count 				100
 #define EEPROM_timeout_count  			5
 #define CONFLICTING_MODE_REQUESTS_count   2
+#define MAIN_HB_timeout_timeout_ms      5000
 
 #ifdef FSAE_DRIVERS
 
@@ -54,6 +55,8 @@ static ERROR_HANDLER error_handler_vector[ERROR_NUM_ERRORS] = {
                             ,{_Error_Handle_Count,  NULL, VCU_DEAD_count}
                             ,{_Error_Handle_Count,  NULL, CONTROL_FLOW_count}
 #endif //FSAE_DRIVERS
+                            ,{_Error_Handle_Timeout,NULL, MAIN_HB_timeout_timeout_ms}
+                            ,{_Error_Handle_Count, NULL, 0}
                             };
 
 
@@ -99,6 +102,19 @@ void Error_Pass(ERROR_T er_t) {
     //    break;
     // }
 }
+
+
+void Error_HB_rx(ERROR_T hb, uint32_t msTicks) {
+    Error_Pass(hb);
+    Error_Assert(hb, msTicks);
+}
+
+
+
+
+/***************************/
+/********ERROR HANDLES******/
+/***************************/
 static ERROR_HANDLER_STATUS_T _Error_Handle_Timeout(ERROR_STATUS_T* er_stat, uint32_t* msTicks, uint32_t timeout_ms) {
 	if (er_stat->error == false) {
 		er_stat->handling = false;

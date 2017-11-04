@@ -219,6 +219,31 @@ void Board_LED_Off(uint8_t led_gpio, uint8_t led_pin) {
 #endif
 }
 
+void Board_FAULT_Off(void) {
+#ifndef TEST_HARDWARE
+    Chip_GPIO_SetPinOutLow(LPC_GPIO, FAULT);
+#else
+    UNUSED(led_gpio); UNUSED(led_pin);
+#endif
+}
+
+void Board_FAULT_On(void) {
+#ifndef TEST_HARDWARE
+    Chip_GPIO_SetPinOutHigh(LPC_GPIO, FAULT);
+#else
+    UNUSED(led_gpio); UNUSED(led_pin);
+#endif
+}
+
+bool Board_OFF_Read(void) {
+    #ifndef TEST_HARDWARE
+    return !Chip_GPIO_GetPinState(LPC_GPIO, OFF_IN);
+#else
+    UNUSED(led_gpio); UNUSED(led_pin);
+    return false;
+#endif
+}
+
 void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin) {
 #ifndef TEST_HARDWARE
     Chip_GPIO_SetPinState(LPC_GPIO, led_gpio, led_pin, 
@@ -280,6 +305,15 @@ void Board_GPIO_Init(void) {
     Chip_GPIO_SetPinDIROutput(LPC_GPIO, LED2);
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_LED2, IOCON_LED2_FUNC);
     Chip_GPIO_SetPinState(LPC_GPIO, LED2, false);
+
+
+    Chip_GPIO_SetPinDIROutput(LPC_GPIO, FAULT);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_FAULT, IOCON_FAULT_FUNC);
+    Chip_GPIO_SetPinState(LPC_GPIO, FAULT, false);
+
+    // OFF
+    Chip_GPIO_SetPinDIRInput(LPC_GPIO, OFF_IN);
+    Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_OFF_IN, IOCON_OFF_IN_FUNC);
 
     //SSP for EEPROM
     Chip_IOCON_PinMuxSet(LPC_IOCON, IOCON_PIO2_2, (IOCON_FUNC2 | IOCON_MODE_INACT));    /* MISO1 */ 
@@ -379,6 +413,9 @@ void Board_LTC6804_ProcessInputs(BMS_PACK_STATUS_T *pack_status, BMS_STATE_T* bm
     Board_LTC6804_GetCellVoltages(pack_status);
     Board_LTC6804_GetCellTemperatures(pack_status, bms_state->pack_config->num_modules);
     Board_LTC6804_OpenWireTest();
+    if(Board_OFF_Read()){
+        Error_Assert(ERROR_NOMINAL_SHUTDOWN,msTicks);
+    }
 }
 
 void Board_LTC6804_ProcessOutput(bool *balance_req) {
@@ -733,12 +770,15 @@ void Board_CAN_ProcessInput(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
                 DEBUG_Print("AHH");
             }
             break;
-        case DC_CAN_BASE:
-            if(rx_msg.dlc ==2) {
-                if (rx_msg.data[0] == 0) {
+        case 0x016:
+            if(rx_msg.dlc ==1) {
+                Error_HB_rx(ERROR_MAIN_HB, msTicks);
+                if (rx_msg.data[0] == 1) {
                 bms_input->mode_request = BMS_SSM_MODE_DISCHARGE;
+                    DEBUG_Print("dis");
                 } else {
                     bms_input->mode_request = BMS_SSM_MODE_CHARGE;
+                    DEBUG_Print("chrg");
                 }
                 
                 break;

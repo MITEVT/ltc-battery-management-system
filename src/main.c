@@ -136,8 +136,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     // update and other fields in msTicks in &input
 
     if (bms_state.curr_mode != BMS_SSM_MODE_INIT) {
-        // Board_CAN_ProcessInput(bms_input, &bms_output);
-        Board_GetModeRequest(&console_output, bms_input); //console not used
+        Board_CAN_ProcessInput(bms_input, &bms_output);
+        // Board_GetModeRequest(&console_output, bms_input); //console not used
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
     bms_input->msTicks = msTicks;
@@ -222,6 +222,7 @@ int main(void) {
 
         if (Error_Handle(&bms_input.msTicks) == HANDLER_HALT) {
             break; // Handler requested a Halt
+            Board_FAULT_On();
         }
         
         // Testing Code

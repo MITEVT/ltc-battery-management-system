@@ -73,6 +73,11 @@ void Board_LED_Off(uint8_t led_gpio, uint8_t led_pin);
 
 void Board_LED_Toggle(uint8_t led_gpio, uint8_t led_pin);
 
+bool Bard_OFF_Read(void);
+
+void Board_FAULT_On(void);
+void Board_FAULT_Off(void);
+
 void Board_Headroom_Toggle(void);
 
 void Board_BlockingDelay(uint32_t dlyTicks);

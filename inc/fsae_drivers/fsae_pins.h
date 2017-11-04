@@ -13,6 +13,15 @@
 #define IOCON_LED2 IOCON_PIO2_10
 #define IOCON_LED2_FUNC IOCON_FUNC0
 
+#define FAULT 1, 5
+#define IOCON_FAULT IOCON_PIO1_5
+#define IOCON_FAULT_FUNC IOCON_FUNC0
+
+
+#define OFF_IN 3,3
+#define IOCON_OFF_IN IOCON_PIO3_3
+#define IOCON_OFF_IN_FUNC IOCON_FUNC0
+
 void Fsae_GPIO_Init(void);
 
 void Fsae_Fault_Pin_Set(bool state);

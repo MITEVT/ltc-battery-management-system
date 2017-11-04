@@ -69,6 +69,10 @@ void Fsae_Can_Receive(BMS_INPUT_T *bms_input, BMS_OUTPUT_T *bms_output) {
         Can_CurrentSensor_Voltage_T msg;
         Can_CurrentSensor_Voltage_Read(&msg);
         bms_input->pack_status->pack_voltage_mV = msg.voltage_mV > 0 ? msg.voltage_mV : -msg.voltage_mV;
+    } else if (msgType == Can_CurrentSensor_Energy_Msg){
+        Can_CurrentSensor_Energy_T msg;
+        Can_CurrentSensor_Energy_Read(&msg);
+        bms_input->pack_status->pack_energy;
     } else if (msgType == Can_Vcu_DashHeartbeat_Msg) {
         Can_Vcu_DashHeartbeat_T msg;
         Can_Vcu_DashHeartbeat_Read(&msg);

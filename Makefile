@@ -131,7 +131,7 @@ C_SRCS_TEST = $(wildcard $(patsubst %, %/*.$(C_EXT), . $(TEST_SRCS_DIRS))) src/c
 # Write Configuration
 #=============================================================================#
 
-COMPORT = $(word 1, $(wildcard /dev/tty.usbserial-*) $(wildcard /dev/ttyUSB*))
+COMPORT = COM4
 BAUDRATE = 57600
 CLOCK_OSC = 0
 

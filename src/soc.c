@@ -4,8 +4,9 @@
 
 static uint32_t soc, init_soc;
 
-
-#define MAX_CHARGE 10000000
+//7.1 or 7.2 kilawatthours
+//units in watt-hours
+#define MAX_CHARGE 7100
 
 void SOC_Init(/*fullycharged?,*/) {
 	// if(/*fully_charged*/){
@@ -14,7 +15,8 @@ void SOC_Init(/*fullycharged?,*/) {
 	// 	/*fully_charged = false;*/
 	// 	last_tick_soc = ms_ticks;
 	// } else {
-		soc = EEPROM_LoadCCPage_Num(0);
+		//soc = EEPROM_LoadCCPage_Num(0);
+		soc = MAX_CHARGE;
 		init_soc = soc;
 	//}
 }

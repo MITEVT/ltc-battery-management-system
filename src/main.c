@@ -299,7 +299,6 @@ int main(void) {
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
             Board_LED_Toggle(LED1);  
-            // Board_PrintNum(SOC_Estimate(), 10);
         }
     }
 

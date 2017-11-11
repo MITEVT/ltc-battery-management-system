@@ -208,7 +208,7 @@ void Send_Bms_PackStatus(BMS_PACK_STATUS_T * pack_status) {
     canPackStatus.id_min_cell_voltage = 0; //TODO: get actual id min cell voltage
     canPackStatus.max_cell_voltage = pack_status->pack_cell_max_mV / 10;
     canPackStatus.id_max_cell_voltage = 0; //TODO: get actual id max cell voltage
-    canPackSattus.state_of_charge = pack_status->state_of_charge;
+    //canPackStatus.state_of_charge = pack_status->state_of_charge;
     handle_can_error(Can_Bms_PackStatus_Write(&canPackStatus));
 }
 

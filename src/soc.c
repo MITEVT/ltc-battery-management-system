@@ -15,8 +15,8 @@ void SOC_Init(/*fullycharged?,*/) {
 	// 	/*fully_charged = false;*/
 	// 	last_tick_soc = ms_ticks;
 	// } else {
-		//soc = EEPROM_LoadCCPage_Num(0);
-		soc = MAX_CHARGE;
+		soc = EEPROM_LoadCCPage_Num(0);
+		//soc = MAX_CHARGE;
 		init_soc = soc;
 	//}
 }

@@ -7,6 +7,7 @@
 #include "error_handler.h"
 #include "console_types.h"
 #include "error_handler.h"
+#include "soc.h"
 
 /***************************************
         Private Variables
@@ -384,8 +385,14 @@ static void dis(const char * const * argv) {
     } else {
         Board_Println("Must be in standby");
     }
-}   
+}
 
+
+static void soc(const char * const * argv) {
+    UNUSED(argv);
+    Board_PrintNum(SOC_Estimate(bms_input), 10);
+
+}
 static void config_def(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY)
@@ -401,7 +408,7 @@ static void induce_error(const char * const * argv) {
     Error_Assert(ERROR_CONTROL_FLOW, bms_input->msTicks);
 }              
 
-static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def, measure, induce_error};
+static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, soc, config_def, measure, induce_error};
 
 /***************************************
         Public Functions

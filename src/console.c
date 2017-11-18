@@ -184,7 +184,7 @@ static void get(const char * const * argv) {
                     Board_Println(tempstr);
                     break;
                 case ROL_soc:
-                    itoa(bms_input->pack_status->state_of_charge, tempstr,10);
+                    itoa(SOC_Estimate(&bms_input), tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_error:

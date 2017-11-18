@@ -183,7 +183,7 @@ static void get(const char * const * argv) {
                     itoa(bms_input->pack_status->max_cell_temp_dC, tempstr,10);
                     Board_Println(tempstr);
                     break;
-                case soc:
+                case ROL_soc:
                     itoa(bms_input->pack_status->state_of_charge, tempstr,10);
                     Board_Println(tempstr);
                     break;
@@ -391,13 +391,6 @@ static void dis(const char * const * argv) {
     }
 }
 
-/*
-static void soc(const char * const * argv) {
-    UNUSED(argv);
-    Board_PrintNum(SOC_Estimate(bms_input), 10);
-
-}
-*/
 
 static void config_def(const char * const * argv) {
     UNUSED(argv);

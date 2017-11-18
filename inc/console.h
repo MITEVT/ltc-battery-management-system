@@ -68,7 +68,8 @@ static const char * const locstring[] =  {
                             "pack_current_mA",
                             "pack_voltage_mV",
                             "max_temp",
-                            "error"
+                            "error",
+                            "soc"
 };
 
 static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { 

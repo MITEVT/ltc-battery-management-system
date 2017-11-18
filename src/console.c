@@ -187,6 +187,10 @@ static void get(const char * const * argv) {
                     itoa(SOC_Estimate(&bms_input), tempstr,10);
                     Board_Println(tempstr);
                     break;
+                case ROL_energy:
+                    itoa(bms_input->pack_status->pack_energy, tempstr,10);
+                    Board_Println(tempstr);
+                    break;                
                 case ROL_error:
                     error_status_vector = Error_GetStatus(0);
                     for (i = 0; i < ERROR_NUM_ERRORS; ++i)

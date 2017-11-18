@@ -31,7 +31,7 @@ uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
 	}
 
 	//write soc to eeprom
-	EEPROM_WriteCCPage_Num(0,soc);
+	//EEPROM_WriteCCPage_Num(0,soc);
 	bms_input->pack_status->state_of_charge = soc;
    //Board_PrintNUm
     return soc;

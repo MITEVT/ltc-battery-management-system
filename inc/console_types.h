@@ -46,6 +46,7 @@ typedef enum {
     ROL_max_temp_dC,
     ROL_error,
     ROL_soc,
+    ROL_energy,
     ROL_LENGTH
 } ro_loc_label_t;
 

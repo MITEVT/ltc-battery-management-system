@@ -27,13 +27,13 @@ uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
 	
 	if(soc>MAX_CHARGE){ 
 		soc = MAX_CHARGE;
-		Board_Println("OVERCHARGED!");
+		//Board_Println("OVERCHARGED!");
 	}
 
 	//write soc to eeprom
 	EEPROM_WriteCCPage_Num(0,soc);
 	bms_input->pack_status->state_of_charge = soc;
-    
+   //Board_PrintNUm
     return soc;
 }
 

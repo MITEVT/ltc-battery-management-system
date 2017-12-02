@@ -12,8 +12,7 @@ void SOC_Init(/*fullycharged?,*/) {
 	// if(/*fully_charged*/){
 	// 	init_soc = MAX_CHARGE;
 	// 	soc = init_soc;
-	// 	/*fully_charged = false;*/
-	// 	last_tick_soc = ms_ticks;
+	// 	/*not fully charged*/
 	// } else {
 		soc = EEPROM_LoadCCPage_Num(0);
 		//soc = MAX_CHARGE;
@@ -25,7 +24,7 @@ uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
 
 	soc = init_soc - bms_input->pack_status->pack_energy;
 	
-	if(soc>MAX_CHARGE){ 
+	if(soc > MAX_CHARGE){ 
 		soc = MAX_CHARGE;
 		//Board_Println("OVERCHARGED!");
 	}

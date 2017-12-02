@@ -155,8 +155,6 @@ void Process_Input(BMS_INPUT_T* bms_input) {
         Board_GetModeRequest(&console_output, bms_input);
         Board_LTC6804_ProcessInputs(&pack_status, &bms_state);
     }
-    //Board_PrintNum(SOC_Estimate(bms_input),10);
-    SOC_Estimate(bms_input);
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
 #ifndef TEST_HARDWARE

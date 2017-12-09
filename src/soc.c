@@ -8,15 +8,13 @@ static uint32_t soc, init_soc;
 //units in watt-hours
 #define MAX_CHARGE 7100
 
-void SOC_Init(/*fullycharged?,*/) {
-	// if(/*fully_charged*/){
-	// 	init_soc = MAX_CHARGE;
-	// 	soc = init_soc;
-	// 	/*not fully charged*/
-	// } else {
-		soc = EEPROM_LoadCCPage_Num(0);
-		//soc = MAX_CHARGE;
-		init_soc = soc;
+void SOC_Full(void){
+	soc = MAX_CHARGE;
+}
+
+void SOC_Init(void) {
+	soc = EEPROM_LoadCCPage_Num(0);
+	init_soc = soc;
 	//}
 }
 
@@ -26,14 +24,13 @@ uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
 	
 	if(soc > MAX_CHARGE){ 
 		soc = MAX_CHARGE;
-		//Board_Println("OVERCHARGED!");
 	}
 
-	//write soc to eeprom
-	//EEPROM_WriteCCPage_Num(0,soc);
 	bms_input->pack_status->state_of_charge = soc;
-   //Board_PrintNUm
-    return soc;
+
+}
+void SOC_Write(void){
+	EEPROM_WriteCCPage_Num(0,soc);
 }
 
 

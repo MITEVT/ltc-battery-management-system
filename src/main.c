@@ -15,6 +15,7 @@
 #endif
 
 #define EEPROM_CS_PIN 0, 7
+#define SOC_UPDATE_FREQ 10000
 
 extern volatile uint32_t msTicks;
 
@@ -193,7 +194,7 @@ void Process_Output(BMS_INPUT_T* bms_input, BMS_OUTPUT_T* bms_output, BMS_STATE_
         Set_EEPROM_Error(255); // magic # for no error
         Charge_Config(&pack_config);
         Discharge_Config(&pack_config);
-        Board_LTC6804_DeInit(); 
+        Board_LTC6804_DeInit();
 
     } else if (bms_output->check_packconfig_with_ltc) {
         bms_input->ltc_packconfig_check_done = Board_LTC6804_Init(&pack_config, cell_voltages);
@@ -230,14 +231,14 @@ void Process_Keyboard(void) {
 // [TODO] Do heartbeats                           WHO:Rango
 // [TODO] Cleanup board                                 ALL
 // [TODO] Implement watchdog timer                      WHO:Erpo
-// 
+//
 // In order of priority
 // [TODO] Open contactors if pack                       WHO:Jorge
 //        current goes above maximum and move to
 //        standby
 // [TODO] open contactors if the charge current is      WHO:Jorge
 //        above the charge C rating and move to standby
-// [TODO] make the BMS hang if the pack current is high 
+// [TODO] make the BMS hang if the pack current is high
 //        while the BMS is in standby, init, or balance
 // [TODO] make the BMS hang if the contactors are
 //        closed when the BMS is in standby, init, or
@@ -250,7 +251,7 @@ void Process_Keyboard(void) {
 //
 // [Not urgent]
 // [TODO] Send warnings through CAN                     WHO:Jorge
-// [TODO] implement logic that opens contactors if a    
+// [TODO] implement logic that opens contactors if a
 //        blown fuse is detected
 
 int main(void) {
@@ -264,9 +265,9 @@ int main(void) {
 
 	Board_Println("Board Up");
 
-    EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN); 
+    EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
     Board_Println_BLOCKING("Finished EEPROM init");
-    
+
     Error_Init();
     SSM_Init(&bms_input, &bms_state, &bms_output);
 
@@ -293,17 +294,17 @@ int main(void) {
         if (Error_Handle(bms_input.msTicks) == HANDLER_HALT) {
             break; // Handler requested a Halt
         }
-        
+
         // Testing Code
         bms_input.contactors_closed = bms_output.close_contactors; // [DEBUG] For testing purposes
 
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Board_LED_Toggle(LED1);  
+            Board_LED_Toggle(LED1);
         }
         //soc write
-        if(msTicks - last_count_soc > 10000){
+        if(msTicks - last_count_soc > SOC_UPDATE_FREQ){
             SOC_Write();
             last_count_soc = msTicks;
         }
@@ -342,19 +343,19 @@ int hardware_test(void) {
     Board_GPIO_Init();
     Board_UART_Init(UART_BAUD);
 
-    Board_Println("HW Test Board Up"); 
+    Board_Println("HW Test Board Up");
 
     EEPROM_Init(LPC_SSP1, EEPROM_BAUD, EEPROM_CS_PIN);
     Board_LTC6804_Init(&pack_config, cell_voltages);
 
-    Board_Println("HW Test Drivers Up"); 
+    Board_Println("HW Test Drivers Up");
 
     SSM_Init(&bms_input, &bms_state, &bms_output);
     //setup readline
     microrl_init(&rl, Board_Print);
     microrl_set_execute_callback(&rl, executerl);
     console_init(&bms_input, &bms_state, &console_output);
-    
+
     Board_Println("HW Test Applications Up");
 
     uint32_t last_count = msTicks;
@@ -366,10 +367,9 @@ int hardware_test(void) {
         // LED Heartbeat
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
-            Board_LED_Toggle(LED1);  
+            Board_LED_Toggle(LED1);
         }
     }
 
     return 0;
 }
-

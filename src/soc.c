@@ -18,11 +18,11 @@ void SOC_Init(void) {
 	//}
 }
 
-uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
+void SOC_Estimate(BMS_INPUT_T* bms_input) {
 
 	soc = init_soc - bms_input->pack_status->pack_energy;
-	
-	if(soc > MAX_CHARGE){ 
+
+	if(soc > MAX_CHARGE){
 		soc = MAX_CHARGE;
 	}
 
@@ -32,5 +32,3 @@ uint32_t SOC_Estimate(BMS_INPUT_T* bms_input) {
 void SOC_Write(void){
 	EEPROM_WriteCCPage_Num(0,soc);
 }
-
-

@@ -11,7 +11,7 @@
 # toolchain configuration
 #=============================================================================#
 
-TOOLCHAIN = arm-none-eabi-
+TOOLCHAIN = ../gcc-arm-none-eabi-6-2017-q2-update/bin/arm-none-eabi-
 
 CC = $(TOOLCHAIN)gcc
 AS = $(TOOLCHAIN)gcc -x assembler-with-cpp
@@ -76,7 +76,7 @@ AS_DEFS = -D__STARTUP_CLEAR_BSS -D__START=main
 
 # library directories (absolute or relative paths to additional folders with
 # libraries)
-LIB_DIRS = 
+LIB_DIRS =
 
 # libraries (additional libraries for linking, e.g. "-lm -lsome_name" to link
 # math library libm.a and libsome_name.a)
@@ -98,7 +98,7 @@ AS_EXT = S
 AS_SRCS = $(wildcard $(patsubst %, %/*.$(AS_EXT), . $(SRCS_DIRS)))
 
 # optimization flags ("-O0" - no optimization, "-O1" - optimize, "-O2" -
-# optimize even more, "-Os" - optimize for size or "-O3" - optimize yet more) 
+# optimize even more, "-Os" - optimize for size or "-O3" - optimize yet more)
 OPTIMIZATION = -O2
 
 # set to 1 to optimize size by removing unused code and data during link phase
@@ -176,7 +176,7 @@ CORE_FLAGS = -mcpu=$(CORE) -mthumb
 
 # flags for C compiler
 C_FLAGS = -fdiagnostics-color=always -std=$(C_STD) -g -ggdb3 -fverbose-asm -Wa,-ahlms=$(OUT_DIR_F)$(notdir $(<:.$(C_EXT)=.lst)) -DUART_BAUD=$(BAUDRATE)
-#			add diagnostic colors		c standard	debug(?) extra comments	
+#			add diagnostic colors		c standard	debug(?) extra comments
 
 # flags for assembler
 AS_FLAGS = -g -ggdb3 -Wa,-amhls=$(OUT_DIR_F)$(notdir $(<:.$(AS_EXT)=.lst))
@@ -269,7 +269,7 @@ $(ELF) : $(LD_SCRIPT)
 #-----------------------------------------------------------------------------#
 # test_linking - objects -> elf
 #-----------------------------------------------------------------------------#
-$(TEST_TARGET) : $(TEST_OBJS)	
+$(TEST_TARGET) : $(TEST_OBJS)
 	@$(CC) $(TEST_OBJS) $(LIBS) -o $@
 	@echo ' '
 

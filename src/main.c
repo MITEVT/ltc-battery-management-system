@@ -157,6 +157,8 @@ void Process_Input(BMS_INPUT_T* bms_input) {
     }
     bms_input->msTicks = msTicks;
     bms_input->contactors_closed = Board_Contactors_Closed();
+
+    SOC_Estimate(bms_input);
 #ifndef TEST_HARDWARE
 #ifdef FSAE_DRIVERS
     bms_input->dcdc_fault = Fsae_DC_DC_Fault_Get();
@@ -276,6 +278,7 @@ int main(void) {
     Board_Println("Applications Up");
     SOC_Init();
     uint32_t last_count = msTicks;
+    uint32_t last_count_soc = msTicks;
 
     while(1) {
 
@@ -298,6 +301,11 @@ int main(void) {
         if (msTicks - last_count > 1000) {
             last_count = msTicks;
             Board_LED_Toggle(LED1);  
+        }
+        //soc write
+        if(msTicks - last_count_soc > 10000){
+            SOC_Write();
+            last_count_soc = msTicks;
         }
     }
 

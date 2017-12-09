@@ -184,7 +184,7 @@ static void get(const char * const * argv) {
                     Board_Println(tempstr);
                     break;
                 case ROL_soc:
-                    itoa(SOC_Estimate(bms_input), tempstr,10);
+                    itoa(bms_input->pack_status->state_of_charge, tempstr,10);
                     Board_Println(tempstr);
                     break;
                 case ROL_energy:
@@ -238,10 +238,20 @@ static void set(const char * const * argv) {
         for (roloc = (ro_loc_label_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
-                Board_Println("this location is read only");
+                if(strcmp(locstring[roloc],"soc_full") == 0){      //allows modification of soc value only --12/9/17 
+                    SOC_Full();
+                    char tempstr[20];
+                    itoa(bms_input->pack_status->state_of_charge, tempstr,10);
+                    Board_Println(tempstr);
+                }
+                else{
+                    Board_Println("this location is read only");
+                }
                 return; 
             }
         }
+
+
         Board_Println("invalid location");
     }
 }

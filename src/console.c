@@ -24,13 +24,13 @@ static CONSOLE_OUTPUT_T *console_output;
 // [TODO] Fix to not parse strings falsely
 uint32_t my_atou(const char *str) {
     uint32_t res = 0; // Initialize result
-  
+
     // Iterate through all characters of input string and
     // update result
     uint32_t i;
     for ( i = 0; str[i] != '\0'; ++i)
         res = res*10 + str[i] - '0';
-  
+
     // return result.
     return res;
 }
@@ -44,7 +44,7 @@ static void get(const char * const * argv) {
     for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
         if (strcmp(argv[1],locstring[rwloc]) == 0){
             foundloc = true;
-            break; 
+            break;
         }
     }
 
@@ -77,15 +77,15 @@ static void get(const char * const * argv) {
             case RWL_cell_charge_c_rating_cC:
                 utoa(bms_state->pack_config->cell_charge_c_rating_cC, tempstr,10);
                 Board_Println(tempstr);
-                break;  
+                break;
             case RWL_bal_on_thresh_mV:
                 utoa(bms_state->pack_config->bal_on_thresh_mV, tempstr,10);
                 Board_Println(tempstr);
-                break;  
+                break;
             case RWL_bal_off_thresh_mV:
                 utoa(bms_state->pack_config->bal_off_thresh_mV, tempstr,10);
                 Board_Println(tempstr);
-                break; 
+                break;
             case RWL_pack_cells_p:
                 utoa(bms_state->pack_config->pack_cells_p, tempstr,10);
                 Board_Println(tempstr);
@@ -121,7 +121,7 @@ static void get(const char * const * argv) {
         for (roloc = (ro_loc_label_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
-                break; 
+                break;
             }
         }
         if (foundloc) {
@@ -190,7 +190,7 @@ static void get(const char * const * argv) {
                 case ROL_energy:
                     itoa(bms_input->pack_status->pack_energy, tempstr,10);
                     Board_Println(tempstr);
-                    break;                
+                    break;
                 case ROL_error:
                     error_status_vector = Error_GetStatus(0);
                     for (i = 0; i < ERROR_NUM_ERRORS; ++i)
@@ -223,7 +223,7 @@ static void set(const char * const * argv) {
     for (rwloc = 0; rwloc < RWL_LENGTH; ++rwloc){
         if (strcmp(argv[1],locstring[rwloc]) == 0){
             foundloc = true;
-            break; 
+            break;
         }
     }
     if(foundloc){
@@ -238,7 +238,7 @@ static void set(const char * const * argv) {
         for (roloc = (ro_loc_label_t)ROL_FIRST; roloc< ROL_LENGTH; ++roloc){
             if (strcmp(argv[1],locstring[roloc]) == 0){
                 foundloc = true;
-                if(strcmp(locstring[roloc],"soc_full") == 0){      //allows modification of soc value only --12/9/17 
+                if(strcmp(argv[2],"soc_full") == 0){      //allows modification of soc value only --12/9/17 locstring[roloc]
                     SOC_Full();
                     char tempstr[20];
                     itoa(bms_input->pack_status->state_of_charge, tempstr,10);
@@ -247,7 +247,7 @@ static void set(const char * const * argv) {
                 else{
                     Board_Println("this location is read only");
                 }
-                return; 
+                return;
             }
         }
 
@@ -263,7 +263,7 @@ static void help(const char * const * argv) {
         if (strcmp(argv[1],commands[command_i]) == 0){
             Board_Println_BLOCKING(helpstring[command_i]); //blocking print
 
-            break; 
+            break;
         }
     }
     Board_Print("");
@@ -294,7 +294,7 @@ static void config(const char * const * argv) {
 }
 
 static void measure(const char * const * argv) {
-    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY || bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) { 
+    if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY || bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) {
         if (strcmp(argv[1],"on") == 0) {
             console_output->measure_on = true;
             Board_Println("Measure On!");
@@ -348,14 +348,14 @@ static void measure(const char * const * argv) {
     } else {
         Board_Println("Must be in standby");
     }
-}   
+}
 
 
 static void bal(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
-            bms_state->curr_mode == BMS_SSM_MODE_BALANCE) { 
-        
+            bms_state->curr_mode == BMS_SSM_MODE_BALANCE) {
+
         if (strcmp(argv[1],"off") == 0) {
             console_output->valid_mode_request = false;
             console_output->balance_mV = UINT32_MAX;
@@ -369,12 +369,12 @@ static void bal(const char * const * argv) {
     } else {
         Board_Println("Must be in standby");
     }
-}   
+}
 
 static void chrg(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
-            bms_state->curr_mode == BMS_SSM_MODE_CHARGE) {  
+            bms_state->curr_mode == BMS_SSM_MODE_CHARGE) {
         if (console_output->valid_mode_request) {
             console_output->valid_mode_request = false;
             Board_Println("chrg off");
@@ -386,12 +386,12 @@ static void chrg(const char * const * argv) {
     } else {
         Board_Println("Must be in standby");
     }
-}   
+}
 
 static void dis(const char * const * argv) {
     UNUSED(argv);
     if (bms_state->curr_mode == BMS_SSM_MODE_STANDBY ||
-            bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) {   
+            bms_state->curr_mode == BMS_SSM_MODE_DISCHARGE) {
         if (console_output->valid_mode_request) {
             console_output->valid_mode_request = false;
             Board_Println("dis off");
@@ -414,12 +414,12 @@ static void config_def(const char * const * argv) {
         bms_state->init_state = BMS_INIT_OFF;
         console_output->config_default = true;
     }
-}              
+}
 
 static void induce_error(const char * const * argv) {
     UNUSED(argv);
     Error_Assert(ERROR_CONTROL_FLOW, bms_input->msTicks);
-}              
+}
 
 static const EXECUTE_HANDLER handlers[] = {get, set, help, config, bal, chrg, dis, config_def, measure, induce_error};
 
@@ -448,7 +448,7 @@ void executerl(int32_t argc, const char * const * argv){
     for (command_i = 0; command_i < NUMCOMMANDS; ++command_i)
     {
         if (strcmp(argv[0],commands[command_i]) == 0){
-            found_command = true;  
+            found_command = true;
             break;
         }
     }

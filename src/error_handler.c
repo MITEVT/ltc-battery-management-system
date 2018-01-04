@@ -13,7 +13,7 @@
 #define CAN_timeout_count 				100
 #define EEPROM_timeout_count  			5
 #define CONFLICTING_MODE_REQUESTS_count   2
-#define MAIN_HB_timeout_timeout_ms      5000
+#define MAIN_HB_timeout_timeout_ms      10000
 
 #ifdef FSAE_DRIVERS
 

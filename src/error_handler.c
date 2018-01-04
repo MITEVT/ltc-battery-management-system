@@ -106,7 +106,7 @@ void Error_Pass(ERROR_T er_t) {
 
 void Error_HB_rx(ERROR_T hb, uint32_t msTicks) {
     Error_Pass(hb);
-    Error_Assert(hb, msTicks);
+    // Error_Assert(hb, msTicks); //temporarily turn off error for HB
 }
 
 

@@ -1,10 +1,10 @@
 #ifndef __FLUXCAN_H__
 #define __FLUXCAN_H__
 
-#define BMS_HEARTBEAT_PERIOD 		1000
-#define BMS_ERRORS_PERIOD			1000
-#define BMS_CELL_TEMPS_PERIOD		1000
-#define BMS_PACK_STATUS_PERIOD		1000
+#define BMS_HEARTBEAT_PERIOD 		2000
+#define BMS_ERRORS_PERIOD			2000
+#define BMS_CELL_TEMPS_PERIOD		2000
+#define BMS_PACK_STATUS_PERIOD		2000
 
 
 //special high priority messages

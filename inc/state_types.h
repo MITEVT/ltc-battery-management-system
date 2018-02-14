@@ -39,6 +39,8 @@ typedef struct BMS_PACK_STATUS {
     uint32_t pack_current_mA;
     uint32_t pack_voltage_mV;
     int16_t max_cell_temp_dC;
+    int32_t pack_energy;
+    uint32_t state_of_charge;
 
     //FSAE specific pack status variables
 #ifdef FSAE_DRIVERS

@@ -20,7 +20,7 @@ static const char * const commands[] = { "get",
                             "dis",
                             "config_def",
                             "measure",
-                            "induce_error"
+                            "induce_error",
                                     };
 
 static const char nargs[ARRAY_SIZE(commands)] = {  1 ,
@@ -68,7 +68,10 @@ static const char * const locstring[] =  {
                             "pack_current_mA",
                             "pack_voltage_mV",
                             "max_temp",
-                            "error"
+                            "error",
+                            "soc",
+                            "energy",
+                            "soc_full"
 };
 
 static const uint32_t locparam[ARRAY_SIZE(locstring)][3] = { 
